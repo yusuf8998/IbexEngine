@@ -1,0 +1,39 @@
+#pragma once
+
+#ifndef TEXTURE_H
+#define TEXTURE_H
+
+#include <GLAD/glad.h>
+#include <string>
+
+class TextureData;
+
+class TextureObject {
+public:
+    // Constructor that takes a file path
+    TextureObject(const std::string& filePath);
+    TextureObject(const TextureData &data);
+    
+    // Destructor to clean up texture data
+    ~TextureObject();
+
+    // Method to bind the texture
+    void bind(GLuint unit = 0) const;
+
+    // Getter for the texture ID
+    GLuint getID() const { return textureID; }
+
+private:
+    GLuint textureID; // OpenGL texture ID
+    std::string filePath; // Texture file path
+
+    // Loads the texture from file and sets OpenGL parameters
+    void loadTexture();
+
+    void generateTexture(unsigned char *data, int width, int height, int channels);
+
+    // Utility function for flipping the image vertically
+    static void flipVertically(unsigned char* data, int width, int height, int channels);
+};
+
+#endif
