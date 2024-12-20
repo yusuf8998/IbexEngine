@@ -9,6 +9,8 @@
 // Forward declaration for resource types
 class TextureData;
 class ShaderData;
+class MeshData;
+class MaterialLibrary;
 
 class ResourceManager
 {
@@ -38,6 +40,8 @@ private:
     // Map for storing resources by filename
     std::unordered_map<std::string, std::shared_ptr<TextureData>> textureCache;
     std::unordered_map<std::string, std::shared_ptr<ShaderData>> shaderCache;
+    std::unordered_map<std::string, std::shared_ptr<MeshData>> meshCache;
+    std::unordered_map<std::string, std::shared_ptr<MaterialLibrary>> mtlCache;
 
     // Disable copy/move operations for the singleton
     ResourceManager(const ResourceManager &) = delete;

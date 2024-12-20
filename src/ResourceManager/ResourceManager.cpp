@@ -1,12 +1,16 @@
 #include "ResourceManager.h"
 #include "TextureData.h"
 #include "ShaderData.h"
+#include "MeshData.h"
+#include "MaterialLibrary.h"
 #include <stb/stb_image.h>
 
 template <>
-std::shared_ptr<TextureData> ResourceManager::loadResource<TextureData>(const std::string& filename) {
+std::shared_ptr<TextureData> ResourceManager::loadResource<TextureData>(const std::string &filename)
+{
     // Check if resource is already loaded
-    if (textureCache.find(filename) != textureCache.end()) {
+    if (textureCache.find(filename) != textureCache.end())
+    {
         return textureCache[filename];
     }
 
@@ -16,10 +20,12 @@ std::shared_ptr<TextureData> ResourceManager::loadResource<TextureData>(const st
     return texture;
 }
 template <>
-std::shared_ptr<TextureData> ResourceManager::getResource<TextureData>(const std::string& filename) {
+std::shared_ptr<TextureData> ResourceManager::getResource<TextureData>(const std::string &filename)
+{
     // Check if the resource is in cache
     auto it = textureCache.find(filename);
-    if (it != textureCache.end()) {
+    if (it != textureCache.end())
+    {
         return it->second;
     }
 
@@ -28,9 +34,11 @@ std::shared_ptr<TextureData> ResourceManager::getResource<TextureData>(const std
 }
 
 template <>
-std::shared_ptr<ShaderData> ResourceManager::loadResource<ShaderData>(const std::string& filename) {
+std::shared_ptr<ShaderData> ResourceManager::loadResource<ShaderData>(const std::string &filename)
+{
     // Check if resource is already loaded
-    if (shaderCache.find(filename) != shaderCache.end()) {
+    if (shaderCache.find(filename) != shaderCache.end())
+    {
         return shaderCache[filename];
     }
 
@@ -40,10 +48,12 @@ std::shared_ptr<ShaderData> ResourceManager::loadResource<ShaderData>(const std:
     return shader;
 }
 template <>
-std::shared_ptr<ShaderData> ResourceManager::getResource<ShaderData>(const std::string& filename) {
+std::shared_ptr<ShaderData> ResourceManager::getResource<ShaderData>(const std::string &filename)
+{
     // Check if the resource is in cache
     auto it = shaderCache.find(filename);
-    if (it != shaderCache.end()) {
+    if (it != shaderCache.end())
+    {
         return it->second;
     }
 
@@ -51,7 +61,74 @@ std::shared_ptr<ShaderData> ResourceManager::getResource<ShaderData>(const std::
     return loadResource<ShaderData>(filename);
 }
 
-void ResourceManager::clear() {
+template <>
+std::shared_ptr<MeshData> ResourceManager::loadResource<MeshData>(const std::string &filename)
+{
+    // Check if resource is already loaded
+    if (meshCache.find(filename) != meshCache.end())
+    {
+        return meshCache[filename];
+    }
+
+    // Load new mesh
+    auto mesh = std::make_shared<MeshData>();
+    if (!mesh->loadFromOBJ(filename))
+    {
+        throw std::runtime_error("Failed to load mesh from " + filename);
+    }
+    meshCache[filename] = mesh;
+    return mesh;
+}
+template <>
+std::shared_ptr<MeshData> ResourceManager::getResource<MeshData>(const std::string &filename)
+{
+    // Check if the resource is in cache
+    auto it = meshCache.find(filename);
+    if (it != meshCache.end())
+    {
+        return it->second;
+    }
+
+    // If not in cache, load it
+    return loadResource<MeshData>(filename);
+}
+
+template <>
+std::shared_ptr<MaterialLibrary> ResourceManager::loadResource<MaterialLibrary>(const std::string &filename)
+{
+    // Check if resource is already loaded
+    if (mtlCache.find(filename) != mtlCache.end())
+    {
+        return mtlCache[filename];
+    }
+
+    // Load new material library
+    auto mtl = std::make_shared<MaterialLibrary>();
+    if (!mtl->loadMaterialsFromMTL(filename))
+    {
+        throw std::runtime_error("Failed to load material library from " + filename);
+    }
+    mtlCache[filename] = mtl;
+    return mtl;
+}
+template <>
+std::shared_ptr<MaterialLibrary> ResourceManager::getResource<MaterialLibrary>(const std::string &filename)
+{
+    // Check if the resource is in cache
+    auto it = mtlCache.find(filename);
+    if (it != mtlCache.end())
+    {
+        return it->second;
+    }
+
+    // If not in cache, load it
+    return loadResource<MaterialLibrary>(filename);
+}
+
+void ResourceManager::clear()
+{
     textureCache.clear();
     shaderCache.clear();
+    meshCache.clear();
+    mtlCache.clear();
 }

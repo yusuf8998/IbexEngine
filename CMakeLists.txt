@@ -8,7 +8,7 @@ find_package(OpenGL REQUIRED)
 add_executable(Ibex
     "src/GLAD/glad.c"
 
-    "src/Graphics/Material.h"
+    "src/ResourceManager/MaterialLibrary.cpp"
 
     "src/ResourceManager/ResourceManager.cpp"
     "src/ResourceManager/TextureData.cpp"

@@ -83,19 +83,15 @@ void Node::updateTransform()
     std::unique_lock<std::shared_mutex> lock(mutex_);
     if (transformChanged)
     {
-        transformMatrix = glm::mat4(1.f);
-        transformMatrix = glm::translate(transformMatrix, position);
-        transformMatrix *= glm::mat4_cast(rotation);
-        transformMatrix = glm::scale(transformMatrix, scale);
-        // transformMatrix = glm::translate(glm::mat4(1.0f), position) *
-        //                   glm::mat4_cast(rotation) *
-        //                   glm::scale(glm::mat4(1.0f), scale);
+        transformMatrix = glm::translate(glm::mat4(1.0f), position) *
+                          glm::mat4_cast(rotation) *
+                          glm::scale(glm::mat4(1.0f), scale);
 
         // Apply parent's transformation (if any)
-        // if (parent)
-        // {
-        //     transformMatrix *= parent->transformMatrix;
-        // }
+        if (parent)
+        {
+            transformMatrix *= parent->transformMatrix;
+        }
         transformChanged = false;
     }
 

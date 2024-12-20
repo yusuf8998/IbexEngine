@@ -5,6 +5,15 @@
 #include "ResourceManager/TextureData.h"
 
 std::map<std::string, TextureObject *> TextureObject::Textures = {};
+TextureObject *TextureObject::getTextureByName(const std::string &name)
+{
+    auto it = Textures.find(name);
+    if (it != Textures.end())
+    {
+        return it->second;
+    }
+    return new TextureObject(name);
+}
 
 TextureObject::TextureObject(const std::string &filePath)
     : filePath(filePath), textureID(0)

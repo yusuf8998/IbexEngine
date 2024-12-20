@@ -1,4 +1,5 @@
 #include "MeshData.h"
+#include "ResourceManager.h"
 #include <stb/stb_image.h>
 
 bool MeshData::loadFromOBJ(const std::string &filepath)
@@ -32,7 +33,7 @@ void MeshData::parseOBJLine(const std::string &line)
 
     if (tokens[0] == "v")
     { // Vertex position
-        if (tokens.size() == 4)
+        if (tokens.size() >= 4)
         {
             glm::vec3 position(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
             vertexAttributes["position"].push_back(position.x);
@@ -42,7 +43,7 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "vn")
     { // Vertex normal
-        if (tokens.size() == 4)
+        if (tokens.size() >= 4)
         {
             glm::vec3 normal(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
             vertexAttributes["normal"].push_back(normal.x);
@@ -52,7 +53,7 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "vt")
     { // Vertex texture coordinate
-        if (tokens.size() == 3)
+        if (tokens.size() >= 3)
         {
             glm::vec2 uv(std::stof(tokens[1]), std::stof(tokens[2]));
             vertexAttributes["uv"].push_back(uv.x);
@@ -77,70 +78,25 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "usemtl")
     { // Material reference
-        if (tokens.size() == 2)
+        if (tokens.size() >= 2)
         {
-            materialNames.push_back(tokens[1]); // Store the material name for subsequent faces
+            // materialNames.push_back(tokens[1]); // Store the material name for subsequent faces
+            for (auto it = materialLibraries.begin(); it != materialLibraries.end(); it++)
+            {
+                if (it->second->hasMaterial(tokens[1]))
+                {
+                    materials[it->first] = tokens[1];
+                    break;
+                }
+            }
         }
     }
-}
-
-bool MeshData::loadMaterialsFromMTL(const std::string &mtlFilePath)
-{
-    std::ifstream file(mtlFilePath);
-    if (!file.is_open())
-    {
-        std::cerr << "Error: Could not open material file " << mtlFilePath << std::endl;
-        return false;
-    }
-
-    std::string line;
-    Material currentMaterial;
-    std::string currentName;
-
-    while (std::getline(file, line))
-    {
-        parseMTLLine(line, currentMaterial, currentName);
-    }
-    materials[currentName] = currentMaterial;
-    file.close();
-    return true;
-}
-
-void MeshData::parseMTLLine(const std::string &line, Material &currentMaterial, std::string &currentName)
-{
-    std::vector<std::string> tokens = splitString(line, ' ');
-
-    if (tokens.empty())
-        return;
-
-    if (tokens[0] == "newmtl")
-    { // New material definition
-        if (currentMaterial.diffuse != glm::vec3(0.f))
+    else if (tokens[0] == "mtllib")
+    { // Material Library reference
+        if (tokens.size() >= 2)
         {
-            materials[currentName] = currentMaterial; // Store the previous material
+            materialLibraries[tokens[1]] = ResourceManager::instance().loadResource<MaterialLibrary>(tokens[1]);
         }
-        currentName = tokens[1];
-        currentMaterial = Material();
-    }
-    else if (tokens[0] == "Ka")
-    { // Ambient color
-        currentMaterial.ambient = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-    }
-    else if (tokens[0] == "Kd")
-    { // Diffuse color
-        currentMaterial.diffuse = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-    }
-    else if (tokens[0] == "Ks")
-    { // Specular color
-        currentMaterial.specular = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-    }
-    else if (tokens[0] == "Ns")
-    { // Shininess
-        currentMaterial.shininess = std::stof(tokens[1]);
-    }
-    else if (tokens[0] == "map_Kd")
-    { // Diffuse texture map
-        currentMaterial.diffuseTexture = tokens[1];
     }
 }
 

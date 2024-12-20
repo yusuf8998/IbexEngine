@@ -12,34 +12,24 @@
 #include <sstream>
 #include <GLAD/glad.h>
 
+#include <splitString.h>
+
+#include <ResourceManager/MaterialLibrary.h>
+
 class MeshData
 {
 public:
     std::unordered_map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes like position, normal, uv
     std::vector<unsigned int> indices;                                    // Indices for faces
-    std::unordered_map<std::string, Material> materials;                  // Map of material names to materials
-    std::vector<std::string> materialNames;                               // Names of the materials applied to faces
+    std::unordered_map<std::string, std::string> materials; // Map of material names to materials
+
+    std::unordered_map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
 
     bool loadFromOBJ(const std::string &filepath);
-    bool loadMaterialsFromMTL(const std::string &mtlFilePath);
 
     // Helper function to access vertex attributes
     const std::vector<float> &getVertexAttribute(const std::string &name) const;
 
 private:
     void parseOBJLine(const std::string &line);
-    void parseMTLLine(const std::string &line, Material &currentMaterial, std::string &currentName);
 };
-
-// Helper function to split a string by delimiter
-inline std::vector<std::string> splitString(const std::string &str, char delimiter)
-{
-    std::vector<std::string> tokens;
-    std::string token;
-    std::istringstream tokenStream(str);
-    while (std::getline(tokenStream, token, delimiter))
-    {
-        tokens.push_back(token);
-    }
-    return tokens;
-}

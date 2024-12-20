@@ -9,12 +9,13 @@
 
 class TextureData;
 
-class TextureObject {
+class TextureObject
+{
 public:
     // Constructor that takes a file path
-    TextureObject(const std::string& filePath);
+    TextureObject(const std::string &filePath);
     TextureObject(const TextureData &data);
-    
+
     // Destructor to clean up texture data
     ~TextureObject();
 
@@ -24,11 +25,14 @@ public:
     // Getter for the texture ID
     GLuint getID() const { return textureID; }
 
-	static std::map<std::string, TextureObject *> Textures;
+    // Getter for a specific texture by name
+    static TextureObject *getTextureByName(const std::string &name);
 
 private:
-    GLuint textureID; // OpenGL texture ID
+    GLuint textureID;     // OpenGL texture ID
     std::string filePath; // Texture file path
+
+    static std::map<std::string, TextureObject *> Textures;
 
     // Loads the texture from file and sets OpenGL parameters
     void loadTexture();
@@ -36,7 +40,7 @@ private:
     void generateTexture(unsigned char *data, int width, int height, int channels);
 
     // Utility function for flipping the image vertically
-    static void flipVertically(unsigned char* data, int width, int height, int channels);
+    static void flipVertically(unsigned char *data, int width, int height, int channels);
 };
 
 #endif

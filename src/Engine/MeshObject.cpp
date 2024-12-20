@@ -134,19 +134,18 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
     glBindVertexArray(VAO);
 
     // Set material properties (e.g., diffuse color)
-    for (const std::string &materialName : data->materialNames)
+    for (auto &kvp : data->materials)
     {
-        const Material &material = data->materials[materialName];
-
+        const auto *material = data->materialLibraries[kvp.first]->getMaterial(kvp.second);
         // Set shader uniform for material properties (diffuse, specular, etc.)
-        shader->setVec3("material.diffuse", material.diffuse);
-        shader->setVec3("material.specular", material.specular);
-        shader->setFloat("material.shininess", material.shininess);
+        shader->setVec3("material.diffuse", material->diffuse);
+        shader->setVec3("material.specular", material->specular);
+        shader->setFloat("material.shininess", material->shininess);
 
         // Bind diffuse texture if it exists
-        if (!material.diffuseTexture.empty())
+        if (!material->diffuseTexture.empty())
         {
-            auto *texture = loadTexture(material.diffuseTexture);
+            auto *texture = loadTexture(material->diffuseTexture);
             texture->bind(GL_TEXTURE0);
             shader->setInt("material.diffuseTexture", 0);
         }
@@ -163,5 +162,5 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
 
 TextureObject *MeshObject::loadTexture(const std::string &texturePath)
 {
-    return TextureObject::Textures[texturePath];
+    return TextureObject::getTextureByName(texturePath);
 }
