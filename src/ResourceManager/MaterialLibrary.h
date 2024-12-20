@@ -5,7 +5,7 @@
 
 #include <unordered_map>
 #include <string>
-#include "Graphics/Material.h"
+#include <ResourceManager/Material.h>
 #include <splitString.h>
 #include <memory>
 

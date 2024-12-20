@@ -7,7 +7,7 @@
 #include "Graphics/ShaderObject.h"
 #include "Graphics/TextureObject.h"
 #include "ResourceManager/ResourceManager.h"
-#include "Engine/MeshObject.h"
+#include "Graphics/MeshObject.h"
 #include "Engine/Node.h"
 #include "Engine/InputHandler.h"
 #include <thread>

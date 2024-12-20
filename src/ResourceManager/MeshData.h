@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <Graphics/Material.h>
+#include <ResourceManager/Material.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
