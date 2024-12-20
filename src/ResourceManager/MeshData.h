@@ -19,6 +19,7 @@
 class MeshData
 {
 public:
+    std::string filepath;
     std::unordered_map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes like position, normal, uv
     std::vector<unsigned int> indices;                                    // Indices for faces
     std::unordered_map<std::string, std::string> materials; // Map of material names to materials

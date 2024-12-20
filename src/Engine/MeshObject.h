@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 
+#include <ResourceManager/ResourceManager.h>
 #include <ResourceManager/MeshData.h>
 #include <Graphics/ShaderObject.h>
 #include <Graphics/TextureObject.h>
@@ -14,17 +15,34 @@ public:
     MeshData *data;
     GLuint VAO, VBO, EBO;
 
+    inline MeshObject(const std::string &filepath)
+        : MeshObject(ResourceManager::instance().getResource<MeshData>(filepath).get())
+    {}
     inline MeshObject(MeshData *data)
         : data(data)
     {
+        if (Meshes[data->filepath] != nullptr)
+            throw std::runtime_error("Mesh already loaded");
+        Meshes[data->filepath] = this;
+        generateOpenGLBuffers();
+        populateOpenGLBuffers();
     }
 
     void generateOpenGLBuffers();
-    void populateOpenGLBuffers(const glm::mat4 &transformation);
+    void populateOpenGLBuffers();
     void render(ShaderObject *shader, const glm::mat4 &transformation);
     TextureObject *loadTexture(const std::string &texturePath);
+
+    static MeshObject *GetMeshObject(const std::string &name)
+    {
+        if (Meshes.count(name) != 0)
+            return Meshes[name];
+        return new MeshObject(name);
+    }
 private:
     std::vector<unsigned int> tri_indices = {};
+
+    static std::unordered_map<std::string, MeshObject *> Meshes;
 };
 
 inline std::vector<unsigned int> generateTriangleIndices(int numVertices)
@@ -36,17 +54,6 @@ inline std::vector<unsigned int> generateTriangleIndices(int numVertices)
         // A valid polygon must have at least 3 vertices (triangle).
         return indices;
     }
-
-    // Let's assume vertices are ordered in a circular fashion.
-    // Example: We have a polygon with 'numVertices' vertices, and we want to triangulate it.
-
-    // Loop through the vertices, connecting the center vertex (0) to form triangles.
-    // for (int i = 1; i < numVertices - 1; ++i)
-    // {
-    //     indices.push_back(0);     // Center vertex (assuming 0 is the center vertex)
-    //     indices.push_back(i);     // First vertex of the triangle
-    //     indices.push_back(i + 1); // Second vertex of the triangle
-    // }
 
     for (int i = 0; i < numVertices; i++)
     {

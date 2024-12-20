@@ -4,6 +4,7 @@
 
 bool MeshData::loadFromOBJ(const std::string &filepath)
 {
+    this->filepath = filepath;
     std::ifstream file(filepath);
     if (!file.is_open())
     {

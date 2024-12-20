@@ -24,13 +24,13 @@ public:
     glm::quat rotation; // Rotation of the node
     glm::vec3 scale;    // Scale of the node
     glm::mat4 transformMatrix;
-    MeshObject *mesh;
+    std::string meshName;
     bool isStatic;
     bool transformChanged;
     Node *parent;
     std::vector<std::shared_ptr<Node>> children;
 
-    Node(const std::string &name = "Unnamed", MeshObject *_mesh = 0, bool is_static = false);
+    Node(const std::string &name = "Unnamed", const std::string &mesh_name = "", bool is_static = false);
     // Add a child node
     void addChild(const std::shared_ptr<Node> &child);
     // Apply transformations and build the final transformation matrix
@@ -77,4 +77,16 @@ inline void saveNodeToFile(const std::shared_ptr<Node> &rootNode, const std::str
     std::ofstream file(filename);
     file << j.dump(4); // pretty print with an indent of 4 spaces
     file.close();
+}
+
+inline std::shared_ptr<Node> loadNodeFromFile(const std::string &filename)
+{
+    std::ifstream file(filename);
+    nlohmann::json j;
+    file >> j;
+    file.close();
+
+    std::shared_ptr<Node> rootNode = std::make_shared<Node>();
+    j.get_to(rootNode);
+    return rootNode;
 }

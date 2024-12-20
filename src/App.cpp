@@ -66,16 +66,16 @@ int main()
         return -1;
     }
 
-    auto mesh = ResourceManager::instance().loadResource<MeshData>("res/cube2.obj");
+    // auto mesh = ResourceManager::instance().loadResource<MeshData>("res/cube2.obj");
 
-    MeshObject mesh_obj = MeshObject(mesh.get());
-    mesh_obj.generateOpenGLBuffers();
+    // MeshObject mesh_obj = MeshObject(mesh.get());
+    // mesh_obj.generateOpenGLBuffers();
 
     auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>("res/vertex_mesh.glsl");
     auto shader_frag = ResourceManager::instance().loadResource<ShaderData>("res/fragment_mesh.glsl");
 
-    std::shared_ptr<Node> root = std::make_shared<Node>("root");
-    root->addChild(std::make_shared<Node>("dynamic", &mesh_obj, false));
+    std::shared_ptr<Node> root = loadNodeFromFile("root.json");//std::make_shared<Node>("root");
+    //root->addChild(std::make_shared<Node>("dynamic", &mesh_obj, false));
 
     ShaderObject shader(*shader_vertex.get(), *shader_frag.get());
     shader.use();
@@ -92,8 +92,6 @@ int main()
     auto movementInputVector = InputVector("Horizontal", "Vertical", "Z");
     auto rotationInputVector = InputVector("", "RotationVertical", "");
 
-    // root->children[0]->translate(glm::vec3(0, 1, 0));
-
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -106,6 +104,7 @@ int main()
 
         root->children[0]->translate(movementInputVector.getValue() / 60.f);
         root->rotate(rotationInputVector.getValue() / 60.f);
+        root->transformChanged = true;
         root->updateTransform();
 
         if (inputHandler.isKeyPressed(GLFW_KEY_P))

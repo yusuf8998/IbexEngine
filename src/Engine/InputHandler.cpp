@@ -147,6 +147,11 @@ void InputHandler::getMousePosition(double &x, double &y) const
     y = mouseY;
 }
 
+InputAxis InputHandler::getAxis(const std::string &name)
+{
+    return InputAxis::Axes[name];
+}
+
 // GLFW callbacks (static)
 // void InputHandler::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 // {

@@ -58,6 +58,8 @@ inline bool GLLogCall(const char *function, const char *file, int line)
     return true;
 }
 
+std::unordered_map<std::string, MeshObject *> MeshObject::Meshes = {};
+
 void MeshObject::generateOpenGLBuffers()
 {
     // Create a VAO (Vertex Array Object)
@@ -70,7 +72,7 @@ void MeshObject::generateOpenGLBuffers()
     tri_indices = generateTriangleIndices(data->indices.size() / 3);
 }
 
-void MeshObject::populateOpenGLBuffers(const glm::mat4 &transformation)
+void MeshObject::populateOpenGLBuffers()
 {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);

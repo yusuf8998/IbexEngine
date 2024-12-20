@@ -37,6 +37,7 @@ void to_json(nlohmann::json &j, const std::shared_ptr<Node> &node)
         {"rotation", node->rotation},
         {"scale", node->scale},
         {"isStatic", node->isStatic},
+        {"meshName", node->meshName},
         {"children", node->children}};
 }
 
@@ -48,7 +49,8 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<Node> &node)
     j.at("rotation").get_to(node->rotation);
     j.at("scale").get_to(node->scale);
     j.at("isStatic").get_to(node->isStatic);
-    // Deserialize children - need to convert each child from JSON to std::shared_ptr<SceneNode>
+    j.at("meshName").get_to(node->meshName);
+    // Deserialize children - need to convert each child from JSON to std::shared_ptr<Node>
     if (j.contains("children"))
     {
         if (j["children"].is_array())
@@ -59,6 +61,7 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<Node> &node)
                 auto child_node = std::make_shared<Node>();
                 child_json.get_to(child_node);
                 node->children.push_back(child_node);
+                child_node->parent = node.get();
             }
         }
         else
@@ -68,8 +71,8 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<Node> &node)
     }
 }
 
-Node::Node(const std::string &name, MeshObject *_mesh, bool is_static)
-    : name(name), position(glm::vec3(0.f)), scale(glm::vec3(1.f)), rotation(glm::quat(glm::vec3(0.f))), parent(nullptr), mesh(_mesh), isStatic(is_static), transformChanged(false)
+Node::Node(const std::string &name, const std::string &mesh_name, bool is_static)
+    : name(name), position(glm::vec3(0.f)), scale(glm::vec3(1.f)), rotation(glm::quat(glm::vec3(0.f))), parent(nullptr), meshName(mesh_name), isStatic(is_static), transformChanged(false)
 {
 }
 void Node::addChild(const std::shared_ptr<Node> &child)
@@ -104,10 +107,9 @@ void Node::updateTransform()
 void Node::render(ShaderObject *shader) const
 {
     std::unique_lock<std::shared_mutex> lock(mutex_);
-    if (mesh)
+    if (!meshName.empty())
     {
-        mesh->populateOpenGLBuffers(transformMatrix);
-        mesh->render(shader, transformMatrix);
+        MeshObject::GetMeshObject(meshName)->render(shader, transformMatrix);
     }
 
     // Render children
