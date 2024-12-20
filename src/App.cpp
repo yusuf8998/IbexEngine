@@ -7,7 +7,7 @@
 #include "Graphics/ShaderObject.h"
 #include "Graphics/TextureObject.h"
 #include "ResourceManager/ResourceManager.h"
-#include "Engine/Mesh.h"
+#include "Engine/MeshObject.h"
 #include "Engine/Node.h"
 #include "Engine/InputHandler.h"
 #include <thread>
@@ -53,6 +53,8 @@ std::thread save_thread;
 
 void save(const std::shared_ptr<Node> &root)
 {
+    if (save_thread.joinable())
+        save_thread.join();
     save_thread = std::thread(saveNodeToFile, root, "root.json");
 }
 
@@ -63,55 +65,55 @@ int main()
         return -1;
     }
 
-    // Create mesh (a simple triangle for example)
-    std::vector<Vertex> vertices = {
-        {{+0.0f, +0.5f, +0.0f}, {1.0f, 1.0f, 1.0f}, {0.5f, 1.0f}},
-        {{+0.5f, -0.5f, +0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-        {{-0.5f, -0.5f, +0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}}};
-    std::vector<unsigned int> indices = {0, 1, 2};
+    std::shared_ptr<MeshData> mesh = std::make_shared<MeshData>();
+    mesh->loadFromOBJ("res/cube.obj");
+    mesh->loadMaterialsFromMTL("res/cube.mtl");
 
-    std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>("tri", vertices, indices);
+    MeshObject *mesh_obj = new MeshObject(mesh.get());
+    mesh_obj->generateOpenGLBuffers();
 
     auto texture1 = ResourceManager::instance().loadResource<TextureData>("res/box.png");
 
-    auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>("res/vertex.glsl");
-    auto shader_frag = ResourceManager::instance().loadResource<ShaderData>("res/fragment.glsl");
+    auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>("res/vertex_mesh.glsl");
+    auto shader_frag = ResourceManager::instance().loadResource<ShaderData>("res/fragment_mesh.glsl");
 
     std::shared_ptr<Node> root = std::make_shared<Node>("root");
-    root->addChild(std::make_shared<Node>("dynamic", mesh.get(), false));
+    root->addChild(std::make_shared<Node>("dynamic", mesh_obj, false));
 
-    root->setScale(glm::vec3(2.f));
-
-    TextureObject texture(*texture1.get());
+    TextureObject texture = TextureObject(*texture1.get());
     texture.bind(GL_TEXTURE0);
 
     ShaderObject shader(*shader_vertex.get(), *shader_frag.get());
     shader.use();
-    shader.setInt("u_texture", 0);
 
     InputHandler inputHandler(window);
+
+    glm::mat4 projection = glm::perspective(glm::radians(60.f), 800.f / 600.f, 0.125f, 10.f);//glm::ortho(-1, 1, -1, 1);
 
     glm::vec3 mov = glm::vec3(0.f);
 
     InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, GLFW_KEY_RIGHT, GLFW_KEY_LEFT, &inputHandler);
     InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_UP, GLFW_KEY_DOWN, &inputHandler);
+    InputAxis::Axes["Z"] = InputAxis(GLFW_KEY_Q, GLFW_KEY_E, &inputHandler);;
 
-    auto movementInputVector = InputVector("Horizontal", "Vertical");
+    auto movementInputVector = InputVector("Horizontal", "Vertical", "Z");
 
-    root->children[0]->translate(glm::vec3(0, 1, 0));
+    // root->children[0]->translate(glm::vec3(0, 1, 0));
 
     while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         inputHandler.update();
 
+        shader.setMat4("projection", projection);
+
         // Simple update and render cycle
-        root->render();
+        root->render(&shader);
 
         mov = movementInputVector.getValue();
 
         root->children[0]->translate(mov / 60.f);
-        root->rotate(glm::vec3(0.f, glm::radians(45.f / 60.f), 0.f));
+        // root->rotate(glm::vec3(0.f, glm::radians(45.f / 60.f), 0.f));
         root->updateTransform();
 
         if (inputHandler.isKeyPressed(GLFW_KEY_P))
@@ -125,7 +127,9 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-    save_thread.join();
+    if (save_thread.joinable())
+        save_thread.join();
+    delete mesh_obj;
     ResourceManager::instance().clear();
     cleanup();
     return 0;

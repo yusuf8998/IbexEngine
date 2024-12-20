@@ -5,6 +5,7 @@
 
 #include <GLAD/glad.h>
 #include <string>
+#include <map>
 
 class TextureData;
 
@@ -22,6 +23,8 @@ public:
 
     // Getter for the texture ID
     GLuint getID() const { return textureID; }
+
+	static std::map<std::string, TextureObject *> Textures;
 
 private:
     GLuint textureID; // OpenGL texture ID

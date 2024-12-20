@@ -2,11 +2,21 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <iostream>
+#include "ResourceManager/TextureData.h"
+
+std::map<std::string, TextureObject *> TextureObject::Textures = {};
 
 TextureObject::TextureObject(const std::string &filePath)
     : filePath(filePath), textureID(0)
 {
     loadTexture();
+    Textures[filePath] = this;
+}
+TextureObject::TextureObject(const TextureData &data)
+    : filePath(data.getName()), textureID(0)
+{
+    generateTexture(data.getData(), data.getWidth(), data.getHeight(), data.getChannels());
+    Textures[filePath] = this;
 }
 
 TextureObject::~TextureObject()
@@ -14,6 +24,7 @@ TextureObject::~TextureObject()
     // if (textureID != 0) {
     //     glDeleteTextures(1, &textureID);
     // }
+    Textures.erase(filePath);
 }
 
 void TextureObject::bind(GLuint unit) const
@@ -73,12 +84,4 @@ void TextureObject::flipVertically(unsigned char *data, int width, int height, i
 {
     // Flip the image vertically (if needed, this is done using stb_image).
     // This function is just for illustration and can be ignored if flipping is handled by stb_image.
-}
-
-#include "ResourceManager/TextureData.h"
-
-TextureObject::TextureObject(const TextureData &data)
-    : filePath(data.getName()), textureID(0)
-{
-    generateTexture(data.getData(), data.getWidth(), data.getHeight(), data.getChannels());
 }

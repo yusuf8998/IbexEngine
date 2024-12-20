@@ -68,7 +68,7 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<Node> &node)
     }
 }
 
-Node::Node(const std::string &name, Mesh *_mesh, bool is_static)
+Node::Node(const std::string &name, MeshObject *_mesh, bool is_static)
     : name(name), position(glm::vec3(0.f)), scale(glm::vec3(1.f)), rotation(glm::quat(glm::vec3(0.f))), parent(nullptr), mesh(_mesh), isStatic(is_static), transformChanged(false)
 {
 }
@@ -83,15 +83,19 @@ void Node::updateTransform()
     std::unique_lock<std::shared_mutex> lock(mutex_);
     if (transformChanged)
     {
-        transformMatrix = glm::translate(glm::mat4(1.0f), position) *
-                          glm::mat4_cast(rotation) *
-                          glm::scale(glm::mat4(1.0f), scale);
+        transformMatrix = glm::mat4(1.f);
+        transformMatrix = glm::translate(transformMatrix, position);
+        transformMatrix *= glm::mat4_cast(rotation);
+        transformMatrix = glm::scale(transformMatrix, scale);
+        // transformMatrix = glm::translate(glm::mat4(1.0f), position) *
+        //                   glm::mat4_cast(rotation) *
+        //                   glm::scale(glm::mat4(1.0f), scale);
 
         // Apply parent's transformation (if any)
-        if (parent)
-        {
-            transformMatrix *= parent->transformMatrix;
-        }
+        // if (parent)
+        // {
+        //     transformMatrix *= parent->transformMatrix;
+        // }
         transformChanged = false;
     }
 
@@ -101,19 +105,19 @@ void Node::updateTransform()
         child->updateTransform(); // Recursive call to update all children
     }
 }
-void Node::render() const
+void Node::render(ShaderObject *shader) const
 {
     std::unique_lock<std::shared_mutex> lock(mutex_);
     if (mesh)
     {
-        mesh->applyTransformation(transformMatrix);
-        mesh->draw();
+        mesh->populateOpenGLBuffers(transformMatrix);
+        mesh->render(shader, transformMatrix);
     }
 
     // Render children
     for (const auto &child : children)
     {
-        child->render();
+        child->render(shader);
     }
 }
 void Node::setPosition(const glm::vec3 &newPos)

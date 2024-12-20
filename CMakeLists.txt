@@ -5,18 +5,19 @@ project(Ibex)
 cmake_policy(SET CMP0072 NEW)
 find_package(OpenGL REQUIRED)
 
-find_package(nlohmann_json 3.11.3 REQUIRED)
-
 add_executable(Ibex
     "src/GLAD/glad.c"
+
+    "src/Graphics/Material.h"
 
     "src/ResourceManager/ResourceManager.cpp"
     "src/ResourceManager/TextureData.cpp"
     "src/ResourceManager/ShaderData.cpp"
+    "src/ResourceManager/MeshData.cpp"
 
     "src/Graphics/ShaderObject.cpp"
     "src/Graphics/TextureObject.cpp"
-    "src/Engine/Mesh.h"
+    "src/Engine/MeshObject.cpp"
     "src/Engine/Node.cpp"
 
     "src/Engine/InputHandler.cpp"
@@ -33,6 +34,7 @@ target_include_directories(Ibex PUBLIC
 add_library(glfw STATIC IMPORTED)
 set_property(TARGET glfw PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Dependencies/GLFW-static/lib-mingw32/libglfw3.a")
 else()
+find_package(nlohmann_json 3.11.3 REQUIRED)
 target_include_directories(Ibex PUBLIC
     "src/"
     "src/vendor/"
@@ -44,8 +46,6 @@ add_custom_target(
     ResourceStuff
     COMMENT "Copying Resources"
     COMMAND cp -r ${CMAKE_SOURCE_DIR}/res ${PROJECT_BINARY_DIR}
-    COMMENT "Copying Dependencies"
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/Dependencies ${PROJECT_BINARY_DIR}
 )
 add_dependencies(Ibex ResourceStuff)
 

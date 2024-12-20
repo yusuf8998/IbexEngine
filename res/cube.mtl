@@ -1,0 +1,7 @@
+# Blender 4.3.2 MTL File: 'None'
+# www.blender.org
+
+newmtl red
+Ns 250.000000
+Kd 0.800000 0.800000 0.800000
+map_Kd res/box.png

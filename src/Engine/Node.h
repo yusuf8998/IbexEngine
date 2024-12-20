@@ -4,7 +4,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Mesh.h"
+#include "MeshObject.h"
 
 #include <iostream>
 #include <fstream>
@@ -24,19 +24,19 @@ public:
     glm::quat rotation; // Rotation of the node
     glm::vec3 scale;    // Scale of the node
     glm::mat4 transformMatrix;
-    Mesh *mesh;
+    MeshObject *mesh;
     bool isStatic;
     bool transformChanged;
     Node *parent;
     std::vector<std::shared_ptr<Node>> children;
 
-    Node(const std::string &name = "Unnamed", Mesh *_mesh = 0, bool is_static = false);
+    Node(const std::string &name = "Unnamed", MeshObject *_mesh = 0, bool is_static = false);
     // Add a child node
     void addChild(const std::shared_ptr<Node> &child);
     // Apply transformations and build the final transformation matrix
     void updateTransform();
     // Render (or any other operation that needs the transform)
-    void render() const;
+    void render(ShaderObject *shader) const;
     // Set the position of the node
     void setPosition(const glm::vec3 &newPos);
     // Set the scale of the node
