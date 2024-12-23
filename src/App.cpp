@@ -83,16 +83,10 @@ int main()
         return -1;
     }
 
-    // auto mesh = ResourceManager::instance().loadResource<MeshData>("res/cube2.obj");
-
-    // MeshObject mesh_obj = MeshObject(mesh.get());
-    // mesh_obj.generateOpenGLBuffers();
-
     auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>("res/vertex_mesh.glsl");
     auto shader_frag = ResourceManager::instance().loadResource<ShaderData>("res/fragment_mesh.glsl");
 
-    std::shared_ptr<Node> root = loadNodeFromFile("root.json"); // std::make_shared<Node>("root");
-    // root->addChild(std::make_shared<Node>("dynamic", &mesh_obj, false));
+    std::shared_ptr<Node> root = loadNodeFromFile("root.json");
 
     ShaderObject shader(*shader_vertex.get(), *shader_frag.get());
     shader.use();
@@ -108,7 +102,7 @@ int main()
     InputAxis::Axes["RotationHorizontal"] = InputAxis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT, &inputHandler);
 
     auto movementInputVector = InputVector("Horizontal", "Z", "Vertical");
-    auto rotationInputVector = InputVector("RotationVertical", "RotationHorizontal", "");
+    auto rotationInputVector = InputVector("RotationHorizontal", "RotationVertical", "");
 
     glm::vec4 transformedInput;
 
@@ -149,10 +143,7 @@ int main()
         // Simple update and render cycle
         root->render(&shader);
 
-        // root->children[0]->translate(movementInputVector.getValue() / 60.f);
-        // root->children[1]->translate(movementInputVector.getValue() / 60.f);
-        // // root->translate(rotationInputVector.getValue() / 60.f);
-        // root->rotate(rotationInputVector.getValue() / 60.f);
+        root->rotate(rotationInputVector.getValue() * deltaTime);
         root->updateTransform();
 
         glfwSwapBuffers(window);

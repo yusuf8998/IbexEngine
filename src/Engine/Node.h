@@ -15,15 +15,44 @@
 #include <nlohmann/json.hpp>
 #include <shared_mutex>
 
+struct Transform
+{
+    glm::vec3 position; // Position of the node
+    glm::quat rotation; // Rotation of the node
+    glm::vec3 scale;    // Scale of the node
+    glm::mat4 localTransform;
+    glm::mat4 globalTransform;
+
+    Transform() : position(glm::vec3(0.f)), rotation(glm::quat(glm::vec3(0.))), scale(glm::vec3(1.f)), localTransform(glm::mat4(1.f)), globalTransform(glm::mat4(1.f))
+    {
+    }
+
+    inline void applyTransformToLocal()
+    {
+        localTransform = glm::mat4(1.f);
+        localTransform *= glm::translate(glm::mat4(1.0f), position) *
+                          glm::mat4_cast(rotation) *
+                          glm::scale(glm::mat4(1.0f), scale);
+    }
+
+    inline void applyParentToGlobal(const glm::mat4 &parent)
+    {
+        globalTransform = glm::mat4(1.f);
+        globalTransform *= parent;
+    }
+
+    inline void applyLocalToGlobal()
+    {
+        globalTransform *= localTransform;
+    }
+};
+
 // Base class for nodes in the scene graph
 class Node
 {
 public:
     std::string name;
-    glm::vec3 position; // Position of the node
-    glm::quat rotation; // Rotation of the node
-    glm::vec3 scale;    // Scale of the node
-    glm::mat4 transformMatrix;
+    Transform transform;
     std::string meshName;
     bool isStatic;
     bool transformChanged = true;
@@ -55,7 +84,7 @@ public:
     // Get the scale (read-only)
     glm::vec3 getScale() const;
 
-// private:
+    // private:
     mutable std::shared_mutex mutex_; // Shared mutex to protect shared state
 };
 
