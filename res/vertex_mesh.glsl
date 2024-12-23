@@ -9,11 +9,12 @@ layout(location = 1) out vec3 fragPos;     // Position to pass to fragment shade
 layout(location = 2) out vec2 fragUV;     // uv to pass to fragment shader
 
 uniform mat4 projection;
+uniform mat4 view;
 uniform mat4 model;
 
 void main()
 {
-    gl_Position = projection * model * vec4(v_position, 1);
+    gl_Position = projection * view * model * vec4(v_position, 1);
     fragPos = v_position;
     fragNormal = v_normal;
     fragUV = v_uv;

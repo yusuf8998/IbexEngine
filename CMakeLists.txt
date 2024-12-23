@@ -9,7 +9,6 @@ add_executable(Ibex
     "src/GLAD/glad.c"
 
     "src/ResourceManager/MaterialLibrary.cpp"
-
     "src/ResourceManager/ResourceManager.cpp"
     "src/ResourceManager/TextureData.cpp"
     "src/ResourceManager/ShaderData.cpp"
@@ -18,9 +17,10 @@ add_executable(Ibex
     "src/Graphics/ShaderObject.cpp"
     "src/Graphics/TextureObject.cpp"
     "src/Graphics/MeshObject.cpp"
-    "src/Engine/Node.cpp"
 
+    "src/Engine/Node.cpp"
     "src/Engine/InputHandler.cpp"
+    "src/Engine/Camera.cpp"
 
     "src/App.cpp"
 )

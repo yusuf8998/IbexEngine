@@ -62,6 +62,7 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<Node> &node)
                 child_json.get_to(child_node);
                 node->children.push_back(child_node);
                 child_node->parent = node.get();
+                child_node->transformChanged = true;
             }
         }
         else
@@ -86,15 +87,15 @@ void Node::updateTransform()
     std::unique_lock<std::shared_mutex> lock(mutex_);
     if (transformChanged)
     {
-        transformMatrix = glm::translate(glm::mat4(1.0f), position) *
-                          glm::mat4_cast(rotation) *
-                          glm::scale(glm::mat4(1.0f), scale);
-
+        transformMatrix = glm::mat4(1.f);
         // Apply parent's transformation (if any)
         if (parent)
         {
             transformMatrix *= parent->transformMatrix;
         }
+        transformMatrix *= glm::translate(glm::mat4(1.0f), position) *
+                          glm::mat4_cast(rotation) *
+                          glm::scale(glm::mat4(1.0f), scale);
         transformChanged = false;
     }
 

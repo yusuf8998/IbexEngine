@@ -10,9 +10,15 @@
 #include "Graphics/MeshObject.h"
 #include "Engine/Node.h"
 #include "Engine/InputHandler.h"
+#include "Engine/Camera.h"
 #include <thread>
 
 GLFWwindow *window;
+
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    mainCamera.processMouseScroll((float)yoffset);
+}
 
 bool initializeWindow()
 {
@@ -32,6 +38,8 @@ bool initializeWindow()
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable V-Sync
+    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -59,6 +67,15 @@ void save(const std::shared_ptr<Node> &root)
     printf("Saved!\n");
 }
 
+// Delta time
+float deltaTime = 0.f;
+float lastFrame = 0.f;
+float currentFrame = 0.f;
+
+double deltaMouseX = 0.f, deltaMouseY = 0.f;
+
+unsigned long mouseState = GLFW_CURSOR_DISABLED;
+
 int main()
 {
     if (!initializeWindow())
@@ -74,43 +91,69 @@ int main()
     auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>("res/vertex_mesh.glsl");
     auto shader_frag = ResourceManager::instance().loadResource<ShaderData>("res/fragment_mesh.glsl");
 
-    std::shared_ptr<Node> root = loadNodeFromFile("root.json");//std::make_shared<Node>("root");
-    //root->addChild(std::make_shared<Node>("dynamic", &mesh_obj, false));
+    std::shared_ptr<Node> root = loadNodeFromFile("root.json"); // std::make_shared<Node>("root");
+    // root->addChild(std::make_shared<Node>("dynamic", &mesh_obj, false));
 
     ShaderObject shader(*shader_vertex.get(), *shader_frag.get());
     shader.use();
 
     InputHandler inputHandler(window);
 
-    glm::mat4 projection = glm::perspective(glm::radians(60.f), 800.f / 600.f, 0.125f, 10.f);
+    glm::mat4 projection, view;
 
     InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, &inputHandler);
-    InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_W, GLFW_KEY_S, &inputHandler);
-    InputAxis::Axes["Z"] = InputAxis(GLFW_KEY_UP, GLFW_KEY_DOWN, &inputHandler);
-    InputAxis::Axes["RotationVertical"] = InputAxis(GLFW_KEY_Q, GLFW_KEY_E, &inputHandler);
+    InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_S, GLFW_KEY_W, &inputHandler);
+    InputAxis::Axes["Z"] = InputAxis(GLFW_KEY_E, GLFW_KEY_Q, &inputHandler);
+    InputAxis::Axes["RotationVertical"] = InputAxis(GLFW_KEY_UP, GLFW_KEY_DOWN, &inputHandler);
+    InputAxis::Axes["RotationHorizontal"] = InputAxis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT, &inputHandler);
 
-    auto movementInputVector = InputVector("Horizontal", "Vertical", "Z");
-    auto rotationInputVector = InputVector("", "RotationVertical", "");
+    auto movementInputVector = InputVector("Horizontal", "Z", "Vertical");
+    auto rotationInputVector = InputVector("RotationVertical", "RotationHorizontal", "");
+
+    glm::vec4 transformedInput;
 
     while (!glfwWindowShouldClose(window))
     {
+        currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         inputHandler.update();
 
-        shader.setMat4("projection", projection);
-
-        // Simple update and render cycle
-        root->render(&shader);
-
-        root->children[0]->translate(movementInputVector.getValue() / 60.f);
-        root->rotate(rotationInputVector.getValue() / 60.f);
-        root->transformChanged = true;
-        root->updateTransform();
+        inputHandler.getMouseDelta(deltaMouseX, deltaMouseY);
+        mainCamera.processMouseMovement(deltaMouseX, deltaMouseY);
 
         if (inputHandler.isKeyPressed(GLFW_KEY_P))
         {
             save(root);
         }
+
+        if (inputHandler.isKeyPressed(GLFW_KEY_ESCAPE))
+        {
+            mouseState = mouseState == GLFW_CURSOR_DISABLED ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED;
+            glfwSetInputMode(window, GLFW_CURSOR, mouseState);
+        }
+
+        transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
+        transformedInput = mainCamera.getRotationMatrix() * transformedInput;
+        mainCamera.position += glm::vec3(transformedInput) * deltaTime;
+
+        // Setup view and projection matrices
+        view = mainCamera.getViewMatrix();
+        projection = glm::perspective(glm::radians(mainCamera.zoom), 800.f / 600.f, 0.1f, 100.f);
+
+        shader.setMat4("projection", projection);
+        shader.setMat4("view", view);
+
+        // Simple update and render cycle
+        root->render(&shader);
+
+        // root->children[0]->translate(movementInputVector.getValue() / 60.f);
+        // root->children[1]->translate(movementInputVector.getValue() / 60.f);
+        // // root->translate(rotationInputVector.getValue() / 60.f);
+        // root->rotate(rotationInputVector.getValue() / 60.f);
+        root->updateTransform();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

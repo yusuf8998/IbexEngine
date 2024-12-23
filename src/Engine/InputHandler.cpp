@@ -147,6 +147,12 @@ void InputHandler::getMousePosition(double &x, double &y) const
     y = mouseY;
 }
 
+void InputHandler::getMouseDelta(double &x, double &y) const
+{
+    x = mouseX - prevMouseX;
+    y = mouseY - prevMouseY;
+}
+
 InputAxis InputHandler::getAxis(const std::string &name)
 {
     return InputAxis::Axes[name];

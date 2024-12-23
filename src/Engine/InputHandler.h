@@ -60,6 +60,8 @@ public:
     // Mouse movement functions
     void getMousePosition(double &x, double &y) const;
 
+    void getMouseDelta(double &x, double &y) const;
+
     InputAxis getAxis(const std::string &name);
 
     // Update the state of the input system (to be called each frame)

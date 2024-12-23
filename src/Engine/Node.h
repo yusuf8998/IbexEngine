@@ -26,7 +26,7 @@ public:
     glm::mat4 transformMatrix;
     std::string meshName;
     bool isStatic;
-    bool transformChanged;
+    bool transformChanged = true;
     Node *parent;
     std::vector<std::shared_ptr<Node>> children;
 
@@ -88,5 +88,7 @@ inline std::shared_ptr<Node> loadNodeFromFile(const std::string &filename)
 
     std::shared_ptr<Node> rootNode = std::make_shared<Node>();
     j.get_to(rootNode);
+    rootNode->transformChanged = true;
+    rootNode->updateTransform();
     return rootNode;
 }
