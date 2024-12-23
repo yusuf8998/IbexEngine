@@ -82,29 +82,32 @@ void Node::addChild(const std::shared_ptr<Node> &child)
     child->parent = this;
     children.push_back(child);
 }
-void Node::updateTransform()
+void Node::updateTransform(bool keep_global)
 {
     std::unique_lock<std::shared_mutex> lock(mutex_);
 
     if (transformChanged)
     {
         transform.applyTransformToLocal();
-        transformChanged = false;
     }
 
-    transform.globalTransform = glm::mat4(1.f);
-    if (parent)
+    if (!keep_global)
     {
-        transform.applyParentToGlobal(parent->transform.globalTransform);
+        transform.globalTransform = glm::mat4(1.f);
+        if (parent)
+        {
+            transform.applyParentToGlobal(parent->transform.globalTransform);
+        }
+        transform.applyLocalToGlobal();
     }
-
-    transform.applyLocalToGlobal();
 
     // Traverse all children
     for (auto &child : children)
     {
-        child->updateTransform(); // Recursive call to update all children
+        child->updateTransform(!transformChanged); // Recursive call to update all children
     }
+
+    transformChanged = false;
 }
 void Node::render(ShaderObject *shader) const
 {

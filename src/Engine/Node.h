@@ -63,7 +63,7 @@ public:
     // Add a child node
     void addChild(const std::shared_ptr<Node> &child);
     // Apply transformations and build the final transformation matrix
-    void updateTransform();
+    void updateTransform(bool keep_global = false);
     // Render (or any other operation that needs the transform)
     void render(ShaderObject *shader) const;
     // Set the position of the node
