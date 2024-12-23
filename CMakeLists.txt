@@ -18,6 +18,7 @@ add_executable(Ibex
     "src/Graphics/TextureObject.cpp"
     "src/Graphics/MeshObject.cpp"
 
+    "src/Engine/Transform.cpp"
     "src/Engine/Node.cpp"
     "src/Engine/InputHandler.cpp"
     "src/Engine/Camera.cpp"
