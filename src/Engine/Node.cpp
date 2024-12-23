@@ -62,7 +62,7 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<Node> &node)
                 child_json.get_to(child_node);
                 node->children.push_back(child_node);
                 child_node->parent = node.get();
-                child_node->transformChanged = true;
+                child_node->transform.transformChanged = true;
             }
         }
         else
@@ -73,7 +73,7 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<Node> &node)
 }
 
 Node::Node(const std::string &name, const std::string &mesh_name, bool is_static)
-    : name(name), transform(Transform()), parent(nullptr), meshName(mesh_name), isStatic(is_static), transformChanged(false)
+    : name(name), transform(Transform()), parent(nullptr), meshName(mesh_name), isStatic(is_static)
 {
 }
 void Node::addChild(const std::shared_ptr<Node> &child)
@@ -86,7 +86,7 @@ void Node::updateTransform(bool keep_global)
 {
     std::unique_lock<std::shared_mutex> lock(mutex_);
 
-    if (transformChanged)
+    if (transform.transformChanged)
     {
         transform.applyTransformToLocal();
     }
@@ -104,10 +104,10 @@ void Node::updateTransform(bool keep_global)
     // Traverse all children
     for (auto &child : children)
     {
-        child->updateTransform(!transformChanged); // Recursive call to update all children
+        child->updateTransform(!transform.transformChanged); // Recursive call to update all children
     }
 
-    transformChanged = false;
+    transform.transformChanged = false;
 }
 void Node::render(ShaderObject *shader) const
 {
@@ -122,53 +122,4 @@ void Node::render(ShaderObject *shader) const
     {
         child->render(shader);
     }
-}
-void Node::setPosition(const glm::vec3 &newPos)
-{
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    transform.position = newPos;
-    transformChanged = true;
-}
-void Node::setScale(const glm::vec3 &newScale)
-{
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    transform.scale = newScale;
-    transformChanged = true;
-}
-void Node::setRotation(const glm::quat &newRotation)
-{
-    std::unique_lock<std::shared_mutex> lock(mutex_);
-    transform.rotation = newRotation;
-    transformChanged = true;
-}
-
-void Node::translate(const glm::vec3 &pos)
-{
-    setPosition(transform.position + pos);
-}
-
-void Node::rescale(const glm::vec3 &scl)
-{
-    setScale(transform.scale * scl);
-}
-
-void Node::rotate(const glm::vec3 &rot)
-{
-    setRotation(transform.rotation * glm::quat(rot));
-}
-
-glm::vec3 Node::getPosition() const
-{
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    return transform.position;
-}
-glm::quat Node::getRotation() const
-{
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    return transform.rotation;
-}
-glm::vec3 Node::getScale() const
-{
-    std::shared_lock<std::shared_mutex> lock(mutex_);
-    return transform.scale;
 }

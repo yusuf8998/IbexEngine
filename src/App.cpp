@@ -143,7 +143,7 @@ int main()
         // Simple update and render cycle
         root->render(&shader);
 
-        root->rotate(rotationInputVector.getValue() * deltaTime);
+        root->transform.rotate(rotationInputVector.getValue() * deltaTime);
         root->updateTransform();
 
         glfwSwapBuffers(window);
