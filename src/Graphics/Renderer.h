@@ -26,6 +26,8 @@ private:
     const char *windowTitle = "Ibex Engine";
     GLFWwindow *window;
 
+    glm::vec3 clearColor = {0.2f, 0.3f, 0.3f};
+
     InputHandler *inputHandler;
 
     int cursorState = GLFW_CURSOR_NORMAL;
@@ -33,9 +35,13 @@ private:
     float lastFrame = 0.f;
     float currentFrame = 0.f;
 
+    glm::mat4 projection, view;
+
     glm::dvec2 deltaMouse;
 
     mutable std::shared_mutex mutex_;
+
+    std::map<int, std::shared_ptr<ShaderObject>> shaders;
 
 public:
     Renderer();
@@ -46,12 +52,19 @@ public:
     glm::uvec2 getScreenSize() const;
     InputHandler *getInputHandler() const;
     GLFWwindow *getWindow() const;
+    glm::vec3 getClearColor() const;
     int getCursorState() const;
     float getDeltaTime() const;
     glm::dvec2 getDeltaMouse() const;
 
+    std::shared_ptr<ShaderObject> getShader(int key) const;
+
+    void setClearColor(const glm::vec3 &color);
     void setCursorState(int state);
     void setScreenSize(const glm::uvec2 &size);
+
+    void loadShader(int key, const std::string &vertexPath, const std::string &fragmentPath);
+    void setViewProjectionUniforms(int key) const;
 
     void flipCursorState();
 

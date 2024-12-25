@@ -27,17 +27,10 @@ void save(const std::shared_ptr<Node> &root)
 int main()
 {
     auto renderer = Renderer();
+    renderer.loadShader(0, "res/vertex_mesh.glsl", "res/fragment_mesh.glsl");
 
-    auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>("res/vertex_mesh.glsl");
-    auto shader_frag = ResourceManager::instance().loadResource<ShaderData>("res/fragment_mesh.glsl");
-
-    std::shared_ptr<Node> root;
+    NodePtr root;
     loadSceneGraph("root.json", root);
-
-    ShaderObject shader(shader_vertex, shader_frag);
-    shader.use();
-
-    glm::mat4 projection, view;
 
     InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, renderer.getInputHandler());
     InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_S, GLFW_KEY_W, renderer.getInputHandler());
@@ -73,16 +66,11 @@ int main()
         transformedInput = mainCamera.getRotationMatrix() * transformedInput;
         mainCamera.position += glm::vec3(transformedInput) * renderer.getDeltaTime();
 
-        // Setup view and projection matrices
-        view = mainCamera.getViewMatrix();
-        projection = glm::perspective(glm::radians(mainCamera.zoom), 800.f / 600.f, 0.1f, 100.f);
-
-        shader.setMat4("projection", projection);
-        shader.setMat4("view", view);
+        renderer.setViewProjectionUniforms(0);
 
         // Simple update and render cycle
         updateSceneGraph(root);
-        renderSceneGraph(root, &shader);
+        renderSceneGraph(root, renderer.getShader(0).get());
 
         castNode<Transformable>(root)->getTransform().rotate(rotationInputVector.getValue() * renderer.getDeltaTime());
 
