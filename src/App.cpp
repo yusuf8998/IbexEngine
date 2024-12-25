@@ -27,7 +27,9 @@ void save(const std::shared_ptr<Node> &root)
 int main()
 {
     auto renderer = Renderer();
-    renderer.loadShader(0, "res/vertex_mesh.glsl", "res/fragment_mesh.glsl");
+    renderer.loadShader(0, "res/vertex_illum.glsl", "res/fragment_illum.glsl");
+
+    // auto mesh = MeshObject("res/cube.obj");
 
     NodePtr root;
     loadSceneGraph("root.json", root);

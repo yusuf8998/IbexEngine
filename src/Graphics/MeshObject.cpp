@@ -105,6 +105,7 @@ void MeshObject::populateOpenGLBuffers()
         vertexData.push_back(normals[normalIdx * 3 + 2]);
     }
 
+
     // Populate the VBO with interleaved data
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_DYNAMIC_DRAW);
 
@@ -121,7 +122,7 @@ void MeshObject::populateOpenGLBuffers()
     glEnableVertexAttribArray(1);
 
     // Normal attribute
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(5 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     // Unbind the VAO and buffers
@@ -154,6 +155,11 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
     }
 
     shader->setMat4("model", transformation);
+
+    shader->setVec3("dirLight.direction", glm::vec3(0.f, -1.0f, 0.f));
+    shader->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+    shader->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
+    shader->setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
     // Draw the mesh
     GLCall(glDrawElements(GL_TRIANGLES, tri_indices.size(), GL_UNSIGNED_INT, tri_indices.data()));
