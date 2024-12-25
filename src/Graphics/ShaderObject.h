@@ -6,6 +6,7 @@
 #include <string>
 #include <GLAD/glad.h>
 #include <glm/glm.hpp>
+#include <memory>
 
 class ShaderData;
 
@@ -14,7 +15,7 @@ class ShaderObject
 public:
     // Constructor
     ShaderObject(const std::string &vertexPath, const std::string &fragmentPath);
-    ShaderObject(const ShaderData &vertexData, const ShaderData &fragData);
+    ShaderObject(const std::shared_ptr<ShaderData> &vertex, const std::shared_ptr<ShaderData> &fragment);
 
     // Use the shader program
     void use() const;
@@ -29,6 +30,8 @@ public:
 private:
     // Shader program ID
     GLuint programID;
+
+    std::shared_ptr<ShaderData> vertex, fragment;
 
     // Helper functions for shader compilation and program linking
     std::string readFile(const std::string &filePath) const;

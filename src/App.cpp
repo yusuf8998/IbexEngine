@@ -12,50 +12,7 @@
 #include "Engine/InputHandler.h"
 #include "Engine/Camera.h"
 #include <thread>
-
-GLFWwindow *window;
-
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
-{
-    mainCamera.processMouseScroll((float)yoffset);
-}
-
-bool initializeWindow()
-{
-    if (!glfwInit())
-    {
-        std::cerr << "Failed to initialize GLFW!" << std::endl;
-        return false;
-    }
-
-    window = glfwCreateWindow(800, 600, "Ibex Engine", nullptr, nullptr);
-    if (!window)
-    {
-        std::cerr << "Failed to create GLFW window!" << std::endl;
-        glfwTerminate();
-        return false;
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable V-Sync
-    glfwSetScrollCallback(window, scroll_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cerr << "Failed to initialize GLAD!" << std::endl;
-        return false;
-    }
-
-    glEnable(GL_DEPTH_TEST);
-    return true;
-}
-
-void cleanup()
-{
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
+#include "Graphics/Renderer.h"
 
 std::thread save_thread;
 
@@ -67,21 +24,9 @@ void save(const std::shared_ptr<Node> &root)
     printf("Saved!\n");
 }
 
-// Delta time
-float deltaTime = 0.f;
-float lastFrame = 0.f;
-float currentFrame = 0.f;
-
-double deltaMouseX = 0.f, deltaMouseY = 0.f;
-
-unsigned long mouseState = GLFW_CURSOR_NORMAL;
-
 int main()
 {
-    if (!initializeWindow())
-    {
-        return -1;
-    }
+    auto renderer = Renderer();
 
     auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>("res/vertex_mesh.glsl");
     auto shader_frag = ResourceManager::instance().loadResource<ShaderData>("res/fragment_mesh.glsl");
@@ -89,55 +34,44 @@ int main()
     std::shared_ptr<Node> root;
     loadSceneGraph("root.json", root);
 
-    ShaderObject shader(*shader_vertex.get(), *shader_frag.get());
+    ShaderObject shader(shader_vertex, shader_frag);
     shader.use();
-
-    InputHandler inputHandler(window);
 
     glm::mat4 projection, view;
 
-    InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, &inputHandler);
-    InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_S, GLFW_KEY_W, &inputHandler);
-    InputAxis::Axes["Z"] = InputAxis(GLFW_KEY_E, GLFW_KEY_Q, &inputHandler);
-    InputAxis::Axes["RotationVertical"] = InputAxis(GLFW_KEY_UP, GLFW_KEY_DOWN, &inputHandler);
-    InputAxis::Axes["RotationHorizontal"] = InputAxis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT, &inputHandler);
+    InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, renderer.getInputHandler());
+    InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_S, GLFW_KEY_W, renderer.getInputHandler());
+    InputAxis::Axes["Z"] = InputAxis(GLFW_KEY_E, GLFW_KEY_Q, renderer.getInputHandler());
+    InputAxis::Axes["RotationVertical"] = InputAxis(GLFW_KEY_UP, GLFW_KEY_DOWN, renderer.getInputHandler());
+    InputAxis::Axes["RotationHorizontal"] = InputAxis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT, renderer.getInputHandler());
 
     auto movementInputVector = InputVector("Horizontal", "Z", "Vertical");
     auto rotationInputVector = InputVector("RotationHorizontal", "RotationVertical", "");
 
     glm::vec4 transformedInput;
 
-    while (!glfwWindowShouldClose(window))
+    while (!renderer.shouldClose())
     {
-        currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        renderer.update();
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        inputHandler.update();
-
-        inputHandler.getMouseDelta(deltaMouseX, deltaMouseY);
-        mainCamera.processMouseMovement(deltaMouseX, deltaMouseY);
-
-        if (inputHandler.isKeyPressed(GLFW_KEY_P))
+        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_P))
         {
             save(root);
         }
 
-        if (inputHandler.isKeyPressed(GLFW_KEY_N))
+        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_N))
         {
             castNode<Renderable>(root->children[0])->visible = !castNode<Renderable>(root->children[0])->visible;
         }
 
-        if (inputHandler.isKeyPressed(GLFW_KEY_ESCAPE))
+        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_ESCAPE))
         {
-            mouseState = mouseState == GLFW_CURSOR_DISABLED ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED;
-            glfwSetInputMode(window, GLFW_CURSOR, mouseState);
+            renderer.flipCursorState();
         }
 
         transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
         transformedInput = mainCamera.getRotationMatrix() * transformedInput;
-        mainCamera.position += glm::vec3(transformedInput) * deltaTime;
+        mainCamera.position += glm::vec3(transformedInput) * renderer.getDeltaTime();
 
         // Setup view and projection matrices
         view = mainCamera.getViewMatrix();
@@ -150,14 +84,12 @@ int main()
         updateSceneGraph(root);
         renderSceneGraph(root, &shader);
 
-        castNode<Transformable>(root)->getTransform().rotate(rotationInputVector.getValue() * deltaTime);
+        castNode<Transformable>(root)->getTransform().rotate(rotationInputVector.getValue() * renderer.getDeltaTime());
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        renderer.postUpdate();
     }
     if (save_thread.joinable())
         save_thread.join();
     ResourceManager::instance().clear();
-    cleanup();
     return 0;
 }

@@ -23,11 +23,12 @@ ShaderObject::ShaderObject(const std::string &vertexPath, const std::string &fra
     glDeleteShader(fragmentShader);
 }
 
-ShaderObject::ShaderObject(const ShaderData &vertexData, const ShaderData &fragData)
+ShaderObject::ShaderObject(const std::shared_ptr<ShaderData> &vertex, const std::shared_ptr<ShaderData> &fragment)
+    : vertex(vertex), fragment(fragment)
 {
     // Step 2: Compile the shaders
-    GLuint vertexShader = compileShader(vertexData.getSource(), GL_VERTEX_SHADER);
-    GLuint fragmentShader = compileShader(fragData.getSource(), GL_FRAGMENT_SHADER);
+    GLuint vertexShader = compileShader(vertex->getSource(), GL_VERTEX_SHADER);
+    GLuint fragmentShader = compileShader(fragment->getSource(), GL_FRAGMENT_SHADER);
 
     // Step 3: Link the shaders into a program
     linkProgram(vertexShader, fragmentShader);
@@ -36,6 +37,20 @@ ShaderObject::ShaderObject(const ShaderData &vertexData, const ShaderData &fragD
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 }
+
+// ShaderObject::ShaderObject(const ShaderData &vertexData, const ShaderData &fragData)
+// {
+//     // Step 2: Compile the shaders
+//     GLuint vertexShader = compileShader(vertexData.getSource(), GL_VERTEX_SHADER);
+//     GLuint fragmentShader = compileShader(fragData.getSource(), GL_FRAGMENT_SHADER);
+
+//     // Step 3: Link the shaders into a program
+//     linkProgram(vertexShader, fragmentShader);
+
+//     // Step 4: Delete shaders after linking
+//     glDeleteShader(vertexShader);
+//     glDeleteShader(fragmentShader);
+// }
 
 void ShaderObject::use() const
 {

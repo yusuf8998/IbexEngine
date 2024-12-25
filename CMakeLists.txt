@@ -17,6 +17,7 @@ add_executable(Ibex
     "src/Graphics/ShaderObject.cpp"
     "src/Graphics/TextureObject.cpp"
     "src/Graphics/MeshObject.cpp"
+    "src/Graphics/Renderer.cpp"
 
     "src/Engine/Transform.cpp"
     "src/Engine/SceneGraph.h"
