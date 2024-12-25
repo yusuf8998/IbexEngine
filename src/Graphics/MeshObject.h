@@ -3,6 +3,7 @@
 #include <GLAD/glad.h>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include <ResourceManager/ResourceManager.h>
 #include <ResourceManager/MeshData.h>
@@ -12,13 +13,13 @@
 class MeshObject
 {
 public:
-    MeshData *data;
+    std::shared_ptr<MeshData> data;
     GLuint VAO, VBO, EBO;
 
     inline MeshObject(const std::string &filepath)
-        : MeshObject(ResourceManager::instance().getResource<MeshData>(filepath).get())
+        : MeshObject(ResourceManager::instance().getResource<MeshData>(filepath))
     {}
-    inline MeshObject(MeshData *data)
+    inline MeshObject(std::shared_ptr<MeshData> data)
         : data(data)
     {
         if (Meshes[data->filepath] != nullptr)
