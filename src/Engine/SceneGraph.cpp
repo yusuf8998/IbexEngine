@@ -28,7 +28,7 @@ void glm::from_json(const json &j, quat &q)
 }
 
 Node::Node(const string &name)
-    : name(name), parent(nullptr), children()
+    : name(name), parent(nullptr), children(), enabled(true)
 {
 }
 
@@ -42,6 +42,7 @@ void to_json(json &j, const NodePtr &node)
 {
     j = json{
         {"name", node->name},
+        {"enabled", node->enabled},
         {"children", json::array()}};
 
     for (const auto &child : node->children)
@@ -62,6 +63,7 @@ void from_json(const json &j, NodePtr &node)
 {
     constructNodeFromJson(j, node);
     j.at("name").get_to(node->name);
+    j.at("enabled").get_to(node->enabled);
     // Deserialize children - need to convert each child from JSON to NodePtr
     if (j.contains("children") && j["children"].is_array())
     {
@@ -134,7 +136,8 @@ void from_json(const json &j, const TransformablePtr &node)
 void Renderable::render(ShaderObject *shader)
 {
     // Render the mesh
-    MeshObject::GetMeshObject(meshName)->render(shader, transform.globalTransform);
+    if (enabled && visible)
+        MeshObject::GetMeshObject(meshName)->render(shader, transform.globalTransform);
 }
 void to_json(json &j, const RenderablePtr &node)
 {

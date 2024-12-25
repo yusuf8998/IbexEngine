@@ -124,6 +124,11 @@ int main()
             save(root);
         }
 
+        if (inputHandler.isKeyPressed(GLFW_KEY_N))
+        {
+            castNode<Renderable>(root->children[0])->visible = !castNode<Renderable>(root->children[0])->visible;
+        }
+
         if (inputHandler.isKeyPressed(GLFW_KEY_ESCAPE))
         {
             mouseState = mouseState == GLFW_CURSOR_DISABLED ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED;

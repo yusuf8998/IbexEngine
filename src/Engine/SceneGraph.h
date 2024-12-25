@@ -24,6 +24,7 @@ public:
     std::string name;
     Node *parent;
     std::vector<NodePtr> children;
+    bool enabled;
 
     Node(const std::string &name = "Unnamed");
     virtual ~Node() = default;
@@ -74,15 +75,6 @@ public:
 
     Renderable(const std::string &name = "Unnamed")
         : Transformable(name), meshName(""), visible(true), static_(false) {}
-
-    inline const std::string &getMeshName() const { return meshName; }
-    inline void setMeshName(const std::string &name) { meshName = name; }
-
-    inline bool isVisible() const { return visible; }
-    inline void setVisible(bool isVisible) { visible = isVisible; }
-
-    inline bool isStatic() const { return static_; }
-    inline void setStatic(bool isStatic) { static_ = isStatic; }
 
     void render(ShaderObject *shader);
 };
