@@ -49,7 +49,10 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<Node> &node)
     j.at("rotation").get_to(node->transform.rotation);
     j.at("scale").get_to(node->transform.scale);
     j.at("isStatic").get_to(node->isStatic);
-    j.at("meshName").get_to(node->meshName);
+    if (j.contains("meshName"))
+        j.at("meshName").get_to(node->meshName);
+    else
+        node->meshName = "";
     // Deserialize children - need to convert each child from JSON to std::shared_ptr<Node>
     if (j.contains("children"))
     {

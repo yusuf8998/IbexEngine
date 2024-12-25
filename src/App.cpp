@@ -8,7 +8,7 @@
 #include "Graphics/TextureObject.h"
 #include "ResourceManager/ResourceManager.h"
 #include "Graphics/MeshObject.h"
-#include "Engine/Node.h"
+#include "Engine/SceneGraph.h"
 #include "Engine/InputHandler.h"
 #include "Engine/Camera.h"
 #include <thread>
@@ -39,7 +39,7 @@ bool initializeWindow()
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable V-Sync
     glfwSetScrollCallback(window, scroll_callback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -63,7 +63,7 @@ void save(const std::shared_ptr<Node> &root)
 {
     if (save_thread.joinable())
         save_thread.join();
-    save_thread = std::thread(saveNodeToFile, root, "root.json");
+    save_thread = std::thread(saveSceneGraph, "root.json", root);
     printf("Saved!\n");
 }
 
@@ -74,7 +74,7 @@ float currentFrame = 0.f;
 
 double deltaMouseX = 0.f, deltaMouseY = 0.f;
 
-unsigned long mouseState = GLFW_CURSOR_DISABLED;
+unsigned long mouseState = GLFW_CURSOR_NORMAL;
 
 int main()
 {
@@ -86,7 +86,8 @@ int main()
     auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>("res/vertex_mesh.glsl");
     auto shader_frag = ResourceManager::instance().loadResource<ShaderData>("res/fragment_mesh.glsl");
 
-    std::shared_ptr<Node> root = loadNodeFromFile("root.json");
+    std::shared_ptr<Node> root;
+    loadSceneGraph("root.json", root);
 
     ShaderObject shader(*shader_vertex.get(), *shader_frag.get());
     shader.use();
@@ -141,10 +142,10 @@ int main()
         shader.setMat4("view", view);
 
         // Simple update and render cycle
-        root->render(&shader);
+        updateSceneGraph(root);
+        renderSceneGraph(root, &shader);
 
-        root->transform.rotate(rotationInputVector.getValue() * deltaTime);
-        root->updateTransform();
+        castNode<Transformable>(root)->getTransform().rotate(rotationInputVector.getValue() * deltaTime);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

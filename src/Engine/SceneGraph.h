@@ -1,0 +1,109 @@
+#pragma once
+
+#include <string>
+#include <vector>
+#include <memory>
+#include <mutex>
+#include <shared_mutex>
+#include <fstream>
+#include <iostream>
+
+#include "Transform.h"
+#include <Graphics/ShaderObject.h>
+
+typedef std::shared_ptr<class Node> NodePtr;
+typedef std::shared_ptr<class Transformable> TransformablePtr;
+typedef std::shared_ptr<class Renderable> RenderablePtr;
+
+class Node
+{
+protected:
+    mutable std::shared_mutex mutex_;
+
+public:
+    std::string name;
+    Node *parent;
+    std::vector<NodePtr> children;
+
+    Node(const std::string &name = "Unnamed");
+    virtual ~Node() = default;
+
+    template <typename F>
+    inline void traverse(F &&f)
+    {
+        std::unique_lock<std::shared_mutex> lock(mutex_);
+        f(this);
+        for (auto &child : children)
+        {
+            child->traverse(f);
+        }
+    }
+
+    void addChild(NodePtr child);
+};
+void to_json(nlohmann::json &j, const NodePtr &node);
+void from_json(const nlohmann::json &j, NodePtr &node);
+
+void constructNodeFromJson(const nlohmann::json &j, NodePtr &node);
+
+class Transformable : public Node
+{
+protected:
+    Transform transform;
+
+public:
+    Transformable(const std::string &name = "Unnamed")
+        : Node(name), transform() {}
+
+    inline Transform &getTransform() { return transform; }
+    inline const Transform &getTransform() const { return transform; }
+
+    void updateTransform(bool keep_global = false);
+};
+
+void to_json(nlohmann::json &j, const TransformablePtr &node);
+void to_json(nlohmann::json &j, const Transformable *node);
+void from_json(const nlohmann::json &j, const TransformablePtr &node);
+
+class Renderable : public Transformable
+{
+public:
+    std::string meshName;
+    bool visible;
+    bool static_;
+
+    Renderable(const std::string &name = "Unnamed")
+        : Transformable(name), meshName(""), visible(true), static_(false) {}
+
+    inline const std::string &getMeshName() const { return meshName; }
+    inline void setMeshName(const std::string &name) { meshName = name; }
+
+    inline bool isVisible() const { return visible; }
+    inline void setVisible(bool isVisible) { visible = isVisible; }
+
+    inline bool isStatic() const { return static_; }
+    inline void setStatic(bool isStatic) { static_ = isStatic; }
+
+    void render(ShaderObject *shader);
+};
+void to_json(nlohmann::json &j, const RenderablePtr &node);
+void to_json(nlohmann::json &j, const Renderable *node);
+void from_json(const nlohmann::json &j, const RenderablePtr &node);
+
+void loadSceneGraph(const std::string &filename, NodePtr &root);
+void saveSceneGraph(const std::string &filename, const NodePtr &root);
+
+template <typename T>
+inline std::shared_ptr<T> makeNode(const std::string &name = "Unnamed")
+{
+    return std::make_shared<T>(name);
+}
+
+template <typename T>
+inline std::shared_ptr<T> castNode(const NodePtr &node)
+{
+    return std::dynamic_pointer_cast<T>(node);
+}
+
+void updateSceneGraph(const NodePtr &root);
+void renderSceneGraph(const NodePtr &root, ShaderObject *shader);
