@@ -47,6 +47,12 @@ public:
     Renderer();
     ~Renderer();
 
+    static Renderer &instance()
+    {
+        static Renderer instance;
+        return instance;
+    }
+
     void initialize();
 
     glm::uvec2 getScreenSize() const;
