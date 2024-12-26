@@ -26,6 +26,8 @@ public:
 
     std::unordered_map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
 
+    std::vector<std::string> getUsedTextures() const;
+
     bool loadFromOBJ(const std::string &filepath);
 
     // Helper function to access vertex attributes

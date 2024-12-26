@@ -2,6 +2,28 @@
 #include "ResourceManager.h"
 #include <stb/stb_image.h>
 
+std::vector<std::string> MeshData::getUsedTextures() const
+{
+    std::vector<std::string> textures;
+    for (const auto &mat : materials)
+    {
+        auto it = materialLibraries.find(mat.first);
+        if (it != materialLibraries.end())
+        {
+            auto material = it->second->getMaterial(mat.second);
+            if (!material->diffuseTexture.empty())
+            {
+                textures.push_back(material->diffuseTexture);
+            }
+            if (!material->specularTexture.empty())
+            {
+                textures.push_back(material->specularTexture);
+            }
+        }
+    }
+    return textures;
+}
+
 bool MeshData::loadFromOBJ(const std::string &filepath)
 {
     this->filepath = filepath;

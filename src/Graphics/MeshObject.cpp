@@ -130,6 +130,8 @@ void MeshObject::populateOpenGLBuffers()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    textureArray = new TextureArrayObject(data->getUsedTextures());
 }
 
 void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
@@ -146,22 +148,25 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
         // shader->setVec3("material.specular", material->specular);
         shader->setFloat("material.shininess", material->shininess);
 
-        // Bind diffuse texture if it exists
-        if (!material->diffuseTexture.empty())
-        {
-            auto *texture = TextureObject::getTextureByName(material->diffuseTexture);
-            texture->bind(GL_TEXTURE0 + 0);
-            shader->setInt("material.diffuseTexture", 0);
-        }
+        // // Bind diffuse texture if it exists
+        // if (!material->diffuseTexture.empty())
+        // {
+        //     auto *texture = TextureObject::getTextureByName(material->diffuseTexture);
+        //     texture->bind(GL_TEXTURE0 + 0);
+        //     shader->setInt("material.diffuseTexture", 0);
+        // }
 
-        // Bind specular texture if it exists
-        if (!material->specularTexture.empty())
-        {
-            auto *texture = TextureObject::getTextureByName(material->specularTexture);
-            texture->bind(GL_TEXTURE0 + 1);
-            shader->setInt("material.specularTexture", 1);
-        }
+        // // Bind specular texture if it exists
+        // if (!material->specularTexture.empty())
+        // {
+        //     auto *texture = TextureObject::getTextureByName(material->specularTexture);
+        //     texture->bind(GL_TEXTURE0 + 1);
+        //     shader->setInt("material.specularTexture", 1);
+        // }
     }
+
+    textureArray->bind(GL_TEXTURE0);
+    shader->setInt("material.textures", 0);
 
     shader->setMat4("model", transformation);
 

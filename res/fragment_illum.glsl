@@ -1,8 +1,7 @@
 #version 450
 
 struct Material {
-    sampler2D diffuseTexture;
-    sampler2D specularTexture;
+    sampler2DArray textures;
     float shininess;
 };
 
@@ -22,6 +21,13 @@ layout(location = 1) in vec3 fragPos;     // Position from vertex shader
 layout(location = 2) in vec2 fragUV;      // UV from vertex shader
 
 layout(location = 0) out vec4 FragColor;  // Output color
+
+vec4 diffuseTexture() {
+    return texture(material.textures, vec3(fragUV, 0.0));
+}
+vec4 specularTexture() {
+    return texture(material.textures, vec3(fragUV, 1.0));
+}
 
 vec4 ambient() {
     return vec4(dirLight.ambient, 1.0);
@@ -45,9 +51,9 @@ void main() {
     vec3 norm = normalize(fragNormal);
     vec3 lightDir = normalize(-dirLight.direction);
 
-    vec4 ambientLight = ambient() * texture2D(material.diffuseTexture, fragUV);
-    vec4 diffuseLight = diffuse(norm, lightDir) * texture2D(material.diffuseTexture, fragUV);
-    vec4 specularLight = specular(norm, lightDir) * texture2D(material.specularTexture, fragUV);
+    vec4 ambientLight = ambient() * diffuseTexture();
+    vec4 diffuseLight = diffuse(norm, lightDir) * diffuseTexture();
+    vec4 specularLight = specular(norm, lightDir) * specularTexture();
 
     vec4 light = ambientLight + diffuseLight + specularLight;
     FragColor = light;

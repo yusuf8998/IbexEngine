@@ -9,6 +9,7 @@
 #include <ResourceManager/MeshData.h>
 #include <Graphics/ShaderObject.h>
 #include <Graphics/TextureObject.h>
+#include "TextureArrayObject.h"
 
 class MeshObject
 {
@@ -42,6 +43,8 @@ public:
     }
 private:
     std::vector<unsigned int> tri_indices = {};
+
+    TextureArrayObject *textureArray;
 
     static std::unordered_map<std::string, MeshObject *> Meshes;
 };
