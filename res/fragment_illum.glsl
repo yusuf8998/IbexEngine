@@ -2,6 +2,8 @@
 
 struct Material {
     sampler2DArray textures;
+    int diffuseIndex;
+    int specularIndex;
     float shininess;
 };
 
@@ -23,10 +25,10 @@ layout(location = 2) in vec2 fragUV;      // UV from vertex shader
 layout(location = 0) out vec4 FragColor;  // Output color
 
 vec4 diffuseTexture() {
-    return texture(material.textures, vec3(fragUV, 0.0));
+    return texture(material.textures, vec3(fragUV, float(material.diffuseIndex)));
 }
 vec4 specularTexture() {
-    return texture(material.textures, vec3(fragUV, 1.0));
+    return texture(material.textures, vec3(fragUV, float(material.specularIndex)));
 }
 
 vec4 ambient() {

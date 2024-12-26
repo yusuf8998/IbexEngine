@@ -20,6 +20,8 @@ public:
     // Getter for the texture array ID
     GLuint getID() const { return textureArrayID; }
 
+    const std::vector<std::string> &getFilePaths() const { return filePaths; }
+
 private:
     GLuint textureArrayID; // OpenGL texture array ID
     std::vector<std::string> filePaths; // Texture file paths

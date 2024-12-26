@@ -106,7 +106,6 @@ void MeshObject::populateOpenGLBuffers()
         vertexData.push_back(normals[normalIdx * 3 + 2]);
     }
 
-
     // Populate the VBO with interleaved data
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_DYNAMIC_DRAW);
 
@@ -163,6 +162,18 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
         //     texture->bind(GL_TEXTURE0 + 1);
         //     shader->setInt("material.specularTexture", 1);
         // }
+
+        for (size_t i = 0; i < textureArray->getFilePaths().size(); i++)
+        {
+            if (textureArray->getFilePaths()[i] == material->diffuseTexture)
+            {
+                shader->setInt("material.diffuseIndex", i);
+            }
+            else if (textureArray->getFilePaths()[i] == material->specularTexture)
+            {
+                shader->setInt("material.specularIndex", i);
+            }
+        }
     }
 
     textureArray->bind(GL_TEXTURE0);
