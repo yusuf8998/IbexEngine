@@ -1,4 +1,4 @@
-#include "CubemapObject.h"
+#include <Graphics/CubemapObject.h>
 #include <iostream>
 
 void CubemapObject::loadCubemap()
