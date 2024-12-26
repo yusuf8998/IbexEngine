@@ -38,6 +38,23 @@ ShaderObject::ShaderObject(const std::shared_ptr<ShaderData> &vertex, const std:
     glDeleteShader(fragmentShader);
 }
 
+ShaderObject::ShaderObject(const std::shared_ptr<ShaderData> &vertex, const std::shared_ptr<ShaderData> &fragment, const std::shared_ptr<ShaderData> &geometry)
+    : vertex(vertex), fragment(fragment), geometry(geometry)
+{
+    // Step 2: Compile the shaders
+    GLuint vertexShader = compileShader(vertex->getSource(), GL_VERTEX_SHADER);
+    GLuint fragmentShader = compileShader(fragment->getSource(), GL_FRAGMENT_SHADER);
+    GLuint geometryShader = compileShader(geometry->getSource(), GL_GEOMETRY_SHADER);
+
+    // Step 3: Link the shaders into a program
+    linkProgram(vertexShader, fragmentShader, geometryShader);
+
+    // Step 4: Delete shaders after linking
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    glDeleteShader(geometryShader);
+}
+
 // ShaderObject::ShaderObject(const ShaderData &vertexData, const ShaderData &fragData)
 // {
 //     // Step 2: Compile the shaders
@@ -105,6 +122,16 @@ void ShaderObject::linkProgram(GLuint vertexShader, GLuint fragmentShader)
     programID = glCreateProgram();
     glAttachShader(programID, vertexShader);
     glAttachShader(programID, fragmentShader);
+    glLinkProgram(programID);
+    checkLinkErrors(programID);
+}
+
+void ShaderObject::linkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader)
+{
+    programID = glCreateProgram();
+    glAttachShader(programID, vertexShader);
+    glAttachShader(programID, fragmentShader);
+    glAttachShader(programID, geometryShader);
     glLinkProgram(programID);
     checkLinkErrors(programID);
 }

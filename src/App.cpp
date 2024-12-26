@@ -27,7 +27,7 @@ void save(const std::shared_ptr<Node> &root)
 int main()
 {
     auto renderer = Renderer();
-    renderer.loadShader(0, "res/vertex_illum.glsl", "res/fragment_illum.glsl");
+    renderer.loadShader(0, "res/vertex_illum.glsl", "res/geometry_illum.glsl","res/fragment_illum.glsl");
 
     // auto mesh = MeshObject("res/cube.obj");
 

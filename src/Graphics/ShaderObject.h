@@ -17,6 +17,8 @@ public:
     ShaderObject(const std::string &vertexPath, const std::string &fragmentPath);
     ShaderObject(const std::shared_ptr<ShaderData> &vertex, const std::shared_ptr<ShaderData> &fragment);
 
+    ShaderObject(const std::shared_ptr<ShaderData> &vertex, const std::shared_ptr<ShaderData> &fragment, const std::shared_ptr<ShaderData> &geometry);
+
     // Use the shader program
     void use() const;
 
@@ -33,12 +35,13 @@ private:
     // Shader program ID
     GLuint programID;
 
-    std::shared_ptr<ShaderData> vertex, fragment;
+    std::shared_ptr<ShaderData> vertex, fragment, geometry;
 
     // Helper functions for shader compilation and program linking
     std::string readFile(const std::string &filePath) const;
     GLuint compileShader(const std::string &source, GLenum shaderType) const;
     void linkProgram(GLuint vertexShader, GLuint fragmentShader);
+    void linkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader);
     void checkCompileErrors(GLuint shader, const std::string &type) const;
     void checkLinkErrors(GLuint program) const;
 };

@@ -100,6 +100,18 @@ void Renderer::loadShader(int key, const std::string &vertexPath, const std::str
     shaders[key]->use();
 }
 
+void Renderer::loadShader(int key, const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath)
+{
+    assert(shaders.find(key) == shaders.end());
+    std::unique_lock lock(mutex_);
+    auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>(vertexPath);
+    auto shader_frag = ResourceManager::instance().loadResource<ShaderData>(fragmentPath);
+    auto shader_geo = ResourceManager::instance().loadResource<ShaderData>(geometryPath);
+
+    shaders[key] = std::make_shared<ShaderObject>(shader_vertex, shader_frag, shader_geo);
+    shaders[key]->use();
+}
+
 void Renderer::setViewProjectionUniforms(int key) const
 {
     auto shader = getShader(key);

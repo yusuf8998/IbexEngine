@@ -70,6 +70,7 @@ public:
     void setScreenSize(const glm::uvec2 &size);
 
     void loadShader(int key, const std::string &vertexPath, const std::string &fragmentPath);
+    void loadShader(int key, const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath);
     void setViewProjectionUniforms(int key) const;
 
     void flipCursorState();
