@@ -1,4 +1,5 @@
 #include "MeshObject.h"
+#include <Engine/Camera.h>
 
 void GLClearError();
 bool GLLogCall(const char *function, const char *file, int line);
@@ -141,16 +142,24 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
     {
         const auto *material = data->materialLibraries[kvp.first]->getMaterial(kvp.second);
         // Set shader uniform for material properties (diffuse, specular, etc.)
-        shader->setVec3("material.diffuse", material->diffuse);
-        shader->setVec3("material.specular", material->specular);
+        // shader->setVec3("material.diffuse", material->diffuse);
+        // shader->setVec3("material.specular", material->specular);
         shader->setFloat("material.shininess", material->shininess);
 
         // Bind diffuse texture if it exists
         if (!material->diffuseTexture.empty())
         {
-            auto *texture = loadTexture(material->diffuseTexture);
-            texture->bind(GL_TEXTURE0);
+            auto *texture = TextureObject::getTextureByName(material->diffuseTexture);
+            texture->bind(GL_TEXTURE0 + 0);
             shader->setInt("material.diffuseTexture", 0);
+        }
+
+        // Bind specular texture if it exists
+        if (!material->specularTexture.empty())
+        {
+            auto *texture = TextureObject::getTextureByName(material->specularTexture);
+            texture->bind(GL_TEXTURE0 + 1);
+            shader->setInt("material.specularTexture", 1);
         }
     }
 
@@ -160,6 +169,8 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
     shader->setVec3("dirLight.ambient", glm::vec3(0.05f, 0.05f, 0.05f));
     shader->setVec3("dirLight.diffuse", glm::vec3(0.4f, 0.4f, 0.4f));
     shader->setVec3("dirLight.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+
+    shader->setVec3("viewPos", mainCamera.position);
 
     // Draw the mesh
     GLCall(glDrawElements(GL_TRIANGLES, tri_indices.size(), GL_UNSIGNED_INT, tri_indices.data()));

@@ -84,4 +84,8 @@ void MaterialLibrary::parseMTLLine(const std::string &line, Material &currentMat
     { // Diffuse texture map
         currentMaterial.diffuseTexture = tokens[1];
     }
+    else if (tokens[0] == "map_Ks")
+    { // Specular texture map
+        currentMaterial.specularTexture = tokens[1];
+    }
 }

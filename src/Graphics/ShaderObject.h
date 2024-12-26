@@ -20,6 +20,8 @@ public:
     // Use the shader program
     void use() const;
 
+    GLuint getID() const { return programID; }
+
     // Set uniform variables
     void setBool(const std::string &name, bool value) const;
     void setInt(const std::string &name, int value) const;
