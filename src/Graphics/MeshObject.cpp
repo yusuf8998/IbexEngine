@@ -195,6 +195,16 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
     glBindVertexArray(0);
 }
 
+void MeshObject::renderRaw()
+{
+    // Bind the VAO for rendering
+    glBindVertexArray(VAO);
+    // Draw the mesh
+    GLCall(glDrawElements(GL_TRIANGLES, tri_indices.size(), GL_UNSIGNED_INT, tri_indices.data()));
+    // Unbind the VAO
+    glBindVertexArray(0);
+}
+
 TextureObject *MeshObject::loadTexture(const std::string &texturePath)
 {
     return TextureObject::getTextureByName(texturePath);

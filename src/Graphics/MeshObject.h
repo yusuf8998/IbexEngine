@@ -33,6 +33,7 @@ public:
     void generateOpenGLBuffers();
     void populateOpenGLBuffers();
     void render(ShaderObject *shader, const glm::mat4 &transformation);
+    void renderRaw();
     TextureObject *loadTexture(const std::string &texturePath);
 
     static MeshObject *GetMeshObject(const std::string &name)
