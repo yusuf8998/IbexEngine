@@ -1,6 +1,8 @@
 #include "TextureArrayObject.h"
 #include <vendor/stb/stb_image.h>
 #include <iostream>
+#include "ResourceManager/TextureData.h"
+#include "ResourceManager/ResourceManager.h"
 
 TextureArrayObject::TextureArrayObject(const std::vector<std::string> &filePaths)
     : filePaths(filePaths)
@@ -32,39 +34,21 @@ void TextureArrayObject::loadTextureArray()
     int arr_width = 0, arr_height = 0, arr_channels = 0;
     for (auto filePath : filePaths)
     {
-        // Load the image using stb_image
-        int width, height, channels;
-        stbi_set_flip_vertically_on_load(true); // Optional: flip the image vertically on load
-        unsigned char *data = stbi_load(filePath.c_str(), &width, &height, &channels, 0);
+        auto texture = ResourceManager::instance().getResource<TextureData>(filePath);
         if (arr_width == 0)
         {
-            arr_width = width;
-            arr_height = height;
-            arr_channels = channels;
+            arr_width = texture->getWidth();
+            arr_height = texture->getHeight();
+            arr_channels = texture->getChannels();
         }
-        else if (width != arr_width || height != arr_height || channels != arr_channels)
+        else if (texture->getWidth() != arr_width || texture->getHeight() != arr_height || texture->getChannels() != arr_channels)
         {
             std::cerr << "Texture dimensions do not match: " << filePath << std::endl;
             return;
         }
-
-        if (data)
-        {
-            datas.push_back(data);
-            // stbi_image_free(data);
-
-            std::cout << "Loaded texture: " << filePath << " (" << width << "x" << height << ")" << std::endl;
-        }
-        else
-        {
-            std::cerr << "Failed to load texture: " << filePath << std::endl;
-        }
+        datas.push_back(texture->getData());
     }
     generateTextureArray(datas, arr_width, arr_height, datas.size(), arr_channels);
-    for (int i = 0; i < datas.size(); i++)
-    {
-        stbi_image_free(datas[i]);
-    }
 }
 
 void TextureArrayObject::generateTextureArray(const std::vector<unsigned char *> &data, int width, int height, int layers, int channels)
