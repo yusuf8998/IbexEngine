@@ -1,5 +1,6 @@
 #include <Graphics/CubemapObject.h>
 #include <iostream>
+#include <stb/stb_image.h>
 
 void CubemapObject::loadCubemap()
 {
@@ -7,8 +8,13 @@ void CubemapObject::loadCubemap()
     int width = 0, height = 0, channels = 0;
     for (int i = 0; i < 6; i++)
     {
+        data[i] = stbi_load(filePaths[i].c_str(), &width, &height, &channels, 0);
+        if (!data[i])
+            throw;
     }
     generateCubemap(data, width, height, channels);
+    for (int i = 0; i < 6; i++)
+        stbi_image_free(data[i]);
 }
 
 void CubemapObject::generateCubemap(unsigned char *data[6], int width, int height, int channels)
@@ -27,13 +33,10 @@ void CubemapObject::generateCubemap(unsigned char *data[6], int width, int heigh
     // Detect the format based on channels
     GLenum format = (channels == 3) ? GL_RGB : (channels == 4 ? GL_RGBA : GL_RED);
 
-    // Generate the cube map
-    glTexImage3D(GL_TEXTURE_CUBE_MAP, 0, format, width, height, 6, 0, format, GL_UNSIGNED_BYTE, 0);
-
     // Populate the texture array with the image data
     for (int i = 0; i < 6; i++)
     {
-        glTexSubImage3D(GL_TEXTURE_CUBE_MAP, 0, 0, 0, i, width, height, 1, format, GL_UNSIGNED_BYTE, data[i]);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data[i]);
     }
 
     // Unbind the cube map
