@@ -93,6 +93,8 @@ int main()
     }
     if (save_thread.joinable())
         save_thread.join();
+    root.reset();
+    MeshObject::ReleaseAllMeshes();
     ResourceManager::instance().clear();
     return 0;
 }

@@ -65,19 +65,30 @@ template <>
 std::shared_ptr<MeshData> ResourceManager::loadResource<MeshData>(const std::string &filename)
 {
     // Check if resource is already loaded
-    if (meshCache.find(filename) != meshCache.end())
+    auto it = meshCache.find(filename);
+    if (it != meshCache.end())
     {
-        return meshCache[filename];
+        return it->second;
     }
 
     // Load new mesh
     auto mesh = std::make_shared<MeshData>();
-    if (!mesh->loadFromOBJ(filename))
+    try
     {
-        throw std::runtime_error("Failed to load mesh from " + filename);
+        if (!mesh->loadFromOBJ(filename))
+        {
+            throw std::runtime_error("Failed to load mesh from " + filename);
+        }
+
+        // Cache the loaded mesh
+        meshCache[filename] = mesh;
+        return mesh;
     }
-    meshCache[filename] = mesh;
-    return mesh;
+    catch (const std::exception &e)
+    {
+        // Handle loading failure, and potentially log or clean up
+        throw std::runtime_error("Exception while loading mesh from " + filename + ": " + e.what());
+    }
 }
 template <>
 std::shared_ptr<MeshData> ResourceManager::getResource<MeshData>(const std::string &filename)

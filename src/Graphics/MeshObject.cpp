@@ -59,7 +59,7 @@ inline bool GLLogCall(const char *function, const char *file, int line)
     return true;
 }
 
-std::unordered_map<std::string, MeshObject *> MeshObject::Meshes = {};
+std::unordered_map<std::string, std::shared_ptr<MeshObject>> MeshObject::Meshes = {};
 
 void MeshObject::generateOpenGLBuffers()
 {
@@ -130,7 +130,7 @@ void MeshObject::populateOpenGLBuffers()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    textureArray = new TextureArrayObject(data->getUsedTextures());
+    textureArray = std::make_shared<TextureArrayObject>(data->getUsedTextures());
 }
 
 void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)

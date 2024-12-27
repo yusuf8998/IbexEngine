@@ -25,7 +25,6 @@ public:
     {
         if (Meshes[data->filepath] != nullptr)
             throw std::runtime_error("Mesh already loaded");
-        Meshes[data->filepath] = this;
         generateOpenGLBuffers();
         populateOpenGLBuffers();
     }
@@ -36,18 +35,24 @@ public:
     void renderRaw();
     TextureObject *loadTexture(const std::string &texturePath);
 
-    static MeshObject *GetMeshObject(const std::string &name)
+    static std::shared_ptr<MeshObject> GetMeshObject(const std::string &name)
     {
         if (Meshes.count(name) != 0)
             return Meshes[name];
-        return new MeshObject(name);
+        Meshes[name] = std::make_shared<MeshObject>(name);
+        return Meshes[name];
+    }
+
+    static void ReleaseAllMeshes()
+    {
+        Meshes.clear();
     }
 private:
     std::vector<unsigned int> tri_indices = {};
 
-    TextureArrayObject *textureArray;
+    std::shared_ptr<TextureArrayObject> textureArray;
 
-    static std::unordered_map<std::string, MeshObject *> Meshes;
+    static std::unordered_map<std::string, std::shared_ptr<MeshObject>> Meshes;
 };
 
 inline std::vector<unsigned int> generateTriangleIndices(int numVertices)
