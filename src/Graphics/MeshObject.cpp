@@ -133,7 +133,7 @@ void MeshObject::populateOpenGLBuffers()
     textureArray = std::make_shared<TextureArrayObject>(data->getUsedTextures());
 }
 
-void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
+void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
 {
     // Bind the VAO for rendering
     glBindVertexArray(VAO);

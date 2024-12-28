@@ -31,7 +31,7 @@ public:
 
     void generateOpenGLBuffers();
     void populateOpenGLBuffers();
-    void render(ShaderObject *shader, const glm::mat4 &transformation);
+    void render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation);
     void renderRaw();
     TextureObject *loadTexture(const std::string &texturePath);
 
