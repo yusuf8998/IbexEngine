@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <map>
 #include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,9 +21,10 @@ class MeshData
 {
 public:
     std::string filepath;
+    std::string objectName = "Unnamed";
     std::unordered_map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes like position, normal, uv
-    std::vector<unsigned int> indices;                                    // Indices for faces
-    std::unordered_map<std::string, std::string> materials; // Map of material names to materials
+    std::map<std::string, std::vector<unsigned int>> indices;             // Indices for faces
+    std::unordered_map<std::string, std::string> materials;               // Map of material names to materials
 
     std::unordered_map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
 
@@ -32,6 +34,8 @@ public:
 
     // Helper function to access vertex attributes
     const std::vector<float> &getVertexAttribute(const std::string &name) const;
+
+    size_t getFaceCount() const;
 
 private:
     void parseOBJLine(const std::string &line);
