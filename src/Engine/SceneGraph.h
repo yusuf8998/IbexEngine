@@ -76,7 +76,7 @@ public:
     Renderable(const std::string &name = "Unnamed")
         : Transformable(name), meshName(""), visible(true), static_(false) {}
 
-    virtual void render(ShaderObject *shader);
+    virtual void render(const std::shared_ptr<ShaderObject> &shader);
 };
 void to_json(nlohmann::json &j, const RenderablePtr &node);
 void to_json(nlohmann::json &j, const Renderable *node);
@@ -98,4 +98,4 @@ inline std::shared_ptr<T> castNode(const NodePtr &node)
 }
 
 void updateSceneGraph(const NodePtr &root);
-void renderSceneGraph(const NodePtr &root, ShaderObject *shader);
+void renderSceneGraph(const NodePtr &root, const std::shared_ptr<ShaderObject> &shader);

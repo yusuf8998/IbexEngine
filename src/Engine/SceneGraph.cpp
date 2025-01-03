@@ -144,7 +144,7 @@ void from_json(const json &j, const TransformablePtr &node)
     node->updateTransform();
 }
 
-void Renderable::render(ShaderObject *shader)
+void Renderable::render(const std::shared_ptr<ShaderObject> &shader)
 {
     // Render the mesh
     if (enabled && visible)
@@ -190,7 +190,7 @@ void updateSceneGraph(const NodePtr &root)
     root->traverse([](Node *node)
                    { if (auto *cast = dynamic_cast<Transformable *>(node)) { cast->updateTransform(); } });
 }
-void renderSceneGraph(const NodePtr &root, ShaderObject *shader)
+void renderSceneGraph(const NodePtr &root, const std::shared_ptr<ShaderObject> &shader)
 {
     root->traverse([&](Node *node)
                    { if (auto *cast = dynamic_cast<Renderable *>(node)) { cast->render(shader); } });

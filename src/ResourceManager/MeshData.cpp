@@ -26,7 +26,7 @@ std::vector<std::string> MeshData::getUsedTextures() const
     }
     return textures;
 }
-
+std::string currentGroupName;
 bool MeshData::loadFromOBJ(const std::string &filepath)
 {
     this->filepath = filepath;
@@ -38,7 +38,7 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
     }
 
     std::string line;
-
+    currentGroupName = "Unnamed";
     while (std::getline(file, line))
     {
         parseOBJLine(line);
@@ -47,81 +47,87 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
     file.close();
     return true;
 }
-
+#include "algorithm"
 void MeshData::parseOBJLine(const std::string &line)
 {
     if (line.empty())
         return;
     std::string uncomment = splitString(line, '#')[0];
+    uncomment.erase(std::remove(uncomment.begin(), uncomment.end(), '\t'), uncomment.end());
     std::vector<std::string> tokens = splitString(uncomment, ' ');
     if (tokens.empty())
         return;
-
-    if (tokens[0] == "v")
+    if (tokens[0] == "o")
+    {
+        if (tokens.size() < 2)
+            return;
+        objectName = tokens[1];
+    }
+    else if (tokens[0] == "o")
+    {
+        if (tokens.size() < 2)
+            return;
+        currentGroupName = tokens[1];
+    }
+    else if (tokens[0] == "v")
     { // Vertex position
-        if (tokens.size() >= 4)
-        {
-            glm::vec3 position(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-            vertexAttributes["position"].push_back(position.x);
-            vertexAttributes["position"].push_back(position.y);
-            vertexAttributes["position"].push_back(position.z);
-        }
+        if (tokens.size() < 4)
+            return;
+        glm::vec3 position(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+        vertexAttributes["position"].push_back(position.x);
+        vertexAttributes["position"].push_back(position.y);
+        vertexAttributes["position"].push_back(position.z);
     }
     else if (tokens[0] == "vn")
     { // Vertex normal
-        if (tokens.size() >= 4)
-        {
-            glm::vec3 normal(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-            vertexAttributes["normal"].push_back(normal.x);
-            vertexAttributes["normal"].push_back(normal.y);
-            vertexAttributes["normal"].push_back(normal.z);
-        }
+        if (tokens.size() < 4)
+            return;
+        glm::vec3 normal(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+        vertexAttributes["normal"].push_back(normal.x);
+        vertexAttributes["normal"].push_back(normal.y);
+        vertexAttributes["normal"].push_back(normal.z);
     }
     else if (tokens[0] == "vt")
     { // Vertex texture coordinate
-        if (tokens.size() >= 3)
-        {
-            glm::vec2 uv(std::stof(tokens[1]), std::stof(tokens[2]));
-            vertexAttributes["uv"].push_back(uv.x);
-            vertexAttributes["uv"].push_back(uv.y);
-        }
+        if (tokens.size() < 3)
+            return;
+        glm::vec2 uv(std::stof(tokens[1]), std::stof(tokens[2]));
+        vertexAttributes["uv"].push_back(uv.x);
+        vertexAttributes["uv"].push_back(uv.y);
     }
     else if (tokens[0] == "f")
     { // Face (index list)
-        if (tokens.size() >= 4)
+        if (tokens.size() < 4)
+            return;
+        for (size_t i = 1; i < tokens.size(); ++i)
         {
-            for (size_t i = 1; i < tokens.size(); ++i)
-            {
-                std::vector<std::string> vertexData = splitString(tokens[i], '/');
-                unsigned int posIdx = std::stoi(vertexData[0]) - 1;
-                unsigned int uvIdx = std::stoi(vertexData[1]) - 1;
-                unsigned int normalIdx = std::stoi(vertexData[2]) - 1;
-                indices.push_back(posIdx);
-                indices.push_back(uvIdx);
-                indices.push_back(normalIdx);
-            }
-        }
-    }
-    else if (tokens[0] == "usemtl")
-    { // Material reference
-        if (tokens.size() >= 2)
-        {
-            // materialNames.push_back(tokens[1]); // Store the material name for subsequent faces
-            for (auto it = materialLibraries.begin(); it != materialLibraries.end(); it++)
-            {
-                if (it->second->hasMaterial(tokens[1]))
-                {
-                    materials[it->first].push_back(tokens[1]);
-                    break;
-                }
-            }
+            std::vector<std::string> vertexData = splitString(tokens[i], '/');
+            unsigned int posIdx = std::stoi(vertexData[0]) - 1;
+            unsigned int uvIdx = vertexData[1].empty() ? 0 : std::stoi(vertexData[1]) - 1;
+            unsigned int normalIdx = vertexData[2].empty() ? 0 : std::stoi(vertexData[2]) - 1;
+            indices[currentGroupName].push_back(posIdx);
+            indices[currentGroupName].push_back(uvIdx);
+            indices[currentGroupName].push_back(normalIdx);
         }
     }
     else if (tokens[0] == "mtllib")
     { // Material Library reference
-        if (tokens.size() >= 2)
+        if (tokens.size() < 2)
+            return;
+        materialLibraries[tokens[1]] = ResourceManager::instance().loadResource<MaterialLibrary>(tokens[1]);
+    }
+    else if (tokens[0] == "usemtl")
+    { // Material reference
+        if (tokens.size() < 2)
+            return;
+        // materialNames.push_back(tokens[1]); // Store the material name for subsequent faces
+        for (auto it = materialLibraries.begin(); it != materialLibraries.end(); it++)
         {
-            materialLibraries[tokens[1]] = ResourceManager::instance().loadResource<MaterialLibrary>(tokens[1]);
+            if (it->second->hasMaterial(tokens[1]))
+            {
+                materials[it->first].push_back(tokens[1]);
+                break;
+            }
         }
     }
 }
@@ -137,4 +143,14 @@ const std::vector<float> &MeshData::getVertexAttribute(const std::string &name) 
     {
         throw std::runtime_error("Attribute not found: " + name);
     }
+}
+
+size_t MeshData::getFaceCount() const
+{
+    size_t result = 0;
+    for (auto &kvp : indices)
+    {
+        result += kvp.second.size() / 3;
+    }
+    return result;
 }

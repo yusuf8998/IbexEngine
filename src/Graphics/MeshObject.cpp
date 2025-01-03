@@ -70,7 +70,33 @@ void MeshObject::generateOpenGLBuffers()
     // Create an EBO (Element Buffer Object)
     glGenBuffers(1, &EBO);
 
-    tri_indices = generateTriangleIndices(data->indices.size() / 3);
+    tri_indices = generateTriangleIndices(data->getFaceCount());
+}
+
+void MeshObject::pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals)
+{
+    for (size_t i = 0; i < data->indices[groupName].size() / 3; i++)
+    {
+        unsigned int posIdx = data->indices[groupName][i * 3];
+        unsigned int uvIdx = data->indices[groupName][i * 3 + 1];
+        unsigned int normalIdx = data->indices[groupName][i * 3 + 2];
+
+        // glm::vec4 pos = glm::vec4(positions[posIdx * 3], positions[posIdx * 3 + 1], positions[posIdx * 3 + 2], 1.f);
+        // pos = pos * transformation;
+        // Push position
+        vertexData->push_back(positions[posIdx * 3 + 0]);
+        vertexData->push_back(positions[posIdx * 3 + 1]);
+        vertexData->push_back(positions[posIdx * 3 + 2]);
+
+        // Push UV
+        vertexData->push_back(uvs[uvIdx * 2 + 0]);
+        vertexData->push_back(uvs[uvIdx * 2 + 1]);
+
+        // Push normal
+        vertexData->push_back(normals[normalIdx * 3 + 0]);
+        vertexData->push_back(normals[normalIdx * 3 + 1]);
+        vertexData->push_back(normals[normalIdx * 3 + 2]);
+    }
 }
 
 void MeshObject::populateOpenGLBuffers()
@@ -83,27 +109,9 @@ void MeshObject::populateOpenGLBuffers()
     const std::vector<float> &uvs = data->getVertexAttribute("uv");
     const std::vector<float> &normals = data->getVertexAttribute("normal");
 
-    for (size_t i = 0; i < data->indices.size() / 3; i++)
+    for (auto &kvp : data->indices)
     {
-        unsigned int posIdx = data->indices[i * 3];
-        unsigned int uvIdx = data->indices[i * 3 + 1];
-        unsigned int normalIdx = data->indices[i * 3 + 2];
-
-        // glm::vec4 pos = glm::vec4(positions[posIdx * 3], positions[posIdx * 3 + 1], positions[posIdx * 3 + 2], 1.f);
-        // pos = pos * transformation;
-        // Push position
-        vertexData.push_back(positions[posIdx * 3 + 0]);
-        vertexData.push_back(positions[posIdx * 3 + 1]);
-        vertexData.push_back(positions[posIdx * 3 + 2]);
-
-        // Push UV
-        vertexData.push_back(uvs[uvIdx * 2 + 0]);
-        vertexData.push_back(uvs[uvIdx * 2 + 1]);
-
-        // Push normal
-        vertexData.push_back(normals[normalIdx * 3 + 0]);
-        vertexData.push_back(normals[normalIdx * 3 + 1]);
-        vertexData.push_back(normals[normalIdx * 3 + 2]);
+        pushVertexData(kvp.first, &vertexData, positions, uvs, normals);
     }
 
     // Populate the VBO with interleaved data
@@ -133,7 +141,7 @@ void MeshObject::populateOpenGLBuffers()
     textureArray = std::make_shared<TextureArrayObject>(data->getUsedTextures());
 }
 
-void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
+void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
 {
     // Bind the VAO for rendering
     glBindVertexArray(VAO);

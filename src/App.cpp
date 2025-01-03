@@ -87,7 +87,7 @@ int main()
 
         // Simple update and render cycle
         updateSceneGraph(root);
-        renderSceneGraph(root, renderer.getShader(0).get());
+        renderSceneGraph(root, renderer.getShader(0));
 
         castNode<Transformable>(root)->getTransform().rotate(rotationInputVector.getValue() * renderer.getDeltaTime());
 

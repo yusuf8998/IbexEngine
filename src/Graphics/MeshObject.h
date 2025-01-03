@@ -31,7 +31,7 @@ public:
 
     void generateOpenGLBuffers();
     void populateOpenGLBuffers();
-    void render(ShaderObject *shader, const glm::mat4 &transformation);
+    void render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation);
     void renderRaw();
     TextureObject *loadTexture(const std::string &texturePath);
 
@@ -53,6 +53,8 @@ private:
     std::shared_ptr<TextureArrayObject> textureArray;
 
     static std::unordered_map<std::string, std::shared_ptr<MeshObject>> Meshes;
+
+    void pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals);
 };
 
 inline std::vector<unsigned int> generateTriangleIndices(int numVertices)
