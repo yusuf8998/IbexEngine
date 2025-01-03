@@ -76,7 +76,7 @@ public:
     Renderable(const std::string &name = "Unnamed")
         : Transformable(name), meshName(""), visible(true), static_(false) {}
 
-    void render(ShaderObject *shader);
+    virtual void render(ShaderObject *shader);
 };
 void to_json(nlohmann::json &j, const RenderablePtr &node);
 void to_json(nlohmann::json &j, const Renderable *node);

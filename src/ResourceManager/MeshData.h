@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 #include <string>
 #include <glm/glm.hpp>
@@ -20,11 +20,11 @@ class MeshData
 {
 public:
     std::string filepath;
-    std::unordered_map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes like position, normal, uv
-    std::vector<unsigned int> indices;                                    // Indices for faces
-    std::unordered_map<std::string, std::string> materials; // Map of material names to materials
+    std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes like position, normal, uv
+    std::vector<unsigned int> indices;
+    std::map<std::string, std::vector<std::string>> materials; // Material library, material name
 
-    std::unordered_map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
+    std::map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
 
     std::vector<std::string> getUsedTextures() const;
 

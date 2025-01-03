@@ -28,6 +28,8 @@ int main()
 {
     auto renderer = Renderer();
     renderer.loadShader(0, "res/vertex_illum.glsl", "res/geometry_illum.glsl","res/fragment_illum.glsl");
+    renderer.loadShader(1, "res/vertex_cube.glsl", "res/fragment_cube.glsl");
+    renderer.assignSkyboxShader(1);
 
     // auto mesh = MeshObject("res/cube.obj");
 

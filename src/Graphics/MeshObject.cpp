@@ -141,27 +141,11 @@ void MeshObject::render(ShaderObject *shader, const glm::mat4 &transformation)
     // Set material properties (e.g., diffuse color)
     for (auto &kvp : data->materials)
     {
-        const auto *material = data->materialLibraries[kvp.first]->getMaterial(kvp.second);
+        const auto *material = data->materialLibraries[kvp.first]->getMaterial(kvp.second[0]);
         // Set shader uniform for material properties (diffuse, specular, etc.)
-        // shader->setVec3("material.diffuse", material->diffuse);
-        // shader->setVec3("material.specular", material->specular);
+        shader->setVec3("material.diffuse", material->diffuse);
+        shader->setVec3("material.specular", material->specular);
         shader->setFloat("material.shininess", material->shininess);
-
-        // // Bind diffuse texture if it exists
-        // if (!material->diffuseTexture.empty())
-        // {
-        //     auto *texture = TextureObject::getTextureByName(material->diffuseTexture);
-        //     texture->bind(GL_TEXTURE0 + 0);
-        //     shader->setInt("material.diffuseTexture", 0);
-        // }
-
-        // // Bind specular texture if it exists
-        // if (!material->specularTexture.empty())
-        // {
-        //     auto *texture = TextureObject::getTextureByName(material->specularTexture);
-        //     texture->bind(GL_TEXTURE0 + 1);
-        //     shader->setInt("material.specularTexture", 1);
-        // }
 
         for (size_t i = 0; i < textureArray->getFilePaths().size(); i++)
         {

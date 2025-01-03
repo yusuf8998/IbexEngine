@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <unordered_map>
+#include <map>
 #include <memory>
 #include <stdexcept>
 #include <iostream>
@@ -38,10 +38,10 @@ private:
     ~ResourceManager() = default;
 
     // Map for storing resources by filename
-    std::unordered_map<std::string, std::shared_ptr<TextureData>> textureCache;
-    std::unordered_map<std::string, std::shared_ptr<ShaderData>> shaderCache;
-    std::unordered_map<std::string, std::shared_ptr<MeshData>> meshCache;
-    std::unordered_map<std::string, std::shared_ptr<MaterialLibrary>> mtlCache;
+    std::map<std::string, std::shared_ptr<TextureData>> textureCache;
+    std::map<std::string, std::shared_ptr<ShaderData>> shaderCache;
+    std::map<std::string, std::shared_ptr<MeshData>> meshCache;
+    std::map<std::string, std::shared_ptr<MaterialLibrary>> mtlCache;
 
     // Disable copy/move operations for the singleton
     ResourceManager(const ResourceManager &) = delete;

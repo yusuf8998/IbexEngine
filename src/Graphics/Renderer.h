@@ -42,6 +42,7 @@ private:
     mutable std::shared_mutex mutex_;
 
     std::map<int, std::shared_ptr<ShaderObject>> shaders;
+    int skyboxShader = -1;
 
 public:
     Renderer();
@@ -64,6 +65,7 @@ public:
     glm::dvec2 getDeltaMouse() const;
 
     std::shared_ptr<ShaderObject> getShader(int key) const;
+    std::shared_ptr<ShaderObject> getSkyboxShader() const;
 
     void setClearColor(const glm::vec3 &color);
     void setCursorState(int state);
@@ -71,6 +73,10 @@ public:
 
     void loadShader(int key, const std::string &vertexPath, const std::string &fragmentPath);
     void loadShader(int key, const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath);
+
+    void assignSkyboxShader(int key);
+    void unassignSkyboxShader();
+
     void setViewProjectionUniforms(int key) const;
 
     void flipCursorState();

@@ -67,6 +67,11 @@ std::shared_ptr<ShaderObject> Renderer::getShader(int key) const
     return shaders.at(key);
 }
 
+std::shared_ptr<ShaderObject> Renderer::getSkyboxShader() const
+{
+    return getShader(skyboxShader);
+}
+
 void Renderer::setClearColor(const glm::vec3 &color)
 {
     clearColor = color;
@@ -110,6 +115,16 @@ void Renderer::loadShader(int key, const std::string &vertexPath, const std::str
 
     shaders[key] = std::make_shared<ShaderObject>(shader_vertex, shader_frag, shader_geo);
     shaders[key]->use();
+}
+
+void Renderer::assignSkyboxShader(int key)
+{
+    skyboxShader = key;
+}
+
+void Renderer::unassignSkyboxShader()
+{
+    skyboxShader = -1;
 }
 
 void Renderer::setViewProjectionUniforms(int key) const

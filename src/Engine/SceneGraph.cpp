@@ -1,5 +1,6 @@
 #include "SceneGraph.h"
 #include <Graphics/MeshObject.h>
+#include "SkyboxNode.h"
 
 using namespace std;
 using namespace glm;
@@ -50,7 +51,11 @@ void to_json(json &j, const NodePtr &node)
         j["children"].push_back(child);
     }
 
-    if (auto *renderable = dynamic_cast<Renderable *>(node.get()))
+    if (auto *skybox = dynamic_cast<SkyboxNode *>(node.get()))
+    {
+        ::to_json(j, skybox);
+    }
+    else if (auto *renderable = dynamic_cast<Renderable *>(node.get()))
     {
         ::to_json(j, renderable);
     }
@@ -81,6 +86,12 @@ void from_json(const json &j, NodePtr &node)
 
 void constructNodeFromJson(const json &j, NodePtr &node)
 {
+    if (j.contains("skyboxName"))
+    {
+        node = make_shared<SkyboxNode>();
+        ::from_json(j, dynamic_pointer_cast<SkyboxNode>(node));
+        return;
+    }
     if (j.contains("meshName"))
     {
         node = make_shared<Renderable>();

@@ -64,6 +64,10 @@ void MaterialLibrary::parseMTLLine(const std::string &line, Material &currentMat
         currentName = tokens[1];
         currentMaterial = Material();
     }
+    else if (tokens[0] == "illum")
+    { // Illumination model
+        currentMaterial.illum = std::stoi(tokens[1]);
+    }
     else if (tokens[0] == "Ka")
     { // Ambient color
         currentMaterial.ambient = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));

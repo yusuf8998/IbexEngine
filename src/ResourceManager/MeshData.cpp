@@ -8,9 +8,12 @@ std::vector<std::string> MeshData::getUsedTextures() const
     for (const auto &mat : materials)
     {
         auto it = materialLibraries.find(mat.first);
-        if (it != materialLibraries.end())
+        if (it == materialLibraries.end())
+            continue;
+        
+        for (const auto &mat_name : mat.second)
         {
-            auto material = it->second->getMaterial(mat.second);
+            auto material = it->second->getMaterial(mat_name);
             if (!material->diffuseTexture.empty())
             {
                 textures.push_back(material->diffuseTexture);
@@ -108,7 +111,7 @@ void MeshData::parseOBJLine(const std::string &line)
             {
                 if (it->second->hasMaterial(tokens[1]))
                 {
-                    materials[it->first] = tokens[1];
+                    materials[it->first].push_back(tokens[1]);
                     break;
                 }
             }
