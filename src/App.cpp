@@ -25,6 +25,9 @@ void save(const std::shared_ptr<Node> &root)
     printf("Saved!\n");
 }
 
+// TODO: Fix skybox. It should hold cubemap data not mesh data.
+// TODO: Skybox renderer assumes default DepthFunc. Create depth func field so it can be temporarily changed without assumption.
+
 int main()
 {
     auto &renderer = Renderer::instance();
