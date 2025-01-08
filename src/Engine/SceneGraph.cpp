@@ -193,6 +193,5 @@ void updateSceneGraph(const NodePtr &root)
 void renderSceneGraph(const NodePtr &root, const std::shared_ptr<ShaderObject> &shader)
 {
     root->traverse([&](Node *node)
-                   { if (auto *cast = dynamic_cast<SkyboxNode *>(node)) { cast->render(shader); }
-                   else if (auto *cast = dynamic_cast<Renderable *>(node)) { cast->render(shader); } });
+                   { if (auto *cast = dynamic_cast<Renderable *>(node)) { cast->render(shader); } });
 }
