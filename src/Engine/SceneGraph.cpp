@@ -148,7 +148,7 @@ void Renderable::render(const std::shared_ptr<ShaderObject> &shader)
 {
     // Render the mesh
     if (enabled && visible)
-        MeshObject::GetMeshObject(meshName)->render(shader, transform.globalTransform);
+        MeshObject::GetMeshObject(renderName)->render(shader, transform.globalTransform);
 }
 void to_json(json &j, const RenderablePtr &node)
 {
@@ -157,14 +157,14 @@ void to_json(json &j, const RenderablePtr &node)
 void to_json(nlohmann::json &j, const Renderable *node)
 {
     ::to_json(j, dynamic_cast<const Transformable *>(node));
-    j += {"meshName", node->meshName};
+    j += {"meshName", node->renderName};
     j += {"visible", node->visible};
     j += {"static", node->static_};
 }
 void from_json(const json &j, const RenderablePtr &node)
 {
     ::from_json(j, dynamic_pointer_cast<Transformable>(node));
-    j.at("meshName").get_to(node->meshName);
+    j.at("meshName").get_to(node->renderName);
     j.at("visible").get_to(node->visible);
     j.at("static").get_to(node->static_);
 }

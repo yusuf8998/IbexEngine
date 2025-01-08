@@ -7,18 +7,18 @@ void to_json(nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
 }
 void to_json(nlohmann::json &j, const SkyboxNode *node)
 {
-    j += {"skyboxName", node->meshName};
+    j += {"skyboxName", node->renderName};
     j += {"visible", node->visible};
 }
 void from_json(const nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
 {
-    j.at("skyboxName").get_to(node->meshName);
+    j.at("skyboxName").get_to(node->renderName);
     j.at("visible").get_to(node->visible);
     node->static_ = true;
     node->getTransform().position = glm::vec3(0.f);
     node->getTransform().rotation = glm::quat(glm::vec3(0.f));
     node->getTransform().scale = glm::vec3(0.f);
-    // MeshObject::GetMeshObject(node->meshName)->data->
+    // MeshObject::GetMeshObject(node->renderName)->data->
 }
 
 void SkyboxNode::setCubemap(const std::array<std::string, 6> &sides)
@@ -41,7 +41,7 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
     shader->setInt("cubemap", 0);
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LEQUAL);
-    MeshObject::GetMeshObject(meshName)->renderRaw();
+    MeshObject::GetMeshObject(renderName)->renderRaw();
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
 }

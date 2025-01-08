@@ -69,12 +69,12 @@ void from_json(const nlohmann::json &j, const TransformablePtr &node);
 class Renderable : public Transformable
 {
 public:
-    std::string meshName;
+    std::string renderName;
     bool visible;
     bool static_;
 
     Renderable(const std::string &name = "Unnamed")
-        : Transformable(name), meshName(""), visible(true), static_(false) {}
+        : Transformable(name), renderName(""), visible(true), static_(false) {}
 
     virtual void render(const std::shared_ptr<ShaderObject> &shader);
 };
