@@ -50,6 +50,17 @@ CubemapObject::CubemapObject(const std::array<std::string, 6> &filePaths)
         this->filePaths[i] = filePaths[i];
     loadCubemap();
 }
+CubemapObject::CubemapObject(const std::string &cubemapDir, const std::string &extension)
+    : CubemapObject(std::array<std::string, 6>{
+        cubemapDir + "/right." + extension,
+        cubemapDir + "/left." + extension,
+        cubemapDir + "/top." + extension,
+        cubemapDir + "/bottom." + extension,
+        cubemapDir + "/back." + extension,
+        cubemapDir + "/front." + extension
+    })
+{
+}
 CubemapObject::~CubemapObject()
 {
     glDeleteTextures(1, &textureID);

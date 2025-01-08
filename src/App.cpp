@@ -64,10 +64,7 @@ int main()
 
     glm::vec4 transformedInput;
 
-    castNode<SkyboxNode>(root->children[3])->setCubemap(std::array<std::string, 6>{
-        "res/box.png", "res/box.png", "res/box.png",
-        "res/box.png", "res/box.png", "res/box.png"
-    });
+    castNode<SkyboxNode>(root->children[3])->setCubemap("res/skybox");
 
     while (!renderer.shouldClose())
     {

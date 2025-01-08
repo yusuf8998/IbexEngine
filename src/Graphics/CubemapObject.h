@@ -16,6 +16,7 @@ private:
 
 public:
     CubemapObject(const std::array<std::string, 6> &filePaths);
+    CubemapObject(const std::string &cubemapDir, const std::string &extension = "png");
     ~CubemapObject();
 
     // Method to bind the texture array

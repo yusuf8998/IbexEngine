@@ -26,6 +26,11 @@ void SkyboxNode::setCubemap(const std::array<std::string, 6> &sides)
     cubeMap = std::make_shared<CubemapObject>(sides);
 }
 
+void SkyboxNode::setCubemap(const std::string &cubemapDir, const std::string &extension)
+{
+    cubeMap = std::make_shared<CubemapObject>(cubemapDir, extension);
+}
+
 void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
 {
     if (!enabled || !visible)
