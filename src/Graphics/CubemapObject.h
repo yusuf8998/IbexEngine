@@ -2,6 +2,7 @@
 
 #include <GLAD/glad.h>
 #include <string>
+#include <array>
 
 class CubemapObject
 {
@@ -14,7 +15,7 @@ private:
     void generateCubemap(unsigned char *data[6], int width, int height, int channels);
 
 public:
-    CubemapObject(const std::string filePaths[6]);
+    CubemapObject(const std::array<std::string, 6> &filePaths);
     ~CubemapObject();
 
     // Method to bind the texture array

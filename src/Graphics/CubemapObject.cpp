@@ -1,6 +1,7 @@
 #include <Graphics/CubemapObject.h>
 #include <iostream>
 #include <stb/stb_image.h>
+#include "CubemapObject.h"
 
 void CubemapObject::loadCubemap()
 {
@@ -43,13 +44,12 @@ void CubemapObject::generateCubemap(unsigned char *data[6], int width, int heigh
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
-CubemapObject::CubemapObject(const std::string filePaths[6])
+CubemapObject::CubemapObject(const std::array<std::string, 6> &filePaths)
 {
     for (int i = 0; i < 6; i++)
         this->filePaths[i] = filePaths[i];
     loadCubemap();
 }
-
 CubemapObject::~CubemapObject()
 {
     glDeleteTextures(1, &textureID);

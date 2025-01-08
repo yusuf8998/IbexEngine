@@ -21,7 +21,7 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
     // MeshObject::GetMeshObject(node->meshName)->data->
 }
 
-void SkyboxNode::setCubemap(const std::string sides[6])
+void SkyboxNode::setCubemap(const std::array<std::string, 6> &sides)
 {
     cubeMap = std::make_shared<CubemapObject>(sides);
 }
