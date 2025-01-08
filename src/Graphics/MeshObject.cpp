@@ -146,6 +146,8 @@ void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::
     // Bind the VAO for rendering
     glBindVertexArray(VAO);
 
+    shader->use();
+
     // Set material properties (e.g., diffuse color)
     for (auto &kvp : data->materials)
     {

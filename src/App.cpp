@@ -13,6 +13,7 @@
 #include "Engine/Camera.h"
 #include <thread>
 #include "Graphics/Renderer.h"
+#include "Engine/SkyboxNode.h"
 
 std::thread save_thread;
 
@@ -26,7 +27,7 @@ void save(const std::shared_ptr<Node> &root)
 
 int main()
 {
-    auto renderer = Renderer();
+    auto &renderer = Renderer::instance();
     renderer.loadShader(0, "res/vertex_illum.glsl", "res/geometry_illum.glsl","res/fragment_illum.glsl");
     renderer.loadShader(1, "res/vertex_cube.glsl", "res/fragment_cube.glsl");
     renderer.assignSkyboxShader(1);
@@ -60,6 +61,11 @@ int main()
 
     glm::vec4 transformedInput;
 
+    castNode<SkyboxNode>(root->children[3])->setCubemap(new std::string[6]{
+        "res/box.png", "res/box.png", "res/box.png",
+        "res/box.png", "res/box.png", "res/box.png"
+    });
+
     while (!renderer.shouldClose())
     {
         renderer.update();
@@ -84,6 +90,7 @@ int main()
         mainCamera.position += glm::vec3(transformedInput) * renderer.getDeltaTime();
 
         renderer.setViewProjectionUniforms(0);
+        renderer.setViewProjectionUniforms(1);
 
         // Simple update and render cycle
         updateSceneGraph(root);

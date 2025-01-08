@@ -13,7 +13,8 @@ public:
     SkyboxNode(const std::string &name = "Unnamed")
         : Renderable(name) {}
 
-    void render(ShaderObject *shader) override;
+    void setCubemap(const std::string sides[6]);
+    void render(const std::shared_ptr<ShaderObject> &shader) override;
 };
 void to_json(nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node);
 void to_json(nlohmann::json &j, const SkyboxNode *node);

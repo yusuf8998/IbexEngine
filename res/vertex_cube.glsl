@@ -13,6 +13,6 @@ void main()
 {
     mat4 rot_view = mat4(mat3(view));
     vec4 pos = projection * rot_view * vec4(v_position, 1);
-    gl_Position = pos;
+    gl_Position = pos.xyww;
     texCoords = v_position;
 }

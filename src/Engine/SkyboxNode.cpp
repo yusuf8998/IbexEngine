@@ -21,10 +21,22 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
     // MeshObject::GetMeshObject(node->meshName)->data->
 }
 
-void SkyboxNode::render(ShaderObject *shader)
+void SkyboxNode::setCubemap(const std::string sides[6])
+{
+    cubeMap = std::make_shared<CubemapObject>(sides);
+}
+
+void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
 {
     if (!enabled || !visible)
         return;
-    
-    MeshObject::GetMeshObject(meshName)->render(Renderer::instance().getSkyboxShader().get(), glm::mat4(1.f));
+    cubeMap->bind(GL_TEXTURE0);
+    auto shader = Renderer::instance().getSkyboxShader();
+    shader->use();
+    shader->setInt("cubemap", 0);
+    glDepthMask(GL_FALSE);
+    glDepthFunc(GL_LEQUAL);
+    MeshObject::GetMeshObject(meshName)->renderRaw();
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_TRUE);
 }

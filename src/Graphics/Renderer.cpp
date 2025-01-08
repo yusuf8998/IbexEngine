@@ -130,6 +130,7 @@ void Renderer::unassignSkyboxShader()
 void Renderer::setViewProjectionUniforms(int key) const
 {
     auto shader = getShader(key);
+    shader->use();
     shader->setMat4("view", view);
     shader->setMat4("projection", projection);
 }
@@ -204,6 +205,7 @@ void Renderer::initialize()
     glClearColor(clearColor.r, clearColor.g, clearColor.b, 1.f);
     glViewport(0, 0, screen_size.x, screen_size.y);
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     inputHandler = new InputHandler(window);
 }
