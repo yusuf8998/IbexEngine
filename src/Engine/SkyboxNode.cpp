@@ -35,13 +35,17 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
 {
     if (!enabled || !visible)
         return;
+    if (!cubeMap)
+    {
+        setCubemap(renderName);
+    }
     cubeMap->bind(GL_TEXTURE0);
     auto shader = Renderer::instance().getSkyboxShader();
     shader->use();
     shader->setInt("cubemap", 0);
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LEQUAL);
-    MeshObject::GetMeshObject(renderName)->renderRaw();
+    MeshObject::GetMeshObject(SkyboxMesh)->renderRaw();
     glDepthFunc(GL_LESS);
     glDepthMask(GL_TRUE);
 }

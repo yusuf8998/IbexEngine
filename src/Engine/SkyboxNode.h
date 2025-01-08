@@ -9,6 +9,7 @@ class SkyboxNode : public Renderable
 {
 private:
     std::shared_ptr<CubemapObject> cubeMap;
+    const std::string SkyboxMesh = "res/skybox.obj";
 public:
     SkyboxNode(const std::string &name = "Unnamed")
         : Renderable(name) {}
