@@ -115,10 +115,10 @@ void MeshObject::populateOpenGLBuffers()
     }
 
     // Populate the VBO with interleaved data
-    glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri_indices.size() * sizeof(unsigned int), tri_indices.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri_indices.size() * sizeof(unsigned int), tri_indices.data(), GL_STATIC_DRAW);
 
     // Enable the vertex attributes
     // Position attribute
