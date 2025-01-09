@@ -18,7 +18,6 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
     node->getTransform().position = glm::vec3(0.f);
     node->getTransform().rotation = glm::quat(glm::vec3(0.f));
     node->getTransform().scale = glm::vec3(0.f);
-    // MeshObject::GetMeshObject(node->renderName)->data->
 }
 
 void SkyboxNode::setCubemap(const std::array<std::string, 6> &sides)
@@ -37,7 +36,9 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
         return;
     if (!cubeMap)
     {
-        setCubemap(renderName);
+        auto split = splitString(renderName, '*');
+        assert(split.size() == 2);
+        setCubemap(split[0], split[1]);
     }
     cubeMap->bind(GL_TEXTURE0);
     auto shader = Renderer::instance().getSkyboxShader();
