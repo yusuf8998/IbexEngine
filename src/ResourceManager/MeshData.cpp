@@ -60,20 +60,20 @@ void MeshData::parseOBJLine(const std::string &line)
         return;
     if (tokens[0] == "o")
     {
-        if (tokens.size() < 2)
-            return;
+        if (tokens.size() != 2)
+            throw std::runtime_error("Token size for object definition is not correct");
         objectName = tokens[1];
     }
     else if (tokens[0] == "g")
     {
-        if (tokens.size() < 2)
-            return;
+        if (tokens.size() != 2)
+            throw std::runtime_error("Token size for group definition is not correct");
         currentGroupName = tokens[1];
     }
     else if (tokens[0] == "v")
     { // Vertex position
-        if (tokens.size() < 4)
-            return;
+        if (tokens.size() != 4)
+            throw std::runtime_error("Token size for position definition is not correct");
         glm::vec3 position(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
         vertexAttributes["position"].push_back(position.x);
         vertexAttributes["position"].push_back(position.y);
@@ -81,8 +81,8 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "vn")
     { // Vertex normal
-        if (tokens.size() < 4)
-            return;
+        if (tokens.size() != 4)
+            throw std::runtime_error("Token size for normal definition is not correct");
         glm::vec3 normal(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
         vertexAttributes["normal"].push_back(normal.x);
         vertexAttributes["normal"].push_back(normal.y);
@@ -90,16 +90,16 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "vt")
     { // Vertex texture coordinate
-        if (tokens.size() < 3)
-            return;
+        if (tokens.size() != 3)
+            throw std::runtime_error("Token size for UV definition is not correct");
         glm::vec2 uv(std::stof(tokens[1]), std::stof(tokens[2]));
         vertexAttributes["uv"].push_back(uv.x);
         vertexAttributes["uv"].push_back(uv.y);
     }
     else if (tokens[0] == "f")
     { // Face (index list)
-        if (tokens.size() < 4)
-            return;
+        if (tokens.size() != 4)
+            throw std::runtime_error("Token size for face definition is not correct");
         for (size_t i = 1; i < tokens.size(); ++i)
         {
             std::vector<std::string> vertexData = splitString(tokens[i], '/');
@@ -113,14 +113,14 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "mtllib")
     { // Material Library reference
-        if (tokens.size() < 2)
-            return;
+        if (tokens.size() != 2)
+            throw std::runtime_error("Token size for mtllib is not correct");
         materialLibraries[tokens[1]] = ResourceManager::instance().loadResource<MaterialLibrary>(tokens[1]);
     }
     else if (tokens[0] == "usemtl")
     { // Material reference
-        if (tokens.size() < 2)
-            return;
+        if (tokens.size() != 2)
+            throw std::runtime_error("Token size for material usage is not correct");
         // materialNames.push_back(tokens[1]); // Store the material name for subsequent faces
         for (auto it = materialLibraries.begin(); it != materialLibraries.end(); it++)
         {
