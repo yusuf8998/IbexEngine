@@ -3,6 +3,7 @@
 
 newmtl red
 Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
 Ns 250.000000
 illum 2
 map_Kd res/box.png
