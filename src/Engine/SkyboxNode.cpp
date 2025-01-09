@@ -47,6 +47,6 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LEQUAL);
     MeshObject::GetMeshObject(SkyboxMesh)->renderRaw();
-    glDepthFunc(GL_LESS);
+    glDepthFunc(DEFAULT_DEPTH_FUNC);
     glDepthMask(GL_TRUE);
 }

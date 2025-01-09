@@ -19,6 +19,8 @@
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 
+constexpr GLenum DEFAULT_DEPTH_FUNC = GL_LESS;
+
 class Renderer
 {
 private:

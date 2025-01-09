@@ -205,7 +205,7 @@ void Renderer::initialize()
     glClearColor(clearColor.r, clearColor.g, clearColor.b, 1.f);
     glViewport(0, 0, screenSize.x, screenSize.y);
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(DEFAULT_DEPTH_FUNC);
 
     inputHandler = new InputHandler(window);
 }
