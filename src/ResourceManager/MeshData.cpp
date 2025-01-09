@@ -55,6 +55,7 @@ void MeshData::parseOBJLine(const std::string &line)
     std::string uncomment = splitString(line, '#')[0];
     uncomment.erase(std::remove(uncomment.begin(), uncomment.end(), '\t'), uncomment.end());
     std::vector<std::string> tokens = splitString(uncomment, ' ');
+
     if (tokens.empty())
         return;
     if (tokens[0] == "o")
@@ -63,7 +64,7 @@ void MeshData::parseOBJLine(const std::string &line)
             return;
         objectName = tokens[1];
     }
-    else if (tokens[0] == "o")
+    else if (tokens[0] == "g")
     {
         if (tokens.size() < 2)
             return;
