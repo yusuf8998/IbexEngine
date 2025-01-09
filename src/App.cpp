@@ -86,8 +86,7 @@ int main()
         transformedInput = mainCamera.getRotationMatrix() * transformedInput;
         mainCamera.position += glm::vec3(transformedInput) * renderer.getDeltaTime();
 
-        renderer.setViewProjectionUniforms(0);
-        renderer.setViewProjectionUniforms(1);
+        renderer.setViewProjectionUniforms();
 
         // Simple update and render cycle
         updateSceneGraph(root);

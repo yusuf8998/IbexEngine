@@ -79,6 +79,7 @@ public:
     void assignSkyboxShader(int key);
     void unassignSkyboxShader();
 
+    void setViewProjectionUniforms() const;
     void setViewProjectionUniforms(int key) const;
 
     void flipCursorState();

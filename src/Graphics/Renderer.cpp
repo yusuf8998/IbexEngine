@@ -127,6 +127,14 @@ void Renderer::unassignSkyboxShader()
     skyboxShader = -1;
 }
 
+void Renderer::setViewProjectionUniforms() const
+{
+    for (auto &kvp : shaders)
+    {
+        setViewProjectionUniforms(kvp.first);
+    }
+}
+
 void Renderer::setViewProjectionUniforms(int key) const
 {
     auto shader = getShader(key);
@@ -159,7 +167,7 @@ void Renderer::update()
 
     // Setup view and projection matrices
     view = mainCamera.getViewMatrix();
-    projection = glm::perspective(glm::radians(mainCamera.zoom), 800.f / 600.f, 0.1f, 100.f);
+    projection = glm::perspective(glm::radians(mainCamera.zoom), (float)screenSize.x / screenSize.y, 0.1f, 100.f);
 }
 
 void Renderer::postUpdate() const
