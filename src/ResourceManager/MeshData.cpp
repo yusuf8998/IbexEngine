@@ -55,7 +55,7 @@ void MeshData::parseOBJLine(const std::string &line)
     std::string uncomment = splitString(line, '#')[0];
     uncomment.erase(std::remove(uncomment.begin(), uncomment.end(), '\t'), uncomment.end());
     std::vector<std::string> tokens = splitString(uncomment, ' ');
-
+    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), [](const std::string &s) { return s.empty(); }), tokens.end());
     if (tokens.empty())
         return;
     if (tokens[0] == "o")
