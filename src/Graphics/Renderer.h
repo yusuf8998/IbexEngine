@@ -22,7 +22,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 class Renderer
 {
 private:
-    glm::uvec2 screen_size = {800, 600};
+    glm::uvec2 screenSize = {800, 600};
     const char *windowTitle = "Ibex Engine";
     GLFWwindow *window;
 

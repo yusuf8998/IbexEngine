@@ -25,7 +25,7 @@ Renderer::~Renderer()
 glm::uvec2 Renderer::getScreenSize() const
 {
     std::shared_lock lock(mutex_);
-    return screen_size;
+    return screenSize;
 }
 
 InputHandler *Renderer::getInputHandler() const
@@ -89,7 +89,7 @@ void Renderer::setCursorState(int state)
 void Renderer::setScreenSize(const glm::uvec2 &size)
 {
     std::unique_lock lock(mutex_);
-    screen_size = size;
+    screenSize = size;
     glfwSetWindowSize(window, size.x, size.y);
     glViewport(0, 0, size.x, size.y);
 }
@@ -183,7 +183,7 @@ void Renderer::initialize()
         return;
     }
 
-    window = glfwCreateWindow(screen_size.x, screen_size.y, windowTitle, nullptr, nullptr);
+    window = glfwCreateWindow(screenSize.x, screenSize.y, windowTitle, nullptr, nullptr);
     if (!window)
     {
         std::cerr << "Failed to create GLFW window!" << std::endl;
@@ -203,7 +203,7 @@ void Renderer::initialize()
     }
 
     glClearColor(clearColor.r, clearColor.g, clearColor.b, 1.f);
-    glViewport(0, 0, screen_size.x, screen_size.y);
+    glViewport(0, 0, screenSize.x, screenSize.y);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
