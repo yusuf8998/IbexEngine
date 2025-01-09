@@ -71,15 +71,10 @@ void Transform::applyLocalToGlobal()
 
 void to_json(nlohmann::json &j, const Transform &transform)
 {
-    j = nlohmann::json();
-    if (transform.position != glm::vec3(0.f))
-        j += {"position", transform.position};
-        
-    if (transform.rotation != glm::quat(glm::vec3(0.f)))
-        j += {"rotation", transform.rotation};
-
-    if (transform.scale != glm::vec3(1.f))
-        j += {"scale", transform.scale};
+    j = nlohmann::json{
+        {"position", transform.position},
+        {"rotation", transform.rotation},
+        {"scale", transform.scale}};
 }
 
 void from_json(const nlohmann::json &j, Transform &transform)
@@ -88,7 +83,7 @@ void from_json(const nlohmann::json &j, Transform &transform)
         j.at("position").get_to(transform.position);
     else
         transform.position = glm::vec3(0.f);
-    
+
     if (j.contains("rotation"))
         j.at("rotation").get_to(transform.rotation);
     else
