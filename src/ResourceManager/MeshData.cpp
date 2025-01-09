@@ -90,7 +90,7 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "vt")
     { // Vertex texture coordinate
-        if (tokens.size() != 3)
+        if (tokens.size() != 3 && tokens.size() != 4)
             throw std::runtime_error("Token size for UV definition is not correct");
         glm::vec2 uv(std::stof(tokens[1]), std::stof(tokens[2]));
         vertexAttributes["uv"].push_back(uv.x);
@@ -98,8 +98,10 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "f")
     { // Face (index list)
-        if (tokens.size() != 4)
-            throw std::runtime_error("Token size for face definition is not correct");
+        if (vertexPerFace == 0)
+            vertexPerFace = tokens.size() - 1;
+        if (tokens.size() != vertexPerFace + 1)
+            throw std::runtime_error("Token size for face definition is not correct. vertexPerFace: " + std::to_string(vertexPerFace));
         for (size_t i = 1; i < tokens.size(); ++i)
         {
             std::vector<std::string> vertexData = splitString(tokens[i], '/');
@@ -146,12 +148,17 @@ const std::vector<float> &MeshData::getVertexAttribute(const std::string &name) 
     }
 }
 
+char MeshData::getVertexPerFace() const
+{
+    return vertexPerFace;
+}
+
 size_t MeshData::getFaceCount() const
 {
     size_t result = 0;
     for (auto &kvp : indices)
     {
-        result += kvp.second.size() / 3;
+        result += kvp.second.size() / vertexPerFace;
     }
     return result;
 }

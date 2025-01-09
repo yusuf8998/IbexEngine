@@ -48,16 +48,18 @@ public:
         Meshes.clear();
     }
 private:
-    std::vector<unsigned int> tri_indices = {};
+    std::vector<unsigned int> indices = {};
 
     std::shared_ptr<TextureArrayObject> textureArray;
 
     static std::unordered_map<std::string, std::shared_ptr<MeshObject>> Meshes;
 
     void pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals);
+
+    GLenum getDrawMode() const;
 };
 
-inline std::vector<unsigned int> generateTriangleIndices(int numVertices)
+inline std::vector<unsigned int> generateIndices(int numVertices)
 {
     std::vector<unsigned int> indices;
 

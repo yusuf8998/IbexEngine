@@ -70,7 +70,7 @@ void MeshObject::generateOpenGLBuffers()
     // Create an EBO (Element Buffer Object)
     glGenBuffers(1, &EBO);
 
-    tri_indices = generateTriangleIndices(data->getFaceCount());
+    indices = generateIndices(data->getFaceCount());
 }
 
 void MeshObject::pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals)
@@ -81,8 +81,6 @@ void MeshObject::pushVertexData(const std::string &groupName, std::vector<float>
         unsigned int uvIdx = data->indices[groupName][i * 3 + 1];
         unsigned int normalIdx = data->indices[groupName][i * 3 + 2];
 
-        // glm::vec4 pos = glm::vec4(positions[posIdx * 3], positions[posIdx * 3 + 1], positions[posIdx * 3 + 2], 1.f);
-        // pos = pos * transformation;
         // Push position
         vertexData->push_back(positions[posIdx * 3 + 0]);
         vertexData->push_back(positions[posIdx * 3 + 1]);
@@ -97,6 +95,17 @@ void MeshObject::pushVertexData(const std::string &groupName, std::vector<float>
         vertexData->push_back(normals[normalIdx * 3 + 1]);
         vertexData->push_back(normals[normalIdx * 3 + 2]);
     }
+}
+
+GLenum MeshObject::getDrawMode() const
+{
+    if (data->getVertexPerFace() == 0)
+        return 0;
+    if (data->getVertexPerFace() == 3)
+        return GL_TRIANGLES;
+    if (data->getVertexPerFace() == 4)
+        return GL_TRIANGLE_STRIP;
+    throw std::runtime_error("Data has invalid vertexPerFace value. vertexPerFace:" + std::to_string(data->getVertexPerFace()));
 }
 
 void MeshObject::populateOpenGLBuffers()
@@ -118,7 +127,7 @@ void MeshObject::populateOpenGLBuffers()
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri_indices.size() * sizeof(unsigned int), tri_indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
     // Enable the vertex attributes
     // Position attribute
@@ -183,7 +192,7 @@ void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::
     shader->setVec3("viewPos", mainCamera.position);
 
     // Draw the mesh
-    GLCall(glDrawElements(GL_TRIANGLES, tri_indices.size(), GL_UNSIGNED_INT, tri_indices.data()));
+    GLCall(glDrawElements(getDrawMode(), indices.size(), GL_UNSIGNED_INT, indices.data()));
 
     // Unbind the VAO
     glBindVertexArray(0);
@@ -194,7 +203,7 @@ void MeshObject::renderRaw()
     // Bind the VAO for rendering
     glBindVertexArray(VAO);
     // Draw the mesh
-    GLCall(glDrawElements(GL_TRIANGLES, tri_indices.size(), GL_UNSIGNED_INT, tri_indices.data()));
+    GLCall(glDrawElements(getDrawMode(), indices.size(), GL_UNSIGNED_INT, indices.data()));
     // Unbind the VAO
     glBindVertexArray(0);
 }
