@@ -166,6 +166,10 @@ void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::
         shader->setVec3("material.specular", material->specular);
         shader->setFloat("material.shininess", material->shininess);
 
+        shader->setInt("material.diffuseIndex", -1);
+        shader->setInt("material.specularIndex", -1);
+        shader->setInt("material.normalIndex", -1);
+
         for (size_t i = 0; i < textureArray->getFilePaths().size(); i++)
         {
             if (textureArray->getFilePaths()[i] == material->diffuseTexture)
@@ -175,6 +179,10 @@ void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::
             else if (textureArray->getFilePaths()[i] == material->specularTexture)
             {
                 shader->setInt("material.specularIndex", i);
+            }
+            else if (textureArray->getFilePaths()[i] == material->normalMap)
+            {
+                shader->setInt("material.normalIndex", i);
             }
         }
     }

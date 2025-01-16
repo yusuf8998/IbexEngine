@@ -22,6 +22,10 @@ std::vector<std::string> MeshData::getUsedTextures() const
             {
                 textures.push_back(material->specularTexture);
             }
+            if (!material->normalMap.empty())
+            {
+                textures.push_back(material->normalMap);
+            }
         }
     }
     return textures;

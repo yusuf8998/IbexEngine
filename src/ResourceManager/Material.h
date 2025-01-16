@@ -19,7 +19,8 @@ public:
     // Texture maps (can be extended to support more textures)
     std::string diffuseTexture; // Filepath for diffuse texture
     std::string specularTexture; // Filepath for specular texture
+    std::string normalMap; // Filepath for normal map
 
     Material(const glm::vec3 &diff = glm::vec3(0.0f), const glm::vec3 &spec = glm::vec3(0.0f), const glm::vec3 &amb = glm::vec3(0.0f), float shin = 32.0f)
-        : diffuse(diff), specular(spec), ambient(amb), shininess(shin), illum(-1), diffuseTexture(""), specularTexture("") {}
+        : diffuse(diff), specular(spec), ambient(amb), shininess(shin), illum(-1), diffuseTexture(""), specularTexture(""), normalMap("") {}
 };

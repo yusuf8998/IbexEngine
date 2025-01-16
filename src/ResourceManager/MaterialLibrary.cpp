@@ -92,4 +92,8 @@ void MaterialLibrary::parseMTLLine(const std::string &line, Material &currentMat
     { // Specular texture map
         currentMaterial.specularTexture = tokens[1];
     }
+    else if (tokens[0] == "norm")
+    { // Normal map
+        currentMaterial.normalMap = tokens[1];
+    }
 }

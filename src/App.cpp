@@ -40,10 +40,12 @@ int main()
     // root->addChild(makeNode<Renderable>("dynamic1"));
     // root->addChild(makeNode<Renderable>("dynamic2"));
     // root->addChild(makeNode<Renderable>("dynamic3"));
+    // root->addChild(makeNode<SkyboxNode>("skybox"));
 
     // castNode<Renderable>(root->children[0])->renderName = "res/cube2.obj";
     // castNode<Renderable>(root->children[1])->renderName = "res/cube2.obj";
     // castNode<Renderable>(root->children[2])->renderName = "res/cube.obj";
+    // castNode<Renderable>(root->children[3])->renderName = "res/skybox*jpg";
 
     // castNode<Transformable>(root->children[0])->getTransform().position = glm::vec3(0, 1, 0);
     // castNode<Transformable>(root->children[1])->getTransform().position = glm::vec3(0, -1, 0);

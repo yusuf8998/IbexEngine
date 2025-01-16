@@ -4,6 +4,7 @@ struct Material {
     sampler2DArray textures;
     int diffuseIndex;
     int specularIndex;
+    int normalIndex;
     vec3 diffuse;
     vec3 specular;
     float shininess;
@@ -32,6 +33,15 @@ vec4 diffuseTexture() {
 vec4 specularTexture() {
     return texture(material.textures, vec3(f_fragUV, float(material.specularIndex)));
 }
+vec3 normalMap() {
+    return normalize(texture(material.textures, vec3(f_fragUV, float(material.normalIndex))).rgb * 2.0 - 1.0);
+}
+
+vec3 finalNormal() {
+    if (material.normalIndex == -1)
+        return normalize(f_fragNormal);
+    return normalize(f_fragNormal + normalMap());
+}
 
 vec4 ambient() {
     return vec4(dirLight.ambient, 1.0);
@@ -44,6 +54,8 @@ vec4 diffuse(vec3 normal, vec3 lightDir) {
 }
 
 vec4 specular(vec3 norm, vec3 lightDir) {
+    if (material.specularIndex == -1)
+        return vec4(vec3(0.0), 0.0);
     vec3 viewDir = normalize(viewPos - f_fragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
@@ -52,7 +64,7 @@ vec4 specular(vec3 norm, vec3 lightDir) {
 }
 
 void main() {
-    vec3 norm = normalize(f_fragNormal);
+    vec3 norm = finalNormal();
     vec3 lightDir = normalize(-dirLight.direction);
 
     vec4 ambientLight = ambient() * diffuseTexture();
