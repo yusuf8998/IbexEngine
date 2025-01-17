@@ -26,6 +26,8 @@ public:
     std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes: position, uv, normal, tangent, bitangent
     std::map<std::string, std::vector<unsigned int>> indices;
 
+    static const unsigned int INDEX_PER_VERTEX = 5;
+
     std::map<std::string, std::vector<std::string>> materials; // Material library, material names
     std::map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
 

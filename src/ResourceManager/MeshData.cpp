@@ -164,9 +164,9 @@ size_t MeshData::getVertexStride() const
 size_t MeshData::getFaceCount() const
 {
     size_t result = 0;
-    for (auto &kvp : indices)
+    for (const auto &kvp : indices)
     {
-        result += kvp.second.size() / vertexPerFace;
+        result += kvp.second.size() / (INDEX_PER_VERTEX * vertexPerFace);
     }
     return result;
 }
