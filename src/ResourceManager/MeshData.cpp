@@ -153,6 +153,14 @@ char MeshData::getVertexPerFace() const
     return vertexPerFace;
 }
 
+size_t MeshData::getVertexStride() const
+{
+    size_t stride = 0;
+    for(const auto &kvp : vertexAttributes)
+        stride += kvp.second.size() * sizeof(float);
+    return stride;
+}
+
 size_t MeshData::getFaceCount() const
 {
     size_t result = 0;

@@ -36,6 +36,7 @@ public:
     const std::vector<float> &getVertexAttribute(const std::string &name) const;
 
     char getVertexPerFace() const;
+    size_t getVertexStride() const;
     size_t getFaceCount() const;
 
 private:
