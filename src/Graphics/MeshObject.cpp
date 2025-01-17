@@ -75,11 +75,11 @@ void MeshObject::generateOpenGLBuffers()
 
 void MeshObject::pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals)
 {
-    for (size_t i = 0; i < data->indices[groupName].size() / 3; i++)
+    for (size_t i = 0; i < data->indices[groupName].size() / MeshData::INDEX_PER_VERTEX; i++)
     {
-        unsigned int posIdx = data->indices[groupName][i * 3];
-        unsigned int uvIdx = data->indices[groupName][i * 3 + 1];
-        unsigned int normalIdx = data->indices[groupName][i * 3 + 2];
+        unsigned int posIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX];
+        unsigned int uvIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + 1];
+        unsigned int normalIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + 2];
 
         // Push position
         vertexData->push_back(positions[posIdx * 3 + 0]);

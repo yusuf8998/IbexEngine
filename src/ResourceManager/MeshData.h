@@ -2,6 +2,7 @@
 
 #include <map>
 #include <vector>
+#include <array>
 #include <map>
 #include <string>
 #include <glm/glm.hpp>
@@ -41,9 +42,16 @@ public:
     short getVertexPerFace() const;
     size_t getVertexStride() const;
     size_t getFaceCount() const;
+    size_t getFaceCount(const std::string &groupName) const;
 
 private:
     void parseOBJLine(const std::string &line);
+    void calcTangentBitangentForMesh();
+    void calcTangentBitangentForGroup(const std::string &groupName);
+
+    static void calcTagentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent);
+
+    std::vector<std::vector<float>> getFace(const std::string &groupName, unsigned int face_index);
 
     short vertexPerFace = 0;
 };

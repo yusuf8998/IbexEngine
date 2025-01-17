@@ -10,7 +10,7 @@ std::vector<std::string> MeshData::getUsedTextures() const
         auto it = materialLibraries.find(mat.first);
         if (it == materialLibraries.end())
             continue;
-        
+
         for (const auto &mat_name : mat.second)
         {
             auto material = it->second->getMaterial(mat_name);
@@ -47,8 +47,8 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
     {
         parseOBJLine(line);
     }
-
     file.close();
+    calcTangentBitangentForMesh();
     return true;
 }
 #include "algorithm"
@@ -117,6 +117,8 @@ void MeshData::parseOBJLine(const std::string &line)
             indices[currentGroupName].push_back(posIdx);
             indices[currentGroupName].push_back(uvIdx);
             indices[currentGroupName].push_back(normalIdx);
+            indices[currentGroupName].push_back(0); // tangent
+            indices[currentGroupName].push_back(0); // bitangent
         }
     }
     else if (tokens[0] == "mtllib")
@@ -139,6 +141,66 @@ void MeshData::parseOBJLine(const std::string &line)
             }
         }
     }
+}
+
+void MeshData::calcTangentBitangentForMesh()
+{
+    for (const auto &kvp : indices)
+        calcTangentBitangentForGroup(kvp.first);
+}
+
+void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
+{
+    const std::vector<float> &positions = getVertexAttribute("position");
+    const std::vector<float> &uvs = getVertexAttribute("uv");
+    const std::vector<float> &normals = getVertexAttribute("normal");
+
+    for (size_t i = 0; i < getFaceCount(groupName); i++)
+    {
+        auto face = getFace(groupName, i);
+
+    }
+}
+
+void MeshData::calcTagentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
+{
+    if (normals[0] != normals[1] || normals[1] != normals[2])
+        throw std::runtime_error("Given normals are not identical");
+    glm::vec3 edge1 = positions[1] - positions[0];
+    glm::vec3 edge2 = positions[2] - positions[0];
+    glm::vec2 deltaUV1 = uvs[1] - uvs[0];
+    glm::vec2 deltaUV2 = uvs[2] - uvs[0];
+
+    float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+    tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+    tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+    tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+    tangent = glm::normalize(tangent);
+
+    bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+    bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+    bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+    bitangent = glm::normalize(bitangent);
+
+    if (glm::epsilonEqual(bitangent, glm::cross(normals[0], tangent), 0.001f) != glm::bvec3(true, true, true))
+        throw std::runtime_error("Calculated bitangent is not orthogonal to tangent and normal!");
+}
+
+std::vector<std::vector<float>> MeshData::getFace(const std::string &groupName, unsigned int face_index)
+{
+    std::vector<std::vector<float>> face;
+    size_t startIndex = face_index * vertexPerFace * INDEX_PER_VERTEX;
+    for (size_t i = 0; i < vertexPerFace; ++i)
+    {
+        std::vector<float> vertex;
+        for (size_t j = 0; j < INDEX_PER_VERTEX; ++j)
+        {
+            vertex.push_back(indices[groupName][startIndex + i * INDEX_PER_VERTEX + j]);
+        }
+        face.push_back(vertex);
+    }
+    return face;
 }
 
 const std::vector<float> &MeshData::getVertexAttribute(const std::string &name) const
@@ -168,7 +230,12 @@ size_t MeshData::getFaceCount() const
     size_t result = 0;
     for (const auto &kvp : indices)
     {
-        result += kvp.second.size() / (INDEX_PER_VERTEX * vertexPerFace);
+        result += getFaceCount(kvp.first);
     }
     return result;
+}
+
+size_t MeshData::getFaceCount(const std::string &groupName) const
+{
+    return indices.at(groupName).size() / (INDEX_PER_VERTEX * vertexPerFace);
 }
