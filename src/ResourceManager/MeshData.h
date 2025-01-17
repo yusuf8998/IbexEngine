@@ -22,10 +22,11 @@ class MeshData
 public:
     std::string filepath;
     std::string objectName = "Unnamed";
-    std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes like position, normal, uv
-    std::map<std::string, std::vector<unsigned int>> indices;
-    std::map<std::string, std::vector<std::string>> materials; // Material library, material name
 
+    std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes: position, uv, normal, tangent, bitangent
+    std::map<std::string, std::vector<unsigned int>> indices;
+
+    std::map<std::string, std::vector<std::string>> materials; // Material library, material names
     std::map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
 
     std::vector<std::string> getUsedTextures() const;
