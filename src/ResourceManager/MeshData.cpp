@@ -59,7 +59,9 @@ void MeshData::parseOBJLine(const std::string &line)
     std::string uncomment = splitString(line, '#')[0];
     uncomment.erase(std::remove(uncomment.begin(), uncomment.end(), '\t'), uncomment.end());
     std::vector<std::string> tokens = splitString(uncomment, ' ');
-    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), [](const std::string &s) { return s.empty(); }), tokens.end());
+    tokens.erase(std::remove_if(tokens.begin(), tokens.end(), [](const std::string &s)
+                                { return s.empty(); }),
+                 tokens.end());
     if (tokens.empty())
         return;
     if (tokens[0] == "o")
@@ -156,7 +158,7 @@ short MeshData::getVertexPerFace() const
 size_t MeshData::getVertexStride() const
 {
     size_t stride = 0;
-    for(const auto &kvp : vertexAttributes)
+    for (const auto &kvp : vertexAttributes)
         stride += kvp.second.size() * sizeof(float);
     return stride;
 }
