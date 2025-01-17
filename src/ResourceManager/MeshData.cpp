@@ -143,13 +143,9 @@ const std::vector<float> &MeshData::getVertexAttribute(const std::string &name) 
 {
     auto it = vertexAttributes.find(name);
     if (it != vertexAttributes.end())
-    {
         return it->second;
-    }
     else
-    {
         throw std::runtime_error("Attribute not found: " + name);
-    }
 }
 
 char MeshData::getVertexPerFace() const
