@@ -35,12 +35,12 @@ public:
     // Helper function to access vertex attributes
     const std::vector<float> &getVertexAttribute(const std::string &name) const;
 
-    char getVertexPerFace() const;
+    short getVertexPerFace() const;
     size_t getVertexStride() const;
     size_t getFaceCount() const;
 
 private:
     void parseOBJLine(const std::string &line);
 
-    char vertexPerFace = 0;
+    short vertexPerFace = 0;
 };
