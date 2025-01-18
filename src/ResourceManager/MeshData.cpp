@@ -150,11 +150,6 @@ void MeshData::calcTangentBitangentForMesh()
         calcTangentBitangentForGroup(kvp.first);
 }
 
-bool collinear(const glm::vec2 &A, const glm::vec2 &B, const glm::vec2 &C)
-{
-    return abs( A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y) ) < 0.01f;
-}
-
 void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
 {
     const std::vector<float> &positions = getVertexAttribute("position");
@@ -193,9 +188,6 @@ void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
             glm::vec3(normals[face.at(2).at(NORMAL_OFFSET) * 3 + 0], normals[face.at(2).at(NORMAL_OFFSET) * 3 + 1], normals[face.at(2).at(NORMAL_OFFSET) * 3 + 2])
         };
 
-        // if (collinear(face_uvs[0], face_uvs[1], face_uvs[2]))
-        //     throw std::runtime_error("UVs are collinear!");
-
         glm::vec3 tangent, bitangent;
 
         currentGroupName = groupName;
@@ -209,7 +201,8 @@ void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
         vertexAttributes["bitangent"].push_back(bitangent.y);
         vertexAttributes["bitangent"].push_back(bitangent.z);
 
-
+        indices[groupName][(i * vertexPerFace * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() - 1;
+        indices[groupName][(i * vertexPerFace * INDEX_PER_VERTEX) + BITANGENT_OFFSET] = vertexAttributes["bitangent"].size() - 1;
     }
 }
 
@@ -240,9 +233,7 @@ void MeshData::calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positi
     bitangent = glm::normalize(bitangent);
 
     if (glm::dot(tangent, bitangent) > 0.01f || glm::dot(tangent, normals[0]) > 0.01f || glm::dot(bitangent, normals[0]) > 0.01f)
-    {
         throw std::runtime_error("Tangent, bitangent, and normal are not orthogonal");
-    }
 }
 
 std::vector<std::vector<float>> MeshData::getFace(const std::string &groupName, unsigned int face_index)

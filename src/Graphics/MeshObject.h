@@ -54,7 +54,7 @@ private:
 
     static std::unordered_map<std::string, std::shared_ptr<MeshObject>> Meshes;
 
-    void pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals);
+    void pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents, const std::vector<float> &bitangents);
 
     GLenum getDrawMode() const;
 };

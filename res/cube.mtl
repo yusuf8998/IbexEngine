@@ -8,4 +8,4 @@ Ns 250.000000
 illum 2
 map_Kd res/box.png
 map_Ks res/box.specular.png
-# norm res/box.normal.png
+norm res/box.normal.png

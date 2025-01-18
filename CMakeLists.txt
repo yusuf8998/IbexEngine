@@ -51,7 +51,7 @@ set(DEPENDENCY_TARGET ResourceStuff)
 add_custom_target(
     ResourceStuff
     COMMENT "Copying Resources"
-    COMMAND cp -r ${CMAKE_SOURCE_DIR}/res ${PROJECT_BINARY_DIR}
+    #COMMAND cp -r ${CMAKE_SOURCE_DIR}/res ${PROJECT_BINARY_DIR}
 )
 add_dependencies(Ibex ResourceStuff)
 
