@@ -70,7 +70,7 @@ void MeshObject::generateOpenGLBuffers()
     // Create an EBO (Element Buffer Object)
     glGenBuffers(1, &EBO);
 
-    indices = generateIndices(data->getFaceCount());
+    indices = generateIndices(data->getFaceCount() * data->getVertexPerFace());
 }
 
 void MeshObject::pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals)
@@ -108,6 +108,13 @@ GLenum MeshObject::getDrawMode() const
     throw std::runtime_error("Data has invalid vertexPerFace value. vertexPerFace:" + std::to_string(data->getVertexPerFace()));
 }
 
+void defineVertexAttrib(int i, int count, size_t stride, size_t &offset)
+{
+    glVertexAttribPointer(i, count, GL_FLOAT, GL_FALSE, stride, (void *)offset);
+    offset += count * sizeof(float);
+    glEnableVertexAttribArray(i);
+}
+
 void MeshObject::populateOpenGLBuffers()
 {
     glBindVertexArray(VAO);
@@ -131,16 +138,23 @@ void MeshObject::populateOpenGLBuffers()
 
     // Enable the vertex attributes
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
-    glEnableVertexAttribArray(0);
+    const size_t stride = sizeof(glm::vec3) + sizeof(glm::vec2) + sizeof(glm::vec3);
+    size_t offset = 0;
 
-    // UV attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    defineVertexAttrib(0, 3, stride, offset); // position
+    defineVertexAttrib(1, 2, stride, offset); // UV
+    defineVertexAttrib(2, 3, stride, offset); // normal
 
-    // Normal attribute
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(5 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+    // glEnableVertexAttribArray(0);
+
+    // // UV attribute
+    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
+    // glEnableVertexAttribArray(1);
+
+    // // Normal attribute
+    // glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(5 * sizeof(float)));
+    // glEnableVertexAttribArray(2);
 
     // Unbind the VAO and buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);

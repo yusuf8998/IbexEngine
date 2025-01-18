@@ -52,6 +52,7 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
     return true;
 }
 #include "algorithm"
+#include <glm/gtx/string_cast.hpp>
 void MeshData::parseOBJLine(const std::string &line)
 {
     if (line.empty())
@@ -149,52 +150,109 @@ void MeshData::calcTangentBitangentForMesh()
         calcTangentBitangentForGroup(kvp.first);
 }
 
+bool collinear(const glm::vec2 &A, const glm::vec2 &B, const glm::vec2 &C)
+{
+    return abs( A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y) ) < 0.01f;
+}
+
 void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
 {
     const std::vector<float> &positions = getVertexAttribute("position");
     const std::vector<float> &uvs = getVertexAttribute("uv");
     const std::vector<float> &normals = getVertexAttribute("normal");
 
+    if (normals.size() == 3 && glm::vec3(normals[0], normals[1], normals[2]) == glm::vec3(0.f) || vertexPerFace == 4)
+    {
+        vertexAttributes["tangent"].push_back(0);
+        vertexAttributes["tangent"].push_back(0);
+        vertexAttributes["tangent"].push_back(0);
+
+        vertexAttributes["bitangent"].push_back(0);
+        vertexAttributes["bitangent"].push_back(0);
+        vertexAttributes["bitangent"].push_back(0);
+        return;
+    }
+
     for (size_t i = 0; i < getFaceCount(groupName); i++)
     {
         auto face = getFace(groupName, i);
 
+        std::array<glm::vec3, 3> face_positions = {
+            glm::vec3(positions[face.at(0).at(POSITION_OFFSET) * 3 + 0], positions[face.at(0).at(POSITION_OFFSET) * 3 + 1], positions[face.at(0).at(POSITION_OFFSET) * 3 + 2]),
+            glm::vec3(positions[face.at(1).at(POSITION_OFFSET) * 3 + 0], positions[face.at(1).at(POSITION_OFFSET) * 3 + 1], positions[face.at(1).at(POSITION_OFFSET) * 3 + 2]),
+            glm::vec3(positions[face.at(2).at(POSITION_OFFSET) * 3 + 0], positions[face.at(2).at(POSITION_OFFSET) * 3 + 1], positions[face.at(2).at(POSITION_OFFSET) * 3 + 2])
+        };
+        std::array<glm::vec2, 3> face_uvs = {
+            glm::vec2(uvs[face.at(0).at(UV_OFFSET) * 2 + 0], uvs[face.at(0).at(UV_OFFSET) * 2 + 1]),
+            glm::vec2(uvs[face.at(1).at(UV_OFFSET) * 2 + 0], uvs[face.at(1).at(UV_OFFSET) * 2 + 1]),
+            glm::vec2(uvs[face.at(2).at(UV_OFFSET) * 2 + 0], uvs[face.at(2).at(UV_OFFSET) * 2 + 1])
+        };
+        std::array<glm::vec3, 3> face_normals = {
+            glm::vec3(normals[face.at(0).at(NORMAL_OFFSET) * 3 + 0], normals[face.at(0).at(NORMAL_OFFSET) * 3 + 1], normals[face.at(0).at(NORMAL_OFFSET) * 3 + 2]),
+            glm::vec3(normals[face.at(1).at(NORMAL_OFFSET) * 3 + 0], normals[face.at(1).at(NORMAL_OFFSET) * 3 + 1], normals[face.at(1).at(NORMAL_OFFSET) * 3 + 2]),
+            glm::vec3(normals[face.at(2).at(NORMAL_OFFSET) * 3 + 0], normals[face.at(2).at(NORMAL_OFFSET) * 3 + 1], normals[face.at(2).at(NORMAL_OFFSET) * 3 + 2])
+        };
+
+        // if (collinear(face_uvs[0], face_uvs[1], face_uvs[2]))
+        //     throw std::runtime_error("UVs are collinear!");
+
+        glm::vec3 tangent, bitangent;
+
+        currentGroupName = groupName;
+        calcTangentBitangentForTri(face_positions, face_uvs, face_normals, tangent, bitangent);
+
+        vertexAttributes["tangent"].push_back(tangent.x);
+        vertexAttributes["tangent"].push_back(tangent.y);
+        vertexAttributes["tangent"].push_back(tangent.z);
+
+        vertexAttributes["bitangent"].push_back(bitangent.x);
+        vertexAttributes["bitangent"].push_back(bitangent.y);
+        vertexAttributes["bitangent"].push_back(bitangent.z);
+
+
     }
 }
 
-void MeshData::calcTagentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
+void MeshData::calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
 {
     if (normals[0] != normals[1] || normals[1] != normals[2])
         throw std::runtime_error("Given normals are not identical");
+    
     glm::vec3 edge1 = positions[1] - positions[0];
     glm::vec3 edge2 = positions[2] - positions[0];
     glm::vec2 deltaUV1 = uvs[1] - uvs[0];
     glm::vec2 deltaUV2 = uvs[2] - uvs[0];
 
-    float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+    float denominator = deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y;
+    if (denominator == 0.0f || !std::isfinite(1.0f / denominator))
+        throw std::runtime_error("Denominator for tangent/bitangent calculation is zero or infinite");
+    float f = 1.0f / denominator;
 
     tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
     tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
     tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-    tangent = glm::normalize(tangent);
 
     bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
     bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
     bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+
+    tangent = glm::normalize(tangent);
     bitangent = glm::normalize(bitangent);
 
-    if (glm::epsilonEqual(bitangent, glm::cross(normals[0], tangent), 0.001f) != glm::bvec3(true, true, true))
-        throw std::runtime_error("Calculated bitangent is not orthogonal to tangent and normal!");
+    if (glm::dot(tangent, bitangent) > 0.01f || glm::dot(tangent, normals[0]) > 0.01f || glm::dot(bitangent, normals[0]) > 0.01f)
+    {
+        throw std::runtime_error("Tangent, bitangent, and normal are not orthogonal");
+    }
 }
 
 std::vector<std::vector<float>> MeshData::getFace(const std::string &groupName, unsigned int face_index)
 {
     std::vector<std::vector<float>> face;
     size_t startIndex = face_index * vertexPerFace * INDEX_PER_VERTEX;
-    for (size_t i = 0; i < vertexPerFace; ++i)
+    for (size_t i = 0; i < vertexPerFace; i++)
     {
         std::vector<float> vertex;
-        for (size_t j = 0; j < INDEX_PER_VERTEX; ++j)
+        for (size_t j = 0; j < INDEX_PER_VERTEX; j++)
         {
             vertex.push_back(indices[groupName][startIndex + i * INDEX_PER_VERTEX + j]);
         }

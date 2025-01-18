@@ -27,6 +27,12 @@ public:
     std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes: position, uv, normal, tangent, bitangent
     std::map<std::string, std::vector<unsigned int>> indices;
 
+    static const unsigned int POSITION_OFFSET = 0;
+    static const unsigned int UV_OFFSET = 1;
+    static const unsigned int NORMAL_OFFSET = 2;
+    static const unsigned int TANGENT_OFFSET = 3;
+    static const unsigned int BITANGENT_OFFSET = 4;
+
     static const unsigned int INDEX_PER_VERTEX = 5;
 
     std::map<std::string, std::vector<std::string>> materials; // Material library, material names
@@ -49,7 +55,7 @@ private:
     void calcTangentBitangentForMesh();
     void calcTangentBitangentForGroup(const std::string &groupName);
 
-    static void calcTagentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent);
+    static void calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent);
 
     std::vector<std::vector<float>> getFace(const std::string &groupName, unsigned int face_index);
 
