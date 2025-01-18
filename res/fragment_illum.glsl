@@ -27,6 +27,7 @@ layout(location = 1) in vec2 f_texCoords;
 layout(location = 2) in vec3 f_tangentLightPos;
 layout(location = 3) in vec3 f_tangentViewPos;
 layout(location = 4) in vec3 f_tangentFragPos;
+layout(location = 5) in vec3 f_fragNormal;
 
 layout(location = 0) out vec4 FragColor;  // Output color
 
@@ -37,6 +38,8 @@ vec4 specularTexture() {
     return texture(material.textures, vec3(f_texCoords, float(material.specularIndex)));
 }
 vec3 normalMap() {
+    if (material.normalIndex == -1)
+        return f_fragNormal;
     return normalize(texture(material.textures, vec3(f_texCoords, float(material.normalIndex))).rgb * 2.0 - 1.0);
 }
 
@@ -50,10 +53,9 @@ vec4 diffuse(vec3 normal, vec3 lightDir) {
     return vec4(diffuse, 1.0);
 }
 
-vec4 specular(vec3 normal, vec3 lightDir) {
+vec4 specular(vec3 normal, vec3 lightDir, vec3 viewDir) {
     if (material.specularIndex == -1)
         return vec4(vec3(0.0), 0.0);
-    vec3 viewDir = normalize(f_tangentViewPos - f_tangentFragPos);
     vec3 reflectDir = reflect(-lightDir, normal);
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
@@ -63,11 +65,21 @@ vec4 specular(vec3 normal, vec3 lightDir) {
 
 void main() {
     vec3 norm = normalMap();
-    vec3 lightDir = normalize(f_tangentLightPos - f_tangentFragPos);
+    vec3 lightDir; vec3 viewDir;
+    if (material.normalIndex == -1)
+    {
+        lightDir = normalize(lightPos - f_fragPos);
+        viewDir = normalize(viewPos - f_fragPos);
+    }
+    else
+    {
+        lightDir = normalize(f_tangentLightPos - f_tangentFragPos);
+        viewDir = normalize(f_tangentViewPos - f_tangentFragPos);
+    }
 
     vec4 ambientLight = ambient() * diffuseTexture();
     vec4 diffuseLight = diffuse(norm, lightDir) * diffuseTexture();
-    vec4 specularLight = specular(norm, lightDir) * specularTexture();
+    vec4 specularLight = specular(norm, lightDir, viewDir) * specularTexture();
 
     FragColor = ambientLight + diffuseLight + specularLight;
 }

@@ -8,12 +8,14 @@ layout(location = 1) in vec2 g_texCoords[3];
 layout(location = 2) in vec3 g_tangentLightPos[3];
 layout(location = 3) in vec3 g_tangentViewPos[3];
 layout(location = 4) in vec3 g_tangentFragPos[3];
+layout(location = 5) in vec3 g_fragNormal[3];
 
 layout(location = 0) out vec3 f_fragPos;
 layout(location = 1) out vec2 f_texCoords;
 layout(location = 2) out vec3 f_tangentLightPos;
 layout(location = 3) out vec3 f_tangentViewPos;
 layout(location = 4) out vec3 f_tangentFragPos;
+layout(location = 5) out vec3 f_fragNormal;
 
 void main() {
     // Pass through the input vertices to the output
@@ -22,6 +24,7 @@ void main() {
     f_tangentLightPos = g_tangentLightPos[0];
     f_tangentViewPos = g_tangentViewPos[0];
     f_tangentFragPos = g_tangentFragPos[0];
+    f_fragNormal = g_fragNormal[0];
     gl_Position = gl_in[0].gl_Position;
     EmitVertex(); // Emit first vertex
 
@@ -30,6 +33,7 @@ void main() {
     f_tangentLightPos = g_tangentLightPos[1];
     f_tangentViewPos = g_tangentViewPos[1];
     f_tangentFragPos = g_tangentFragPos[1];
+    f_fragNormal = g_fragNormal[1];
     gl_Position = gl_in[1].gl_Position;
     EmitVertex(); // Emit second vertex
 
@@ -38,6 +42,7 @@ void main() {
     f_tangentLightPos = g_tangentLightPos[2];
     f_tangentViewPos = g_tangentViewPos[2];
     f_tangentFragPos = g_tangentFragPos[2];
+    f_fragNormal = g_fragNormal[2];
     gl_Position = gl_in[2].gl_Position;
     EmitVertex(); // Emit third vertex
 

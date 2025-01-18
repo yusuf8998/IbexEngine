@@ -73,7 +73,7 @@ void MeshObject::generateOpenGLBuffers()
     indices = generateIndices(data->getFaceCount() * data->getVertexPerFace());
 }
 
-void MeshObject::pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents, const std::vector<float> &bitangents)
+void MeshObject::pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents)
 {
     for (size_t i = 0; i < data->indices[groupName].size() / MeshData::INDEX_PER_VERTEX; i++)
     {
@@ -81,7 +81,6 @@ void MeshObject::pushVertexData(const std::string &groupName, std::vector<float>
         unsigned int uvIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + MeshData::UV_OFFSET];
         unsigned int normalIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + MeshData::NORMAL_OFFSET];
         unsigned int tangentIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + MeshData::TANGENT_OFFSET];
-        unsigned int bitangentIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + MeshData::BITANGENT_OFFSET];
 
         // Push position
         vertexData->push_back(positions[posIdx * 3 + 0]);
@@ -101,11 +100,6 @@ void MeshObject::pushVertexData(const std::string &groupName, std::vector<float>
         vertexData->push_back(tangents[tangentIdx * 3 + 0]);
         vertexData->push_back(tangents[tangentIdx * 3 + 1]);
         vertexData->push_back(tangents[tangentIdx * 3 + 2]);
-
-        // Push bitangent
-        vertexData->push_back(bitangents[bitangentIdx * 3 + 0]);
-        vertexData->push_back(bitangents[bitangentIdx * 3 + 1]);
-        vertexData->push_back(bitangents[bitangentIdx * 3 + 2]);
     }
 }
 
@@ -137,11 +131,10 @@ void MeshObject::populateOpenGLBuffers()
     const std::vector<float> &uvs = data->getVertexAttribute("uv");
     const std::vector<float> &normals = data->getVertexAttribute("normal");
     const std::vector<float> &tangents = data->getVertexAttribute("tangent");
-    const std::vector<float> &bitangents = data->getVertexAttribute("bitangent");
 
     for (auto &kvp : data->indices)
     {
-        pushVertexData(kvp.first, &vertexData, positions, uvs, normals, tangents, bitangents);
+        pushVertexData(kvp.first, &vertexData, positions, uvs, normals, tangents);
     }
 
     // Populate the VBO with interleaved data
@@ -152,15 +145,13 @@ void MeshObject::populateOpenGLBuffers()
 
     // Enable the vertex attributes
     // Position attribute
-    const size_t stride = sizeof(glm::vec3) + sizeof(glm::vec2) + sizeof(glm::vec3) + sizeof(glm::vec3) + sizeof(glm::vec3);
+    const size_t stride = sizeof(glm::vec3) + sizeof(glm::vec2) + sizeof(glm::vec3) + sizeof(glm::vec3);
     size_t offset = 0;
 
     defineVertexAttrib(0, 3, stride, offset); // position
     defineVertexAttrib(1, 2, stride, offset); // UV
     defineVertexAttrib(2, 3, stride, offset); // normal
     defineVertexAttrib(3, 3, stride, offset); // tangent
-    defineVertexAttrib(4, 3, stride, offset); // bitangent
-
     // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
     // glEnableVertexAttribArray(0);
 
@@ -226,7 +217,7 @@ void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::
     shader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
     shader->setVec3("light.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
-    shader->setVec3("lightPos", glm::vec3(0.f, 10.f, 0.f));
+    shader->setVec3("lightPos", glm::vec3(0.f, 1000.f, 0.f));
     shader->setVec3("viewPos", mainCamera.position);
 
     // Draw the mesh

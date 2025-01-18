@@ -119,7 +119,6 @@ void MeshData::parseOBJLine(const std::string &line)
             indices[currentGroupName].push_back(uvIdx);
             indices[currentGroupName].push_back(normalIdx);
             indices[currentGroupName].push_back(0); // tangent
-            indices[currentGroupName].push_back(0); // bitangent
         }
     }
     else if (tokens[0] == "mtllib")
@@ -161,10 +160,6 @@ void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
         vertexAttributes["tangent"].push_back(0);
         vertexAttributes["tangent"].push_back(0);
         vertexAttributes["tangent"].push_back(0);
-
-        vertexAttributes["bitangent"].push_back(0);
-        vertexAttributes["bitangent"].push_back(0);
-        vertexAttributes["bitangent"].push_back(0);
         return;
     }
 
@@ -197,12 +192,7 @@ void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
         vertexAttributes["tangent"].push_back(tangent.y);
         vertexAttributes["tangent"].push_back(tangent.z);
 
-        vertexAttributes["bitangent"].push_back(bitangent.x);
-        vertexAttributes["bitangent"].push_back(bitangent.y);
-        vertexAttributes["bitangent"].push_back(bitangent.z);
-
         indices[groupName][(i * vertexPerFace * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() - 1;
-        indices[groupName][(i * vertexPerFace * INDEX_PER_VERTEX) + BITANGENT_OFFSET] = vertexAttributes["bitangent"].size() - 1;
     }
 }
 

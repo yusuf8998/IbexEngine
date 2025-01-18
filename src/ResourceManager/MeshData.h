@@ -31,9 +31,8 @@ public:
     static const unsigned int UV_OFFSET = 1;
     static const unsigned int NORMAL_OFFSET = 2;
     static const unsigned int TANGENT_OFFSET = 3;
-    static const unsigned int BITANGENT_OFFSET = 4;
 
-    static const unsigned int INDEX_PER_VERTEX = 5;
+    static const unsigned int INDEX_PER_VERTEX = 4;
 
     std::map<std::string, std::vector<std::string>> materials; // Material library, material names
     std::map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
