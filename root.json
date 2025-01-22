@@ -1,0 +1,92 @@
+{
+    "children": [
+        {
+            "children": [],
+            "enabled": true,
+            "meshName": "res/Crate-01-01.obj",
+            "name": "dynamic1",
+            "static": false,
+            "transform": {
+                "position": {
+                    "x": 0.0,
+                    "y": 1.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "visible": true
+        },
+        {
+            "children": [],
+            "enabled": true,
+            "meshName": "res/cube2.obj",
+            "name": "dynamic2",
+            "static": false,
+            "transform": {
+                "position": {
+                    "x": 0.0,
+                    "y": -1.0,
+                    "z": 0.0
+                },
+                "rotation": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "visible": true
+        },
+        {
+            "children": [],
+            "enabled": true,
+            "meshName": "res/cube.obj",
+            "name": "dynamic3",
+            "static": false,
+            "transform": {
+                "position": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 5.0
+                },
+                "rotation": {
+                    "w": 1.0,
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                },
+                "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                }
+            },
+            "visible": true
+        },
+        {
+            "children": [],
+            "enabled": true,
+            "name": "skybox",
+            "skyboxName": "res/skybox*jpg",
+            "visible": true
+        }
+    ],
+    "enabled": true,
+    "name": "root",
+    "transform": null
+}

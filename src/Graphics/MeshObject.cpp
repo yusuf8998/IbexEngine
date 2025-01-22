@@ -213,11 +213,11 @@ void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::
 
     shader->setMat4("model", transformation);
 
+    shader->setVec3("light.direction", glm::vec3(0.f, -1.f, 0.f));
     shader->setVec3("light.ambient", glm::vec3(0.125f, 0.125f, 0.125f));
     shader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
     shader->setVec3("light.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
-    shader->setVec3("lightPos", glm::vec3(0.f, 1000.f, 0.f));
     shader->setVec3("viewPos", mainCamera.position);
 
     // Draw the mesh

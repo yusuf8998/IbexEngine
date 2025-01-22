@@ -9,3 +9,12 @@ illum 2
 map_Kd res/box.png
 map_Ks res/box.specular.png
 norm res/box.normal.png
+
+newmtl TBNtest
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ns 250.000000
+illum 2
+map_Kd res/box.png
+map_Ks res/box.specular.png
+norm res/TBNtest.normal.png

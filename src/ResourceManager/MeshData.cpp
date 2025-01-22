@@ -191,8 +191,10 @@ void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
         vertexAttributes["tangent"].push_back(tangent.x);
         vertexAttributes["tangent"].push_back(tangent.y);
         vertexAttributes["tangent"].push_back(tangent.z);
-
-        indices[groupName][(i * vertexPerFace * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() - 1;
+        
+        indices[groupName][((i * vertexPerFace + 0) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
+        indices[groupName][((i * vertexPerFace + 1) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
+        indices[groupName][((i * vertexPerFace + 2) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
     }
 }
 
