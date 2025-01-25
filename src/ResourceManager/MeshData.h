@@ -26,6 +26,8 @@ public:
     std::shared_ptr<Material> material;
 
     short vertexPerFace = 0;
+
+    std::vector<std::string> getUsedTextures() const;
 };
 
 class RenderObject;

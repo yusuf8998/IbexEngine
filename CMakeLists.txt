@@ -18,7 +18,7 @@ add_executable(Ibex
     "src/Graphics/TextureObject.cpp"
     "src/Graphics/TextureArrayObject.cpp"
     "src/Graphics/CubemapObject.cpp"
-    "src/Graphics/MeshObject.cpp"
+    "src/Graphics/RenderObject.cpp"
     "src/Graphics/Renderer.cpp"
 
     "src/Engine/Transform.cpp"

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SceneGraph.h"
-#include <Graphics/MeshObject.h>
+#include <Graphics/RenderObject.h>
 
 #include <Graphics/CubemapObject.h>
 

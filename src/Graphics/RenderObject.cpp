@@ -1,4 +1,4 @@
-#include "MeshObject.h"
+#include "RenderObject.h"
 #include <Engine/Camera.h>
 
 void GLClearError();
@@ -186,7 +186,7 @@ void RenderGroup::populateOpenGLBuffers()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    textureArray = std::make_shared<TextureArrayObject>(data->getUsedTextures());
+    textureArray = std::make_shared<TextureArrayObject>(data->getGroup(name).getUsedTextures());
 }
 
 void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)

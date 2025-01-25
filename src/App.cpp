@@ -7,7 +7,7 @@
 #include "Graphics/ShaderObject.h"
 #include "Graphics/TextureObject.h"
 #include "ResourceManager/ResourceManager.h"
-#include "Graphics/MeshObject.h"
+#include "Graphics/RenderObject.h"
 #include "Engine/SceneGraph.h"
 #include "Engine/InputHandler.h"
 #include "Engine/Camera.h"
