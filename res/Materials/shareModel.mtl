@@ -1,0 +1,9 @@
+# Apple ModelI/O MTL File: shareModel.mtl
+
+newmtl tex_u1_v1
+map_Kd res/Textures/tex_u1_v1_diffuse.jpg
+norm res/Textures/tex_u1_v1_normal.jpg
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ns 0
+

@@ -1,0 +1,35 @@
+# Blender 4.3.2 MTL File: 'None'
+# www.blender.org
+
+newmtl red
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ns 250.000000
+illum 2
+map_Kd res/Textures/box.png
+map_Ks res/Textures/box.specular.png
+norm res/Textures/box.normal.png
+
+newmtl TBNtest
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ns 250.000000
+illum 2
+map_Kd res/Textures/box.png
+map_Ks res/Textures/box.specular.png
+norm res/Textures/TBNtest.normal.png
+
+newmtl Pebble
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ns 250.000000
+illum 2
+map_Kd res/Textures/Pebbles_022_SD/Pebbles_022_BaseColor.jpg
+norm res/Textures/Pebbles_022_SD/Pebbles_022_Normal.jpg
+
+newmtl Pebble_NoNormal
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ns 250.000000
+illum 2
+map_Kd res/Textures/Pebbles_022_SD/Pebbles_022_BaseColor.jpg
