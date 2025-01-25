@@ -73,9 +73,8 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "g")
     {
-        if (tokens.size() != 2)
-            throw std::runtime_error("Token size for group definition is not correct");
-        currentGroupName = tokens[1];
+        if (tokens.size() > 1)
+            currentGroupName = tokens[1];
     }
     else if (tokens[0] == "v")
     { // Vertex position
@@ -200,8 +199,9 @@ void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
 
 void MeshData::calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
 {
-    if (normals[0] != normals[1] || normals[1] != normals[2])
-        throw std::runtime_error("Given normals are not identical");
+    // glm::vec3 face_normal = normals[0];
+    // if (normals[0] != normals[1] || normals[1] != normals[2])
+    //     face_normal = (normals[0] + normals[1] + normals[2]) / 3.0f;
     
     glm::vec3 edge1 = positions[1] - positions[0];
     glm::vec3 edge2 = positions[2] - positions[0];
@@ -224,8 +224,8 @@ void MeshData::calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positi
     tangent = glm::normalize(tangent);
     bitangent = glm::normalize(bitangent);
 
-    if (glm::dot(tangent, bitangent) > 0.01f || glm::dot(tangent, normals[0]) > 0.01f || glm::dot(bitangent, normals[0]) > 0.01f)
-        throw std::runtime_error("Tangent, bitangent, and normal are not orthogonal");
+    // if (glm::dot(tangent, bitangent) > 0.01f || glm::dot(tangent, face_normal) > 0.01f || glm::dot(bitangent, face_normal) > 0.01f)
+    //     throw std::runtime_error("Tangent, bitangent, and normal are not orthogonal");
 }
 
 std::vector<std::vector<float>> MeshData::getFace(const std::string &groupName, unsigned int face_index)

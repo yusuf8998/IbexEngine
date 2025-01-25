@@ -30,8 +30,8 @@ void save(const std::shared_ptr<Node> &root)
 int main()
 {
     auto &renderer = Renderer::instance();
-    renderer.loadShader(0, "res/vertex_illum.glsl", "res/geometry_illum.glsl","res/fragment_illum.glsl");
-    renderer.loadShader(1, "res/vertex_cube.glsl", "res/fragment_cube.glsl");
+    renderer.loadShader(0, "res/Shaders/Shader_Illum/vertex_illum.glsl", "res/Shaders/Shader_Illum/geometry_illum.glsl","res/Shaders/Shader_Illum/fragment_illum.glsl");
+    renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
     renderer.assignSkyboxShader(1);
 
     // auto mesh = MeshObject("res/cube.obj");
