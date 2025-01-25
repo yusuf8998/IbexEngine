@@ -56,8 +56,10 @@ vec4 diffuse(vec3 normal, vec3 lightDir) {
 vec4 specular(vec3 normal, vec3 lightDir, vec3 viewDir) {
     if (material.specularIndex == -1)
     return vec4(vec3(0.0), 0.0);
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    // vec3 reflectDir = reflect(-lightDir, normal);
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    // float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     vec3 specular = 0.5 * material.specular * light.specular * spec;
     return vec4(specular, 1.0);
 }
