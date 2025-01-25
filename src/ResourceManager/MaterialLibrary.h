@@ -15,7 +15,7 @@ public:
     void addMaterial(const std::string& name, const Material& material);
 
     // Get a material from the library
-    Material *getMaterial(const std::string& name);
+    std::shared_ptr<Material> getMaterial(const std::string& name);
 
     // Check if a material exists in the library
     bool hasMaterial(const std::string& name) const;

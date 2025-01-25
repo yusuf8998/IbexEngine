@@ -101,7 +101,7 @@ int main()
     if (save_thread.joinable())
         save_thread.join();
     root.reset();
-    MeshObject::ReleaseAllMeshes();
+    RenderObject::ReleaseAllMeshes();
     ResourceManager::instance().clear();
     return 0;
 }

@@ -59,28 +59,16 @@ inline bool GLLogCall(const char *function, const char *file, int line)
     return true;
 }
 
-std::unordered_map<std::string, std::shared_ptr<MeshObject>> MeshObject::Meshes = {};
+std::unordered_map<std::string, std::shared_ptr<RenderObject>> RenderObject::Meshes = {};
 
-void MeshObject::generateOpenGLBuffers()
+void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents)
 {
-    // Create a VAO (Vertex Array Object)
-    glGenVertexArrays(1, &VAO);
-    // Create a VBO (Vertex Buffer Object)
-    glGenBuffers(1, &VBO);
-    // Create an EBO (Element Buffer Object)
-    glGenBuffers(1, &EBO);
-
-    indices = generateIndices(data->getFaceCount() * data->getVertexPerFace());
-}
-
-void MeshObject::pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents)
-{
-    for (size_t i = 0; i < data->indices[groupName].size() / MeshData::INDEX_PER_VERTEX; i++)
+    for (size_t i = 0; i < group.indices.size() / MeshData::INDEX_PER_VERTEX; i++)
     {
-        unsigned int posIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + MeshData::POSITION_OFFSET];
-        unsigned int uvIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + MeshData::UV_OFFSET];
-        unsigned int normalIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + MeshData::NORMAL_OFFSET];
-        unsigned int tangentIdx = data->indices[groupName][i * MeshData::INDEX_PER_VERTEX + MeshData::TANGENT_OFFSET];
+        unsigned int posIdx = group.indices[i * MeshData::INDEX_PER_VERTEX + MeshData::POSITION_OFFSET];
+        unsigned int uvIdx = group.indices[i * MeshData::INDEX_PER_VERTEX + MeshData::UV_OFFSET];
+        unsigned int normalIdx = group.indices[i * MeshData::INDEX_PER_VERTEX + MeshData::NORMAL_OFFSET];
+        unsigned int tangentIdx = group.indices[i * MeshData::INDEX_PER_VERTEX + MeshData::TANGENT_OFFSET];
 
         // Push position
         vertexData->push_back(positions[posIdx * 3 + 0]);
@@ -103,17 +91,6 @@ void MeshObject::pushVertexData(const std::string &groupName, std::vector<float>
     }
 }
 
-GLenum MeshObject::getDrawMode() const
-{
-    if (data->getVertexPerFace() == 0)
-        return 0;
-    if (data->getVertexPerFace() == 3)
-        return GL_TRIANGLES;
-    if (data->getVertexPerFace() == 4)
-        return GL_TRIANGLE_STRIP;
-    throw std::runtime_error("Data has invalid vertexPerFace value. vertexPerFace:" + std::to_string(data->getVertexPerFace()));
-}
-
 void defineVertexAttrib(int i, int count, size_t stride, size_t &offset)
 {
     glVertexAttribPointer(i, count, GL_FLOAT, GL_FALSE, stride, (void *)offset);
@@ -121,7 +98,61 @@ void defineVertexAttrib(int i, int count, size_t stride, size_t &offset)
     glEnableVertexAttribArray(i);
 }
 
-void MeshObject::populateOpenGLBuffers()
+void RenderObject::extractGroups()
+{
+    for (const auto &g : data->groups)
+    {
+        groups.push_back(RenderGroup(data, g.name));
+    }
+}
+
+void RenderObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
+{
+    for (auto &g : groups)
+    {
+        g.render(shader, transformation);
+    }
+}
+
+void RenderObject::renderRaw()
+{
+    for (auto &g : groups)
+    {
+        g.renderRaw();
+    }
+}
+
+TextureObject *RenderObject::loadTexture(const std::string &texturePath)
+{
+    return TextureObject::getTextureByName(texturePath);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GLenum RenderGroup::getDrawMode() const
+{
+    if (data->getVertexPerFace(name) == 0)
+        return 0;
+    if (data->getVertexPerFace(name) == 3)
+        return GL_TRIANGLES;
+    if (data->getVertexPerFace(name) == 4)
+        return GL_TRIANGLE_STRIP;
+    throw std::runtime_error("Data has invalid vertexPerFace value. vertexPerFace:" + std::to_string(data->getVertexPerFace(name)));
+}
+
+void RenderGroup::generateOpenGLBuffers()
+{
+    // Create a VAO (Vertex Array Object)
+    glGenVertexArrays(1, &VAO);
+    // Create a VBO (Vertex Buffer Object)
+    glGenBuffers(1, &VBO);
+    // Create an EBO (Element Buffer Object)
+    glGenBuffers(1, &EBO);
+
+    indices = generateIndices(data->getFaceCount(name) * data->getVertexPerFace(name));
+}
+
+void RenderGroup::populateOpenGLBuffers()
 {
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -132,10 +163,7 @@ void MeshObject::populateOpenGLBuffers()
     const std::vector<float> &normals = data->getVertexAttribute("normal");
     const std::vector<float> &tangents = data->getVertexAttribute("tangent");
 
-    for (auto &kvp : data->indices)
-    {
-        pushVertexData(kvp.first, &vertexData, positions, uvs, normals, tangents);
-    }
+    pushVertexData(data->getGroup(name), &vertexData, positions, uvs, normals, tangents);
 
     // Populate the VBO with interleaved data
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
@@ -152,16 +180,6 @@ void MeshObject::populateOpenGLBuffers()
     defineVertexAttrib(1, 2, stride, offset); // UV
     defineVertexAttrib(2, 3, stride, offset); // normal
     defineVertexAttrib(3, 3, stride, offset); // tangent
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
-    // glEnableVertexAttribArray(0);
-
-    // // UV attribute
-    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(3 * sizeof(float)));
-    // glEnableVertexAttribArray(1);
-
-    // // Normal attribute
-    // glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)(5 * sizeof(float)));
-    // glEnableVertexAttribArray(2);
 
     // Unbind the VAO and buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -171,7 +189,7 @@ void MeshObject::populateOpenGLBuffers()
     textureArray = std::make_shared<TextureArrayObject>(data->getUsedTextures());
 }
 
-void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
+void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
 {
     // Bind the VAO for rendering
     glBindVertexArray(VAO);
@@ -181,7 +199,7 @@ void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::
     // Set material properties (e.g., diffuse color)
     for (auto &kvp : data->materials)
     {
-        const auto *material = data->materialLibraries[kvp.first]->getMaterial(kvp.second[0]);
+        const auto material = data->materialLibraries[kvp.first]->getMaterial(kvp.second[0]);
         // Set shader uniform for material properties (diffuse, specular, etc.)
         shader->setVec3("material.diffuse", material->diffuse);
         shader->setVec3("material.specular", material->specular);
@@ -227,17 +245,14 @@ void MeshObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::
     glBindVertexArray(0);
 }
 
-void MeshObject::renderRaw()
+void RenderGroup::renderRaw()
 {
     // Bind the VAO for rendering
     glBindVertexArray(VAO);
+
     // Draw the mesh
     GLCall(glDrawElements(getDrawMode(), indices.size(), GL_UNSIGNED_INT, indices.data()));
+
     // Unbind the VAO
     glBindVertexArray(0);
-}
-
-TextureObject *MeshObject::loadTexture(const std::string &texturePath)
-{
-    return TextureObject::getTextureByName(texturePath);
 }

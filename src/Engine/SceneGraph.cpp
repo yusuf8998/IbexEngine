@@ -148,7 +148,7 @@ void Renderable::render(const std::shared_ptr<ShaderObject> &shader)
 {
     // Render the mesh
     if (enabled && visible)
-        MeshObject::GetMeshObject(renderName)->render(shader, transform.globalTransform);
+        RenderObject::GetRenderObject(renderName)->render(shader, transform.globalTransform);
 }
 void to_json(json &j, const RenderablePtr &node)
 {

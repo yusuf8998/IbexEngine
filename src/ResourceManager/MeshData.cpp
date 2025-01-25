@@ -31,6 +31,8 @@ std::vector<std::string> MeshData::getUsedTextures() const
     return textures;
 }
 std::string currentGroupName;
+std::string queuedMaterialLibrary;
+
 bool MeshData::loadFromOBJ(const std::string &filepath)
 {
     this->filepath = filepath;
@@ -43,6 +45,7 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
 
     std::string line;
     currentGroupName = "Unnamed";
+    queuedMaterialLibrary = "";
     while (std::getline(file, line))
     {
         parseOBJLine(line);
@@ -53,6 +56,26 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
 }
 #include "algorithm"
 #include <glm/gtx/string_cast.hpp>
+void MeshData::UseMaterial(const std::string &materialName, MeshGroup &group)
+{
+    for (auto it = materialLibraries.begin(); it != materialLibraries.end(); it++)
+    {
+        if (it->second->hasMaterial(materialName))
+        {
+            materials[it->first].push_back(materialName);
+            group.material = std::shared_ptr<Material>(it->second->getMaterial(materialName));
+            return;
+        }
+    }
+}
+void MeshData::generateGroup(const std::string &name)
+{
+    groups.push_back(MeshGroup{currentGroupName});
+    if (queuedMaterialLibrary != "")
+    {
+        UseMaterial(queuedMaterialLibrary, groups.back());
+    }
+}
 void MeshData::parseOBJLine(const std::string &line)
 {
     if (line.empty())
@@ -75,6 +98,7 @@ void MeshData::parseOBJLine(const std::string &line)
     {
         if (tokens.size() > 1)
             currentGroupName = tokens[1];
+        generateGroup(currentGroupName);
     }
     else if (tokens[0] == "v")
     { // Vertex position
@@ -104,20 +128,22 @@ void MeshData::parseOBJLine(const std::string &line)
     }
     else if (tokens[0] == "f")
     { // Face (index list)
-        if (vertexPerFace == 0)
-            vertexPerFace = tokens.size() - 1;
-        if (tokens.size() != vertexPerFace + 1)
-            throw std::runtime_error("Token size for face definition is not correct. vertexPerFace: " + std::to_string(vertexPerFace));
+        if (!hasGroup(currentGroupName))
+            generateGroup(currentGroupName);
+        if (getGroup(currentGroupName).vertexPerFace == 0)
+            getGroup(currentGroupName).vertexPerFace = tokens.size() - 1;
+        if (tokens.size() != getGroup(currentGroupName).vertexPerFace + 1)
+            throw std::runtime_error("Token size for face definition is not correct. vertexPerFace: " + std::to_string(getGroup(currentGroupName).vertexPerFace));
         for (size_t i = 1; i < tokens.size(); ++i)
         {
             std::vector<std::string> vertexData = splitString(tokens[i], '/');
             unsigned int posIdx = std::stoi(vertexData[0]) - 1;
             unsigned int uvIdx = vertexData[1].empty() ? 0 : std::stoi(vertexData[1]) - 1;
             unsigned int normalIdx = vertexData[2].empty() ? 0 : std::stoi(vertexData[2]) - 1;
-            indices[currentGroupName].push_back(posIdx);
-            indices[currentGroupName].push_back(uvIdx);
-            indices[currentGroupName].push_back(normalIdx);
-            indices[currentGroupName].push_back(0); // tangent
+            getGroup(currentGroupName).indices.push_back(posIdx);
+            getGroup(currentGroupName).indices.push_back(uvIdx);
+            getGroup(currentGroupName).indices.push_back(normalIdx);
+            getGroup(currentGroupName).indices.push_back(0); // tangent
         }
     }
     else if (tokens[0] == "mtllib")
@@ -130,31 +156,30 @@ void MeshData::parseOBJLine(const std::string &line)
     { // Material reference
         if (tokens.size() != 2)
             throw std::runtime_error("Token size for material usage is not correct");
-        // materialNames.push_back(tokens[1]); // Store the material name for subsequent faces
-        for (auto it = materialLibraries.begin(); it != materialLibraries.end(); it++)
-        {
-            if (it->second->hasMaterial(tokens[1]))
-            {
-                materials[it->first].push_back(tokens[1]);
-                break;
-            }
-        }
+        if (hasGroup(currentGroupName))
+            UseMaterial(tokens[1], getGroup(currentGroupName));
+        else
+            queuedMaterialLibrary = tokens[1];
     }
 }
 
 void MeshData::calcTangentBitangentForMesh()
 {
-    for (const auto &kvp : indices)
-        calcTangentBitangentForGroup(kvp.first);
+    for (auto &g : groups)
+        calcTangentBitangentForGroup(g);
 }
 
 void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
+{
+    calcTangentBitangentForGroup(getGroup(groupName));
+}
+void MeshData::calcTangentBitangentForGroup(MeshGroup &group)
 {
     const std::vector<float> &positions = getVertexAttribute("position");
     const std::vector<float> &uvs = getVertexAttribute("uv");
     const std::vector<float> &normals = getVertexAttribute("normal");
 
-    if (normals.size() == 3 && glm::vec3(normals[0], normals[1], normals[2]) == glm::vec3(0.f) || vertexPerFace == 4)
+    if (normals.size() == 3 && glm::vec3(normals[0], normals[1], normals[2]) == glm::vec3(0.f) || group.vertexPerFace == 4)
     {
         vertexAttributes["tangent"].push_back(0);
         vertexAttributes["tangent"].push_back(0);
@@ -162,9 +187,9 @@ void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
         return;
     }
 
-    for (size_t i = 0; i < getFaceCount(groupName); i++)
+    for (size_t i = 0; i < getFaceCount(group); i++)
     {
-        auto face = getFace(groupName, i);
+        auto face = getFace(group, i);
 
         std::array<glm::vec3, 3> face_positions = {
             glm::vec3(positions[face.at(0).at(POSITION_OFFSET) * 3 + 0], positions[face.at(0).at(POSITION_OFFSET) * 3 + 1], positions[face.at(0).at(POSITION_OFFSET) * 3 + 2]),
@@ -184,17 +209,47 @@ void MeshData::calcTangentBitangentForGroup(const std::string &groupName)
 
         glm::vec3 tangent, bitangent;
 
-        currentGroupName = groupName;
+        currentGroupName = group.name;
         calcTangentBitangentForTri(face_positions, face_uvs, face_normals, tangent, bitangent);
 
         vertexAttributes["tangent"].push_back(tangent.x);
         vertexAttributes["tangent"].push_back(tangent.y);
         vertexAttributes["tangent"].push_back(tangent.z);
         
-        indices[groupName][((i * vertexPerFace + 0) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
-        indices[groupName][((i * vertexPerFace + 1) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
-        indices[groupName][((i * vertexPerFace + 2) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
+        group.indices[((i * group.vertexPerFace + 0) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
+        group.indices[((i * group.vertexPerFace + 1) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
+        group.indices[((i * group.vertexPerFace + 2) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
     }
+}
+
+MeshGroup &MeshData::getGroup(const std::string &groupName)
+{
+    for (auto &g : groups)
+    {
+        if (g.name == groupName)
+            return const_cast<MeshGroup &>(g);
+    }
+    throw std::runtime_error("Group not found: " + groupName);
+}
+
+const MeshGroup &MeshData::getGroup(const std::string &groupName) const
+{
+    for (const auto &g : groups)
+    {
+        if (g.name == groupName)
+            return g;
+    }
+    throw std::runtime_error("Group not found: " + groupName);
+}
+
+bool MeshData::hasGroup(const std::string &groupName) const
+{
+    for (const auto &g : groups)
+    {
+        if (g.name == groupName)
+            return true;
+    }
+    return false;
 }
 
 void MeshData::calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
@@ -230,14 +285,19 @@ void MeshData::calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positi
 
 std::vector<std::vector<float>> MeshData::getFace(const std::string &groupName, unsigned int face_index)
 {
+    return getFace(getGroup(groupName), face_index);
+}
+
+std::vector<std::vector<float>> MeshData::getFace(const MeshGroup &group, unsigned int face_index)
+{
     std::vector<std::vector<float>> face;
-    size_t startIndex = face_index * vertexPerFace * INDEX_PER_VERTEX;
-    for (size_t i = 0; i < vertexPerFace; i++)
+    size_t startIndex = face_index * group.vertexPerFace * INDEX_PER_VERTEX;
+    for (size_t i = 0; i < group.vertexPerFace; i++)
     {
         std::vector<float> vertex;
         for (size_t j = 0; j < INDEX_PER_VERTEX; j++)
         {
-            vertex.push_back(indices[groupName][startIndex + i * INDEX_PER_VERTEX + j]);
+            vertex.push_back(group.indices[startIndex + i * INDEX_PER_VERTEX + j]);
         }
         face.push_back(vertex);
     }
@@ -253,9 +313,14 @@ const std::vector<float> &MeshData::getVertexAttribute(const std::string &name) 
         throw std::runtime_error("Attribute not found: " + name);
 }
 
-short MeshData::getVertexPerFace() const
+short MeshData::getVertexPerFace(const std::string &groupName) const
 {
-    return vertexPerFace;
+    return getVertexPerFace(getGroup(groupName));
+}
+
+short MeshData::getVertexPerFace(const MeshGroup &group) const
+{
+    return group.vertexPerFace;
 }
 
 size_t MeshData::getVertexStride() const
@@ -269,14 +334,19 @@ size_t MeshData::getVertexStride() const
 size_t MeshData::getFaceCount() const
 {
     size_t result = 0;
-    for (const auto &kvp : indices)
+    for (const auto &g : groups)
     {
-        result += getFaceCount(kvp.first);
+        result += getFaceCount(g);
     }
     return result;
 }
 
 size_t MeshData::getFaceCount(const std::string &groupName) const
 {
-    return indices.at(groupName).size() / (INDEX_PER_VERTEX * vertexPerFace);
+    return getFaceCount(getGroup(groupName));
+}
+
+size_t MeshData::getFaceCount(const MeshGroup &group) const
+{
+    return group.indices.size() / (INDEX_PER_VERTEX * group.vertexPerFace);
 }

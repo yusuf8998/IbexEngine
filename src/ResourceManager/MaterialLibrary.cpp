@@ -12,11 +12,12 @@ void MaterialLibrary::addMaterial(const std::string &name, const Material &mater
         std::cout << "Warning: Material " << name << " already exists in the library" << std::endl;
 }
 
-Material *MaterialLibrary::getMaterial(const std::string &name)
+std::shared_ptr<Material> MaterialLibrary::getMaterial(const std::string &name)
 {
     if (materials.count(name) == 0)
         return 0;
-    return &materials.at(name);
+    return std::make_shared<Material>(materials.at(name));
+    // return std::shared_ptr &materials.at(name);
 }
 
 bool MaterialLibrary::hasMaterial(const std::string &name) const

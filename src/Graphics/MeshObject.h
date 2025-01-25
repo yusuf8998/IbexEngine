@@ -11,35 +11,63 @@
 #include <Graphics/TextureObject.h>
 #include "TextureArrayObject.h"
 
-class MeshObject
+class RenderObject;
+
+class RenderGroup
 {
 public:
-    std::shared_ptr<MeshData> data;
-    GLuint VAO, VBO, EBO;
+    GLenum getDrawMode() const;
 
-    inline MeshObject(const std::string &filepath)
-        : MeshObject(ResourceManager::instance().getResource<MeshData>(filepath))
-    {}
-    inline MeshObject(std::shared_ptr<MeshData> data)
-        : data(data)
+    friend class RenderObject;
+
+    RenderGroup(const std::shared_ptr<MeshData> &data, const std::string &name)
+        : data(data), name(name)
     {
-        if (Meshes[data->filepath] != nullptr)
-            throw std::runtime_error("Mesh already loaded");
         generateOpenGLBuffers();
         populateOpenGLBuffers();
     }
 
+private:
+    std::shared_ptr<MeshData> data;
+    std::string name;
+    GLuint VAO, VBO, EBO;
+    std::vector<unsigned int> indices = {};
+
     void generateOpenGLBuffers();
     void populateOpenGLBuffers();
+
+    void render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation);
+    void renderRaw();
+
+    std::shared_ptr<TextureArrayObject> textureArray;
+};
+
+class RenderObject
+{
+public:
+    std::shared_ptr<MeshData> data;
+    std::vector<RenderGroup> groups;
+
+    inline RenderObject(const std::string &filepath)
+        : RenderObject(ResourceManager::instance().getResource<MeshData>(filepath))
+    {}
+    inline RenderObject(std::shared_ptr<MeshData> data)
+        : data(data)
+    {
+        if (Meshes[data->filepath] != nullptr)
+            throw std::runtime_error("Mesh already loaded");
+        extractGroups();
+    }
+
     void render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation);
     void renderRaw();
     TextureObject *loadTexture(const std::string &texturePath);
 
-    static std::shared_ptr<MeshObject> GetMeshObject(const std::string &name)
+    static std::shared_ptr<RenderObject> GetRenderObject(const std::string &name)
     {
         if (Meshes.count(name) != 0)
             return Meshes[name];
-        Meshes[name] = std::make_shared<MeshObject>(name);
+        Meshes[name] = std::make_shared<RenderObject>(name);
         return Meshes[name];
     }
 
@@ -48,16 +76,12 @@ public:
         Meshes.clear();
     }
 private:
-    std::vector<unsigned int> indices = {};
+    void extractGroups();
 
-    std::shared_ptr<TextureArrayObject> textureArray;
-
-    static std::unordered_map<std::string, std::shared_ptr<MeshObject>> Meshes;
-
-    void pushVertexData(const std::string &groupName, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents);
-
-    GLenum getDrawMode() const;
+    static std::unordered_map<std::string, std::shared_ptr<RenderObject>> Meshes;
 };
+
+void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents);
 
 inline std::vector<unsigned int> generateIndices(int numVertices)
 {
