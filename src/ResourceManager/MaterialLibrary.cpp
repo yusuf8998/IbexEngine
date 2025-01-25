@@ -4,20 +4,16 @@
 #include <string>
 #include <iostream>
 
-void MaterialLibrary::addMaterial(const std::string &name, const Material &material)
+void MaterialLibrary::addMaterial(const std::string &name, const std::shared_ptr<Material> &material)
 {
-    if (materials.count(name) == 0)
-        materials[name] = material;
-    else
-        std::cout << "Warning: Material " << name << " already exists in the library" << std::endl;
+    materials[name] = material;
 }
 
 std::shared_ptr<Material> MaterialLibrary::getMaterial(const std::string &name)
 {
     if (materials.count(name) == 0)
         return 0;
-    return std::make_shared<Material>(materials.at(name));
-    // return std::shared_ptr &materials.at(name);
+    return materials.at(name);
 }
 
 bool MaterialLibrary::hasMaterial(const std::string &name) const
@@ -35,7 +31,7 @@ bool MaterialLibrary::loadMaterialsFromMTL(const std::string &mtlFilePath)
     }
 
     std::string line;
-    Material currentMaterial;
+    std::shared_ptr<Material> currentMaterial;
     std::string currentName;
 
     while (std::getline(file, line))
@@ -47,7 +43,7 @@ bool MaterialLibrary::loadMaterialsFromMTL(const std::string &mtlFilePath)
     return true;
 }
 
-void MaterialLibrary::parseMTLLine(const std::string &line, Material &currentMaterial, std::string &currentName)
+void MaterialLibrary::parseMTLLine(const std::string &line, std::shared_ptr<Material> &currentMaterial, std::string &currentName)
 {
     if (line.empty())
         return;
@@ -58,43 +54,43 @@ void MaterialLibrary::parseMTLLine(const std::string &line, Material &currentMat
 
     if (tokens[0] == "newmtl")
     { // New material definition
-        if (currentMaterial.diffuse != glm::vec3(0.f))
+        if (currentMaterial)
         {
             materials[currentName] = currentMaterial; // Store the previous material
         }
         currentName = tokens[1];
-        currentMaterial = Material();
+        currentMaterial = std::make_shared<Material>();
     }
     else if (tokens[0] == "illum")
     { // Illumination model
-        currentMaterial.illum = std::stoi(tokens[1]);
+        currentMaterial->illum = std::stoi(tokens[1]);
     }
     else if (tokens[0] == "Ka")
     { // Ambient color
-        currentMaterial.ambient = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+        currentMaterial->ambient = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
     }
     else if (tokens[0] == "Kd")
     { // Diffuse color
-        currentMaterial.diffuse = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+        currentMaterial->diffuse = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
     }
     else if (tokens[0] == "Ks")
     { // Specular color
-        currentMaterial.specular = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
+        currentMaterial->specular = glm::vec3(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
     }
     else if (tokens[0] == "Ns")
     { // Shininess
-        currentMaterial.shininess = std::stof(tokens[1]);
+        currentMaterial->shininess = std::stof(tokens[1]);
     }
     else if (tokens[0] == "map_Kd")
     { // Diffuse texture map
-        currentMaterial.diffuseTexture = tokens[1];
+        currentMaterial->diffuseTexture = tokens[1];
     }
     else if (tokens[0] == "map_Ks")
     { // Specular texture map
-        currentMaterial.specularTexture = tokens[1];
+        currentMaterial->specularTexture = tokens[1];
     }
     else if (tokens[0] == "norm")
     { // Normal map
-        currentMaterial.normalMap = tokens[1];
+        currentMaterial->normalMap = tokens[1];
     }
 }

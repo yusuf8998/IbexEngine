@@ -9,23 +9,24 @@
 #include <splitString.h>
 #include <memory>
 
-class MaterialLibrary {
+class MaterialLibrary
+{
 public:
-    // Add a material to the library
-    void addMaterial(const std::string& name, const Material& material);
+
+    void addMaterial(const std::string &name, const std::shared_ptr<Material> &material);
 
     // Get a material from the library
-    std::shared_ptr<Material> getMaterial(const std::string& name);
+    std::shared_ptr<Material> getMaterial(const std::string &name);
 
     // Check if a material exists in the library
-    bool hasMaterial(const std::string& name) const;
+    bool hasMaterial(const std::string &name) const;
 
     bool loadMaterialsFromMTL(const std::string &mtlFilePath);
 
 private:
-    std::unordered_map<std::string, Material> materials;
+    std::unordered_map<std::string, std::shared_ptr<Material>> materials;
 
-    void parseMTLLine(const std::string &line, Material &currentMaterial, std::string &currentName);
+    void parseMTLLine(const std::string &line, std::shared_ptr<Material> &currentMaterial, std::string &currentName);
 };
 
 #endif // MATERIAL_LIBRARY_H
