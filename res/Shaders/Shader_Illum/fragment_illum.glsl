@@ -32,9 +32,13 @@ layout(location = 5) in vec3 f_fragNormal;
 layout(location = 0) out vec4 FragColor;  // Output color
 
 vec4 diffuseTexture() {
+    if (material.diffuseIndex == -1)
+    return vec4(vec3(1.0), 1.0);
     return texture(material.textures, vec3(f_texCoords, float(material.diffuseIndex)));
 }
 vec4 specularTexture() {
+    if (material.specularIndex == -1)
+    return vec4(vec3(1.0), 1.0);
     return texture(material.textures, vec3(f_texCoords, float(material.specularIndex)));
 }
 vec3 normalMap() {

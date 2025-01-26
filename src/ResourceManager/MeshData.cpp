@@ -194,28 +194,25 @@ void MeshData::calcTangentBitangentForGroup(MeshGroup &group)
         std::array<glm::vec3, 3> face_positions = {
             glm::vec3(positions[face.at(0).at(POSITION_OFFSET) * 3 + 0], positions[face.at(0).at(POSITION_OFFSET) * 3 + 1], positions[face.at(0).at(POSITION_OFFSET) * 3 + 2]),
             glm::vec3(positions[face.at(1).at(POSITION_OFFSET) * 3 + 0], positions[face.at(1).at(POSITION_OFFSET) * 3 + 1], positions[face.at(1).at(POSITION_OFFSET) * 3 + 2]),
-            glm::vec3(positions[face.at(2).at(POSITION_OFFSET) * 3 + 0], positions[face.at(2).at(POSITION_OFFSET) * 3 + 1], positions[face.at(2).at(POSITION_OFFSET) * 3 + 2])
-        };
+            glm::vec3(positions[face.at(2).at(POSITION_OFFSET) * 3 + 0], positions[face.at(2).at(POSITION_OFFSET) * 3 + 1], positions[face.at(2).at(POSITION_OFFSET) * 3 + 2])};
         std::array<glm::vec2, 3> face_uvs = {
             glm::vec2(uvs[face.at(0).at(UV_OFFSET) * 2 + 0], uvs[face.at(0).at(UV_OFFSET) * 2 + 1]),
             glm::vec2(uvs[face.at(1).at(UV_OFFSET) * 2 + 0], uvs[face.at(1).at(UV_OFFSET) * 2 + 1]),
-            glm::vec2(uvs[face.at(2).at(UV_OFFSET) * 2 + 0], uvs[face.at(2).at(UV_OFFSET) * 2 + 1])
-        };
+            glm::vec2(uvs[face.at(2).at(UV_OFFSET) * 2 + 0], uvs[face.at(2).at(UV_OFFSET) * 2 + 1])};
         std::array<glm::vec3, 3> face_normals = {
             glm::vec3(normals[face.at(0).at(NORMAL_OFFSET) * 3 + 0], normals[face.at(0).at(NORMAL_OFFSET) * 3 + 1], normals[face.at(0).at(NORMAL_OFFSET) * 3 + 2]),
             glm::vec3(normals[face.at(1).at(NORMAL_OFFSET) * 3 + 0], normals[face.at(1).at(NORMAL_OFFSET) * 3 + 1], normals[face.at(1).at(NORMAL_OFFSET) * 3 + 2]),
-            glm::vec3(normals[face.at(2).at(NORMAL_OFFSET) * 3 + 0], normals[face.at(2).at(NORMAL_OFFSET) * 3 + 1], normals[face.at(2).at(NORMAL_OFFSET) * 3 + 2])
-        };
+            glm::vec3(normals[face.at(2).at(NORMAL_OFFSET) * 3 + 0], normals[face.at(2).at(NORMAL_OFFSET) * 3 + 1], normals[face.at(2).at(NORMAL_OFFSET) * 3 + 2])};
 
         glm::vec3 tangent, bitangent;
 
         currentGroupName = group.name;
-        calcTangentBitangentForTri(face_positions, face_uvs, face_normals, tangent, bitangent);
+        CalcTangentBitangentForTri(face_positions, face_uvs, face_normals, tangent, bitangent);
 
         vertexAttributes["tangent"].push_back(tangent.x);
         vertexAttributes["tangent"].push_back(tangent.y);
         vertexAttributes["tangent"].push_back(tangent.z);
-        
+
         group.indices[((i * group.vertexPerFace + 0) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
         group.indices[((i * group.vertexPerFace + 1) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
         group.indices[((i * group.vertexPerFace + 2) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
@@ -254,53 +251,113 @@ bool MeshData::hasGroup(const std::string &groupName) const
 
 unsigned int MeshData::getPositionOffset() const
 {
-    return getVertexAttribute("position").size() - 1;
+    return getVertexAttribute("position").size();
 }
 unsigned int MeshData::getUVOffset() const
 {
-    return getVertexAttribute("uv").size() - 1;
+    return getVertexAttribute("uv").size();
 }
 unsigned int MeshData::getNormalOffset() const
 {
-    return getVertexAttribute("normal").size() - 1;
+    return getVertexAttribute("normal").size();
 }
 unsigned int MeshData::getTangentOffset() const
 {
-    return getVertexAttribute("tangent").size() - 1;
+    return getVertexAttribute("tangent").size();
 }
 
-void MeshData::combineMesh(const MeshData &other)
+std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshData &b)
 {
-    if (objectName != other.objectName)
-        throw std::runtime_error("Object names do not match");
-    if (materials != other.materials)
-        throw std::runtime_error("Material libraries do not match");
+    std::shared_ptr<MeshData> result = std::make_shared<MeshData>();
+    result->objectName = a.objectName + "+" + b.objectName;
+    result->filepath = a.filepath + "+" + b.filepath;
+    result->materials = a.materials;
+    result->materialLibraries = a.materialLibraries;
+    result->vertexAttributes = a.vertexAttributes;
 
-    for (const auto &kvp : other.vertexAttributes)
+    // Combine materials and material libraries
+    for (const auto &kvp : b.materials)
     {
-        if (vertexAttributes.find(kvp.first) == vertexAttributes.end())
-            vertexAttributes[kvp.first] = kvp.second;
+        if (result->materials.count(kvp.first) == 0)
+            result->materials[kvp.first] = kvp.second;
         else
-            vertexAttributes[kvp.first].insert(vertexAttributes[kvp.first].end(), kvp.second.begin(), kvp.second.end());
+            std::copy(kvp.second.begin(), kvp.second.end(), std::inserter(result->materials[kvp.first], result->materials[kvp.first].end()));
     }
-
-    for (const auto &g : other.groups)
+    for (auto &kvp : result->materials)
     {
-        // Figure out a way to combine groups
+        std::sort(kvp.second.begin(), kvp.second.end());
+        kvp.second.erase(std::unique(kvp.second.begin(), kvp.second.end()), kvp.second.end());
+    }
+    for (const auto &kvp : b.materialLibraries)
+        if (result->materialLibraries.count(kvp.first) == 0)
+            result->materialLibraries[kvp.first] = kvp.second;
 
-        if (!hasGroup(g.name))
-            groups.push_back(g);
-        else
-            getGroup(g.name).combineGroup(g, getPositionOffset(), getUVOffset(), getNormalOffset(), getTangentOffset());
+    std::vector<MeshGroup> aGroups = a.groups, bGroups = b.groups;
+    std::map<std::shared_ptr<Material>, MeshGroup> combinedGroups;
+    std::vector<MeshGroup> uniqueGroups;
+
+    // Combine groups in meshes seperately
+    FlattenGroupVector(aGroups);
+    FlattenGroupVector(bGroups);
+    
+    // This doesn't work
+
+    // Combine groups between meshes
+    for (auto &aGroup : aGroups)
+    {
+        for (auto &bGroup : bGroups)
+        {
+            if (aGroup.canCombine(bGroup))
+            {
+                MeshGroup combinedGroup = MeshGroup::combineGroups(aGroup, bGroup, result->getPositionOffset(), result->getUVOffset(), result->getNormalOffset(), result->getTangentOffset());
+                combinedGroups[combinedGroup.material] = combinedGroup;
+            }
+        }
+    }
+    for (auto &aGroup : aGroups)
+    {
+        if (combinedGroups.count(aGroup.material) == 0)
+            uniqueGroups.push_back(aGroup);
+    }
+    for (auto &bGroup : bGroups)
+    {
+        if (combinedGroups.count(bGroup.material) == 0)
+            uniqueGroups.push_back(bGroup);
+    }
+    std::copy(b.vertexAttributes.begin(), b.vertexAttributes.end(), std::inserter(result->vertexAttributes, result->vertexAttributes.end()));
+
+    // Copy combined groups to result
+    result->groups = std::vector<MeshGroup>(combinedGroups.size());
+    std::transform(combinedGroups.begin(), combinedGroups.end(), result->groups.begin(), [](const std::pair<std::shared_ptr<Material>, MeshGroup> &kvp) { return kvp.second; });
+    std::copy(uniqueGroups.begin(), uniqueGroups.end(), std::back_inserter(result->groups));
+    return result;
+}
+
+void MeshData::FlattenGroupVector(std::vector<MeshGroup> &groups)
+{
+    for (auto it = groups.begin(); it != groups.end(); ++it)
+    {
+        for (auto jt = it + 1; jt != groups.end();)
+        {
+            if (it->canCombine(*jt))
+            {
+                *it = MeshGroup::combineGroups(*it, *jt, 0, 0, 0, 0);
+                jt = groups.erase(jt);
+            }
+            else
+            {
+                ++jt;
+            }
+        }
     }
 }
 
-void MeshData::calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
+void MeshData::CalcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
 {
     // glm::vec3 face_normal = normals[0];
     // if (normals[0] != normals[1] || normals[1] != normals[2])
     //     face_normal = (normals[0] + normals[1] + normals[2]) / 3.0f;
-    
+
     glm::vec3 edge1 = positions[1] - positions[0];
     glm::vec3 edge2 = positions[2] - positions[0];
     glm::vec2 deltaUV1 = uvs[1] - uvs[0];
@@ -415,18 +472,35 @@ std::vector<std::string> MeshGroup::getUsedTextures() const
     return textures;
 }
 
-void MeshGroup::combineGroup(const MeshGroup &other, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset)
+MeshGroup MeshGroup::combineGroups(const MeshGroup &a, const MeshGroup &b, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset)
 {
-    if (vertexPerFace != other.vertexPerFace)
+    if (a.vertexPerFace != b.vertexPerFace)
         throw std::runtime_error("Vertex per face mismatch");
-    if (material != nullptr && other.material != nullptr && material != other.material)
+    if (a.material != nullptr && b.material != nullptr && a.material != b.material)
         throw std::runtime_error("Material mismatch");
 
-    for (size_t i = 0; i < other.indices.size() / INDEX_PER_VERTEX; i++)
+    std::vector<unsigned int> indices;
+
+    for (size_t i = 0; i < a.indices.size() / INDEX_PER_VERTEX; i++)
     {
-        indices.push_back(other.indices[i * INDEX_PER_VERTEX + POSITION_OFFSET] + positionOffset);
-        indices.push_back(other.indices[i * INDEX_PER_VERTEX + UV_OFFSET] + uvOffset);
-        indices.push_back(other.indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET] + normalOffset);
-        indices.push_back(other.indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET] + tangentOffset);
+        indices.push_back(a.indices[i * INDEX_PER_VERTEX + POSITION_OFFSET]);
+        indices.push_back(a.indices[i * INDEX_PER_VERTEX + UV_OFFSET]);
+        indices.push_back(a.indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET]);
+        indices.push_back(a.indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET]);
     }
+
+    for (size_t i = 0; i < b.indices.size() / INDEX_PER_VERTEX; i++)
+    {
+        indices.push_back(b.indices[i * INDEX_PER_VERTEX + POSITION_OFFSET] + positionOffset);
+        indices.push_back(b.indices[i * INDEX_PER_VERTEX + UV_OFFSET] + uvOffset);
+        indices.push_back(b.indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET] + normalOffset);
+        indices.push_back(b.indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET] + tangentOffset);
+    }
+
+    return MeshGroup{a.name + "+" + b.name, indices, a.material, a.vertexPerFace};
+}
+
+bool MeshGroup::canCombine(const MeshGroup &other) const
+{
+    return vertexPerFace == other.vertexPerFace && material == other.material;
 }

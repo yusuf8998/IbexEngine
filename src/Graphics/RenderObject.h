@@ -71,6 +71,11 @@ public:
         return Meshes[name];
     }
 
+    static void AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object)
+    {
+        Meshes[name] = object;
+    }
+
     static void ReleaseAllMeshes()
     {
         Meshes.clear();

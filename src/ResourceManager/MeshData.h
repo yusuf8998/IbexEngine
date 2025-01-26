@@ -44,7 +44,8 @@ public:
     friend class MeshData;
 
 private:
-    void combineGroup(const MeshGroup &other, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset);
+    static MeshGroup combineGroups(const MeshGroup &a, const MeshGroup &b, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset);
+    bool canCombine(const MeshGroup &other) const;
 };
 
 class RenderObject;
@@ -82,9 +83,11 @@ public:
     unsigned int getNormalOffset() const;
     unsigned int getTangentOffset() const;
 
-    void combineMesh(const MeshData &other);
+    static std::shared_ptr<MeshData> CombineMeshes(const MeshData &a, const MeshData &b);
 
     friend class RenderObject;
+
+    static void FlattenGroupVector(std::vector<MeshGroup> &groups);
 
 private:
     std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes: position, uv, normal, tangent, bitangent
@@ -99,7 +102,7 @@ private:
     void calcTangentBitangentForGroup(const std::string &groupName);
     void calcTangentBitangentForGroup(MeshGroup &group);
 
-    static void calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent);
+    static void CalcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent);
 
     std::vector<std::vector<float>> getFace(const std::string &groupName, unsigned int face_index);
     std::vector<std::vector<float>> getFace(const MeshGroup &group, unsigned int face_index);
