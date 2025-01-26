@@ -252,6 +252,49 @@ bool MeshData::hasGroup(const std::string &groupName) const
     return false;
 }
 
+unsigned int MeshData::getPositionOffset() const
+{
+    return getVertexAttribute("position").size() - 1;
+}
+unsigned int MeshData::getUVOffset() const
+{
+    return getVertexAttribute("uv").size() - 1;
+}
+unsigned int MeshData::getNormalOffset() const
+{
+    return getVertexAttribute("normal").size() - 1;
+}
+unsigned int MeshData::getTangentOffset() const
+{
+    return getVertexAttribute("tangent").size() - 1;
+}
+
+void MeshData::combineMesh(const MeshData &other)
+{
+    if (objectName != other.objectName)
+        throw std::runtime_error("Object names do not match");
+    if (materials != other.materials)
+        throw std::runtime_error("Material libraries do not match");
+
+    for (const auto &kvp : other.vertexAttributes)
+    {
+        if (vertexAttributes.find(kvp.first) == vertexAttributes.end())
+            vertexAttributes[kvp.first] = kvp.second;
+        else
+            vertexAttributes[kvp.first].insert(vertexAttributes[kvp.first].end(), kvp.second.begin(), kvp.second.end());
+    }
+
+    for (const auto &g : other.groups)
+    {
+        // Figure out a way to combine groups
+
+        if (!hasGroup(g.name))
+            groups.push_back(g);
+        else
+            getGroup(g.name).combineGroup(g, getPositionOffset(), getUVOffset(), getNormalOffset(), getTangentOffset());
+    }
+}
+
 void MeshData::calcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
 {
     // glm::vec3 face_normal = normals[0];
@@ -370,4 +413,20 @@ std::vector<std::string> MeshGroup::getUsedTextures() const
         }
     }
     return textures;
+}
+
+void MeshGroup::combineGroup(const MeshGroup &other, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset)
+{
+    if (vertexPerFace != other.vertexPerFace)
+        throw std::runtime_error("Vertex per face mismatch");
+    if (material != nullptr && other.material != nullptr && material != other.material)
+        throw std::runtime_error("Material mismatch");
+
+    for (size_t i = 0; i < other.indices.size() / INDEX_PER_VERTEX; i++)
+    {
+        indices.push_back(other.indices[i * INDEX_PER_VERTEX + POSITION_OFFSET] + positionOffset);
+        indices.push_back(other.indices[i * INDEX_PER_VERTEX + UV_OFFSET] + uvOffset);
+        indices.push_back(other.indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET] + normalOffset);
+        indices.push_back(other.indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET] + tangentOffset);
+    }
 }

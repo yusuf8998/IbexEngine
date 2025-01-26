@@ -18,6 +18,18 @@
 
 #include <ResourceManager/MaterialLibrary.h>
 
+class MeshData;
+
+constexpr unsigned int POSITION_OFFSET = 0;
+constexpr unsigned int UV_OFFSET = 1;
+constexpr unsigned int NORMAL_OFFSET = 2;
+constexpr unsigned int TANGENT_OFFSET = 3;
+
+constexpr unsigned int INDEX_PER_VERTEX = 4;
+
+// Just keep in mind
+// typedef glm::vec<INDEX_PER_VERTEX, unsigned int, glm::defaultp> Vertex; // Position, UV, Normal, Tangent
+
 class MeshGroup
 {
 public:
@@ -28,6 +40,11 @@ public:
     short vertexPerFace = 0;
 
     std::vector<std::string> getUsedTextures() const;
+
+    friend class MeshData;
+
+private:
+    void combineGroup(const MeshGroup &other, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset);
 };
 
 class RenderObject;
@@ -37,13 +54,6 @@ class MeshData
 public:
     std::string filepath;
     std::string objectName = "Unnamed";
-
-    static const unsigned int POSITION_OFFSET = 0;
-    static const unsigned int UV_OFFSET = 1;
-    static const unsigned int NORMAL_OFFSET = 2;
-    static const unsigned int TANGENT_OFFSET = 3;
-
-    static const unsigned int INDEX_PER_VERTEX = 4;
 
     std::map<std::string, std::vector<std::string>> materials; // Material library, material names
     std::map<std::string, std::shared_ptr<MaterialLibrary>> materialLibraries;
@@ -66,6 +76,13 @@ public:
     const MeshGroup &getGroup(const std::string &groupName) const;
 
     bool hasGroup(const std::string &groupName) const;
+
+    unsigned int getPositionOffset() const;
+    unsigned int getUVOffset() const;
+    unsigned int getNormalOffset() const;
+    unsigned int getTangentOffset() const;
+
+    void combineMesh(const MeshData &other);
 
     friend class RenderObject;
 

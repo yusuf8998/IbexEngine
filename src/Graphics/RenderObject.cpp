@@ -63,12 +63,12 @@ std::unordered_map<std::string, std::shared_ptr<RenderObject>> RenderObject::Mes
 
 void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents)
 {
-    for (size_t i = 0; i < group.indices.size() / MeshData::INDEX_PER_VERTEX; i++)
+    for (size_t i = 0; i < group.indices.size() / INDEX_PER_VERTEX; i++)
     {
-        unsigned int posIdx = group.indices[i * MeshData::INDEX_PER_VERTEX + MeshData::POSITION_OFFSET];
-        unsigned int uvIdx = group.indices[i * MeshData::INDEX_PER_VERTEX + MeshData::UV_OFFSET];
-        unsigned int normalIdx = group.indices[i * MeshData::INDEX_PER_VERTEX + MeshData::NORMAL_OFFSET];
-        unsigned int tangentIdx = group.indices[i * MeshData::INDEX_PER_VERTEX + MeshData::TANGENT_OFFSET];
+        unsigned int posIdx = group.indices[i * INDEX_PER_VERTEX + POSITION_OFFSET];
+        unsigned int uvIdx = group.indices[i * INDEX_PER_VERTEX + UV_OFFSET];
+        unsigned int normalIdx = group.indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET];
+        unsigned int tangentIdx = group.indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET];
 
         // Push position
         vertexData->push_back(positions[posIdx * 3 + 0]);
