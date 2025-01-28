@@ -33,12 +33,12 @@ layout(location = 0) out vec4 FragColor;  // Output color
 
 vec4 diffuseTexture() {
     if (material.diffuseIndex == -1)
-    return vec4(vec3(1.0), 1.0);
+    return vec4(material.diffuse, 1.0);
     return texture(material.textures, vec3(f_texCoords, float(material.diffuseIndex)));
 }
 vec4 specularTexture() {
     if (material.specularIndex == -1)
-    return vec4(vec3(1.0), 1.0);
+    return vec4(material.specular, 1.0);
     return texture(material.textures, vec3(f_texCoords, float(material.specularIndex)));
 }
 vec3 normalMap() {
@@ -65,7 +65,7 @@ vec4 specular(vec3 normal, vec3 lightDir, vec3 viewDir) {
     // vec3 reflectDir = reflect(-lightDir, normal);
     // float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 halfwayDir = normalize(lightDir + viewDir);
-    float energyConservation = ( 8.0 + material.shininess ) / ( 8.0 * kPi );
+    float energyConservation = (8.0 + material.shininess) / (8.0 * kPi);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     vec3 specular = energyConservation * 0.5 * material.specular * light.specular * spec;
     return vec4(specular, 1.0);
