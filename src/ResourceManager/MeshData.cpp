@@ -251,19 +251,19 @@ bool MeshData::hasGroup(const std::string &groupName) const
 
 unsigned int MeshData::getPositionOffset() const
 {
-    return getVertexAttribute("position").size();
+    return getVertexAttribute("position").size() / 3;
 }
 unsigned int MeshData::getUVOffset() const
 {
-    return getVertexAttribute("uv").size();
+    return getVertexAttribute("uv").size() / 2;
 }
 unsigned int MeshData::getNormalOffset() const
 {
-    return getVertexAttribute("normal").size();
+    return getVertexAttribute("normal").size() / 3;
 }
 unsigned int MeshData::getTangentOffset() const
 {
-    return getVertexAttribute("tangent").size();
+    return getVertexAttribute("tangent").size() / 3;
 }
 
 std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshData &b)
@@ -310,6 +310,7 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshD
             if (aGroup.canCombine(bGroup))
             {
                 MeshGroup combinedGroup = MeshGroup::combineGroups(aGroup, bGroup, result->getPositionOffset(), result->getUVOffset(), result->getNormalOffset(), result->getTangentOffset());
+
                 combinedGroups[combinedGroup.material] = combinedGroup;
             }
         }
@@ -324,8 +325,11 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshD
         if (combinedGroups.count(bGroup.material) == 0)
             uniqueGroups.push_back(bGroup);
     }
-    std::copy(b.vertexAttributes.begin(), b.vertexAttributes.end(), std::inserter(result->vertexAttributes, result->vertexAttributes.end()));
-
+    for (const auto &kvp : result->vertexAttributes)
+    {
+        std::copy(b.vertexAttributes.at(kvp.first).begin(), b.vertexAttributes.at(kvp.first).end(), std::inserter(result->vertexAttributes.at(kvp.first), result->vertexAttributes.at(kvp.first).end()));
+    }
+    
     // Copy combined groups to result
     result->groups = std::vector<MeshGroup>(combinedGroups.size());
     std::transform(combinedGroups.begin(), combinedGroups.end(), result->groups.begin(), [](const std::pair<std::shared_ptr<Material>, MeshGroup> &kvp) { return kvp.second; });

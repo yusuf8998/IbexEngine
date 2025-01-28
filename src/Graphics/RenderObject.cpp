@@ -197,32 +197,29 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
     shader->use();
 
     // Set material properties (e.g., diffuse color)
-    for (auto &kvp : data->materials)
+    const auto material = data->getGroup(name).material;
+    // Set shader uniform for material properties (diffuse, specular, etc.)
+    shader->setVec3("material.diffuse", material->diffuse);
+    shader->setVec3("material.specular", material->specular);
+    shader->setFloat("material.shininess", material->shininess);
+
+    shader->setInt("material.diffuseIndex", -1);
+    shader->setInt("material.specularIndex", -1);
+    shader->setInt("material.normalIndex", -1);
+
+    for (size_t i = 0; i < textureArray->getFilePaths().size(); i++)
     {
-        const auto material = data->materialLibraries[kvp.first]->getMaterial(kvp.second[0]);
-        // Set shader uniform for material properties (diffuse, specular, etc.)
-        shader->setVec3("material.diffuse", material->diffuse);
-        shader->setVec3("material.specular", material->specular);
-        shader->setFloat("material.shininess", material->shininess);
-
-        shader->setInt("material.diffuseIndex", -1);
-        shader->setInt("material.specularIndex", -1);
-        shader->setInt("material.normalIndex", -1);
-
-        for (size_t i = 0; i < textureArray->getFilePaths().size(); i++)
+        if (textureArray->getFilePaths()[i] == material->diffuseTexture)
         {
-            if (textureArray->getFilePaths()[i] == material->diffuseTexture)
-            {
-                shader->setInt("material.diffuseIndex", i);
-            }
-            else if (textureArray->getFilePaths()[i] == material->specularTexture)
-            {
-                shader->setInt("material.specularIndex", i);
-            }
-            else if (textureArray->getFilePaths()[i] == material->normalMap)
-            {
-                shader->setInt("material.normalIndex", i);
-            }
+            shader->setInt("material.diffuseIndex", i);
+        }
+        else if (textureArray->getFilePaths()[i] == material->specularTexture)
+        {
+            shader->setInt("material.specularIndex", i);
+        }
+        else if (textureArray->getFilePaths()[i] == material->normalMap)
+        {
+            shader->setInt("material.normalIndex", i);
         }
     }
 
