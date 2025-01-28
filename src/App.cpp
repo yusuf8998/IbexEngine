@@ -65,10 +65,10 @@ int main()
     root->addChild(makeNode<Renderable>("dynamic1"));
     root->addChild(makeNode<SkyboxNode>("skybox"));
 
-    auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine3.obj")->data, *RenderObject::GetRenderObject("res/Combine4.obj")->data);
-    RenderObject::AddRenderObject("res/Combine3.obj+res/Combine4.obj", std::make_shared<RenderObject>(combined));
+    auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine1.obj")->data, *RenderObject::GetRenderObject("res/Combine2.obj")->data);
+    RenderObject::AddRenderObject("res/Combine1.obj+res/Combine2.obj", std::make_shared<RenderObject>(combined));
 
-    castNode<Renderable>(root->children[0])->renderName = "res/Combine3.obj+res/Combine4.obj";
+    castNode<Renderable>(root->children[0])->renderName = "res/Combine1.obj+res/Combine2.obj";
     castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
 
     // NodePtr root;

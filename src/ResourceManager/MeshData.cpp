@@ -266,6 +266,55 @@ unsigned int MeshData::getTangentOffset() const
     return getVertexAttribute("tangent").size() / 3;
 }
 
+void MeshData::removeDuplicateVertices()
+{
+    std::vector<float> newPositions, newUVs, newNormals, newTangents;
+    std::vector<unsigned int> indexMap;
+    for (size_t i = 0; i < groups.size(); i++)
+    {
+        auto &group = groups[i];
+        std::vector<unsigned int> newIndices;
+        for (size_t j = 0; j < group.indices.size(); j += INDEX_PER_VERTEX)
+        {
+            std::array<unsigned int, INDEX_PER_VERTEX> vertex = {group.indices[j + POSITION_OFFSET], group.indices[j + UV_OFFSET], group.indices[j + NORMAL_OFFSET], group.indices[j + TANGENT_OFFSET]};
+            auto it = std::find(indexMap.begin(), indexMap.end(), vertex[0]);
+            if (it == indexMap.end())
+            {
+                indexMap.push_back(vertex[0]);
+                newPositions.push_back(vertexAttributes["position"][vertex[0] * 3 + 0]);
+                newPositions.push_back(vertexAttributes["position"][vertex[0] * 3 + 1]);
+                newPositions.push_back(vertexAttributes["position"][vertex[0] * 3 + 2]);
+                newUVs.push_back(vertexAttributes["uv"][vertex[1] * 2 + 0]);
+                newUVs.push_back(vertexAttributes["uv"][vertex[1] * 2 + 1]);
+                newNormals.push_back(vertexAttributes["normal"][vertex[2] * 3 + 0]);
+                newNormals.push_back(vertexAttributes["normal"][vertex[2] * 3 + 1]);
+                newNormals.push_back(vertexAttributes["normal"][vertex[2] * 3 + 2]);
+                newTangents.push_back(vertexAttributes["tangent"][vertex[3] * 3 + 0]);
+                newTangents.push_back(vertexAttributes["tangent"][vertex[3] * 3 + 1]);
+                newTangents.push_back(vertexAttributes["tangent"][vertex[3] * 3 + 2]);
+                newIndices.push_back(indexMap.size() - 1);
+            }
+            else
+            {
+                newIndices.push_back(it - indexMap.begin());
+            }
+        }
+        group.indices = newIndices;
+    }
+    vertexAttributes["position"] = newPositions;
+    vertexAttributes["uv"] = newUVs;
+    vertexAttributes["normal"] = newNormals;
+    vertexAttributes["tangent"] = newTangents;
+
+    for (auto &group : groups)
+    {
+        for (size_t i = 0; i < group.indices.size(); i++)
+        {
+            group.indices[i] = indexMap[group.indices[i]];
+        }
+    }
+}
+
 std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshData &b)
 {
     std::shared_ptr<MeshData> result = std::make_shared<MeshData>();
@@ -309,7 +358,7 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshD
         {
             if (aGroup.canCombine(bGroup))
             {
-                MeshGroup combinedGroup = MeshGroup::combineGroups(aGroup, bGroup, result->getPositionOffset(), result->getUVOffset(), result->getNormalOffset(), result->getTangentOffset());
+                MeshGroup combinedGroup = MeshGroup::CombineGroups(aGroup, bGroup, result->getPositionOffset(), result->getUVOffset(), result->getNormalOffset(), result->getTangentOffset());
 
                 combinedGroups[combinedGroup.material] = combinedGroup;
             }
@@ -345,7 +394,7 @@ void MeshData::FlattenGroupVector(std::vector<MeshGroup> &groups)
         {
             if (it->canCombine(*jt))
             {
-                *it = MeshGroup::combineGroups(*it, *jt, 0, 0, 0, 0);
+                *it = MeshGroup::CombineGroups(*it, *jt, 0, 0, 0, 0);
                 jt = groups.erase(jt);
             }
             else
@@ -476,7 +525,7 @@ std::vector<std::string> MeshGroup::getUsedTextures() const
     return textures;
 }
 
-MeshGroup MeshGroup::combineGroups(const MeshGroup &a, const MeshGroup &b, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset)
+MeshGroup MeshGroup::CombineGroups(const MeshGroup &a, const MeshGroup &b, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset)
 {
     if (a.vertexPerFace != b.vertexPerFace)
         throw std::runtime_error("Vertex per face mismatch");
