@@ -83,7 +83,7 @@ public:
     unsigned int getNormalOffset() const;
     unsigned int getTangentOffset() const;
 
-    void removeDuplicateVertices();
+    void removeDuplicateAttributes();
 
     friend class RenderObject;
     static std::shared_ptr<MeshData> CombineMeshes(const MeshData &a, const MeshData &b);
@@ -97,6 +97,10 @@ private:
 
     void generateGroup(const std::string &name);
     void UseMaterial(const std::string &materialName, MeshGroup &group);
+
+    bool compareAttributes(std::vector<float>::const_iterator &it, std::vector<float>::const_iterator &jt, unsigned int stride);
+    bool compareAttributes(std::vector<float>::iterator &it, std::vector<float>::iterator &jt, unsigned int stride);
+    void removeDuplicateAttribute(const std::string &name, unsigned int stride, std::map<unsigned int, unsigned int> &map);
 
     void calcTangentBitangentForMesh();
     void calcTangentBitangentForGroup(const std::string &groupName);

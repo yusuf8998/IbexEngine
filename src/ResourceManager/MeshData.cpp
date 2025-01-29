@@ -266,53 +266,74 @@ unsigned int MeshData::getTangentOffset() const
     return getVertexAttribute("tangent").size() / 3;
 }
 
-void MeshData::removeDuplicateVertices()
+bool MeshData::compareAttributes(std::vector<float>::const_iterator &it, std::vector<float>::const_iterator &jt, unsigned int stride)
 {
-    std::vector<float> newPositions, newUVs, newNormals, newTangents;
-    std::vector<unsigned int> indexMap;
-    for (size_t i = 0; i < groups.size(); i++)
+    for (unsigned int i = 0; i < stride; i++)
     {
-        auto &group = groups[i];
-        std::vector<unsigned int> newIndices;
-        for (size_t j = 0; j < group.indices.size(); j += INDEX_PER_VERTEX)
+        if (it[i] != jt[i])
+            return false;
+    }
+    return true;
+}
+
+bool MeshData::compareAttributes(std::vector<float>::iterator &it, std::vector<float>::iterator &jt, unsigned int stride)
+{
+    for (unsigned int i = 0; i < stride; i++)
+    {
+        if (it[i] != jt[i])
+            return false;
+    }
+    return true;
+}
+
+void MeshData::removeDuplicateAttribute(const std::string &name, unsigned int stride, std::map<unsigned int, unsigned int> &map)
+{
+    for (auto it = vertexAttributes[name].end() - stride; it != vertexAttributes[name].begin(); it -= stride)
+    {
+        for (auto jt = vertexAttributes[name].begin(); jt != it; jt += stride)
         {
-            std::array<unsigned int, INDEX_PER_VERTEX> vertex = {group.indices[j + POSITION_OFFSET], group.indices[j + UV_OFFSET], group.indices[j + NORMAL_OFFSET], group.indices[j + TANGENT_OFFSET]};
-            auto it = std::find(indexMap.begin(), indexMap.end(), vertex[0]);
-            if (it == indexMap.end())
+            if (compareAttributes(it, jt, stride))
             {
-                indexMap.push_back(vertex[0]);
-                newPositions.push_back(vertexAttributes["position"][vertex[0] * 3 + 0]);
-                newPositions.push_back(vertexAttributes["position"][vertex[0] * 3 + 1]);
-                newPositions.push_back(vertexAttributes["position"][vertex[0] * 3 + 2]);
-                newUVs.push_back(vertexAttributes["uv"][vertex[1] * 2 + 0]);
-                newUVs.push_back(vertexAttributes["uv"][vertex[1] * 2 + 1]);
-                newNormals.push_back(vertexAttributes["normal"][vertex[2] * 3 + 0]);
-                newNormals.push_back(vertexAttributes["normal"][vertex[2] * 3 + 1]);
-                newNormals.push_back(vertexAttributes["normal"][vertex[2] * 3 + 2]);
-                newTangents.push_back(vertexAttributes["tangent"][vertex[3] * 3 + 0]);
-                newTangents.push_back(vertexAttributes["tangent"][vertex[3] * 3 + 1]);
-                newTangents.push_back(vertexAttributes["tangent"][vertex[3] * 3 + 2]);
-                newIndices.push_back(indexMap.size() - 1);
-            }
-            else
-            {
-                newIndices.push_back(it - indexMap.begin());
+                map[(it - vertexAttributes[name].begin()) / stride] = (jt - vertexAttributes[name].begin()) / stride;
+                vertexAttributes[name].erase(it, it + stride);
+                break;
             }
         }
-        group.indices = newIndices;
     }
-    vertexAttributes["position"] = newPositions;
-    vertexAttributes["uv"] = newUVs;
-    vertexAttributes["normal"] = newNormals;
-    vertexAttributes["tangent"] = newTangents;
+}
+
+void MeshData::removeDuplicateAttributes()
+{
+    std::map<unsigned int, unsigned int> positionMap, uvMap, normalMap, tangentMap;
+    removeDuplicateAttribute("position", 3, positionMap);
+    removeDuplicateAttribute("uv", 2, uvMap);
+    removeDuplicateAttribute("normal", 3, normalMap);
+    removeDuplicateAttribute("tangent", 3, tangentMap);
 
     for (auto &group : groups)
     {
-        for (size_t i = 0; i < group.indices.size(); i++)
+        for (size_t i = 0; i < group.indices.size(); i += INDEX_PER_VERTEX)
         {
-            group.indices[i] = indexMap[group.indices[i]];
-        }
+            auto posIdx = group.indices[i + POSITION_OFFSET];
+            auto uvIdx = group.indices[i + UV_OFFSET];
+            auto normalIdx = group.indices[i + NORMAL_OFFSET];
+            auto tangentIdx = group.indices[i + TANGENT_OFFSET];
+
+            if (positionMap.count(posIdx) > 0)
+                group.indices[i + POSITION_OFFSET] = positionMap[posIdx];
+            if (uvMap.count(uvIdx) > 0)
+                group.indices[i + UV_OFFSET] = uvMap[uvIdx];
+            if (normalMap.count(normalIdx) > 0)
+                group.indices[i + NORMAL_OFFSET] = normalMap[normalIdx];
+            if (tangentMap.count(tangentIdx) > 0)
+                group.indices[i + TANGENT_OFFSET] = tangentMap[tangentIdx];
+        }   
     }
+
+    vertexAttributes["position"].shrink_to_fit();
+    vertexAttributes["uv"].shrink_to_fit();
+    vertexAttributes["normal"].shrink_to_fit();
+    vertexAttributes["tangent"].shrink_to_fit();
 }
 
 std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshData &b)

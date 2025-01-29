@@ -59,6 +59,45 @@ inline bool GLLogCall(const char *function, const char *file, int line)
     return true;
 }
 
+RenderObject::RenderObject(const std::string &filepath)
+    : RenderObject(ResourceManager::instance().getResource<MeshData>(filepath))
+{
+}
+RenderObject::RenderObject(std::shared_ptr<MeshData> data)
+    : data(data)
+{
+    if (Meshes[data->filepath] != nullptr)
+        throw std::runtime_error("Mesh already loaded");
+    data->removeDuplicateAttributes();
+    extractGroups();
+}
+
+std::shared_ptr<RenderObject> RenderObject::GetRenderObject(const std::string &name)
+{
+    if (Meshes.count(name) != 0)
+        return Meshes[name];
+    Meshes[name] = std::make_shared<RenderObject>(name);
+    return Meshes[name];
+}
+
+void RenderObject::AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object)
+{
+    Meshes[name] = object;
+}
+
+void RenderObject::ReleaseAllMeshes()
+{
+    Meshes.clear();
+}
+
+void RenderObject::reuploadToGLBuffers()
+{
+    for (auto &g : groups)
+    {
+        g.reuploadToGLBuffers();
+    }
+}
+
 std::unordered_map<std::string, std::shared_ptr<RenderObject>> RenderObject::Meshes = {};
 
 void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents)
@@ -129,6 +168,13 @@ TextureObject *RenderObject::loadTexture(const std::string &texturePath)
 
 ///////////////////////////////////////////////////////////////////////////
 
+RenderGroup::RenderGroup(const std::shared_ptr<MeshData> &data, const std::string &name)
+    : data(data), name(name)
+{
+    generateOpenGLBuffers();
+    populateOpenGLBuffers();
+}
+
 GLenum RenderGroup::getDrawMode() const
 {
     if (data->getVertexPerFace(name) == 0)
@@ -149,7 +195,7 @@ void RenderGroup::generateOpenGLBuffers()
     // Create an EBO (Element Buffer Object)
     glGenBuffers(1, &EBO);
 
-    indices = generateIndices(data->getFaceCount(name) * data->getVertexPerFace(name));
+    elementIndices = generateIndices(data->getFaceCount(name) * data->getVertexPerFace(name));
 }
 
 void RenderGroup::populateOpenGLBuffers()
@@ -169,7 +215,7 @@ void RenderGroup::populateOpenGLBuffers()
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementIndices.size() * sizeof(unsigned int), elementIndices.data(), GL_STATIC_DRAW);
 
     // Enable the vertex attributes
     // Position attribute
@@ -187,6 +233,16 @@ void RenderGroup::populateOpenGLBuffers()
     glBindVertexArray(0);
 
     textureArray = std::make_shared<TextureArrayObject>(data->getGroup(name).getUsedTextures());
+}
+
+void RenderGroup::reuploadToGLBuffers()
+{
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteVertexArrays(1, &VAO);
+
+    generateOpenGLBuffers();
+    populateOpenGLBuffers();
 }
 
 void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
@@ -236,7 +292,7 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
     shader->setVec3("viewPos", mainCamera.position);
 
     // Draw the mesh
-    GLCall(glDrawElements(getDrawMode(), indices.size(), GL_UNSIGNED_INT, indices.data()));
+    GLCall(glDrawElements(getDrawMode(), elementIndices.size(), GL_UNSIGNED_INT, elementIndices.data()));
 
     // Unbind the VAO
     glBindVertexArray(0);
@@ -248,7 +304,7 @@ void RenderGroup::renderRaw()
     glBindVertexArray(VAO);
 
     // Draw the mesh
-    GLCall(glDrawElements(getDrawMode(), indices.size(), GL_UNSIGNED_INT, indices.data()));
+    GLCall(glDrawElements(getDrawMode(), elementIndices.size(), GL_UNSIGNED_INT, elementIndices.data()));
 
     // Unbind the VAO
     glBindVertexArray(0);

@@ -20,21 +20,18 @@ public:
 
     friend class RenderObject;
 
-    RenderGroup(const std::shared_ptr<MeshData> &data, const std::string &name)
-        : data(data), name(name)
-    {
-        generateOpenGLBuffers();
-        populateOpenGLBuffers();
-    }
+    RenderGroup(const std::shared_ptr<MeshData> &data, const std::string &name);
 
 private:
     std::shared_ptr<MeshData> data;
     std::string name;
     GLuint VAO, VBO, EBO;
-    std::vector<unsigned int> indices = {};
+    std::vector<unsigned int> elementIndices = {};
 
     void generateOpenGLBuffers();
     void populateOpenGLBuffers();
+
+    void reuploadToGLBuffers();
 
     void render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation);
     void renderRaw();
@@ -48,38 +45,19 @@ public:
     std::shared_ptr<MeshData> data;
     std::vector<RenderGroup> groups;
 
-    inline RenderObject(const std::string &filepath)
-        : RenderObject(ResourceManager::instance().getResource<MeshData>(filepath))
-    {}
-    inline RenderObject(std::shared_ptr<MeshData> data)
-        : data(data)
-    {
-        if (Meshes[data->filepath] != nullptr)
-            throw std::runtime_error("Mesh already loaded");
-        extractGroups();
-    }
+    RenderObject(const std::string &filepath);
+    RenderObject(std::shared_ptr<MeshData> data);
 
     void render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation);
     void renderRaw();
     TextureObject *loadTexture(const std::string &texturePath);
 
-    static std::shared_ptr<RenderObject> GetRenderObject(const std::string &name)
-    {
-        if (Meshes.count(name) != 0)
-            return Meshes[name];
-        Meshes[name] = std::make_shared<RenderObject>(name);
-        return Meshes[name];
-    }
+    static std::shared_ptr<RenderObject> GetRenderObject(const std::string &name);
+    static void AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object);
+    static void ReleaseAllMeshes();
 
-    static void AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object)
-    {
-        Meshes[name] = object;
-    }
+    void reuploadToGLBuffers();
 
-    static void ReleaseAllMeshes()
-    {
-        Meshes.clear();
-    }
 private:
     void extractGroups();
 
