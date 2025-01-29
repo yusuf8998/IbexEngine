@@ -247,14 +247,16 @@ void RenderGroup::reuploadToGLBuffers()
 
 void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
 {
+    // Check for OpenGL errors
+    GLClearError();
+
     // Bind the VAO for rendering
-    glBindVertexArray(VAO);
+    GLCall(glBindVertexArray(VAO));
 
     shader->use();
 
     // Set material properties (e.g., diffuse color)
     const auto &material = data->getGroup(name).material;
-    // Set shader uniform for material properties (diffuse, specular, etc.)
     shader->setVec3("material.diffuse", material->diffuse);
     shader->setVec3("material.specular", material->specular);
     shader->setFloat("material.shininess", material->shininess);
@@ -292,10 +294,15 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
     shader->setVec3("viewPos", mainCamera.position);
 
     // Draw the mesh
-    GLCall(glDrawElements(getDrawMode(), elementIndices.size(), GL_UNSIGNED_INT, elementIndices.data()));
+    // GLCall(glDrawElements(getDrawMode(), elementIndices.size(), GL_UNSIGNED_INT, elementIndices.data()));
+
+    GLCall(glDrawArrays(getDrawMode(), 0, data->getFaceCount(name) * data->getVertexPerFace(name)));
 
     // Unbind the VAO
     glBindVertexArray(0);
+
+    // Check for OpenGL errors
+    ASSERT(GLLogCall("glDrawElements", __FILE__, __LINE__));
 }
 
 void RenderGroup::renderRaw()

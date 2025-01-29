@@ -411,8 +411,8 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::
     std::vector<MeshGroup> uniqueGroups;
 
     // Combine groups in meshes seperately
-    FlattenGroupVector(aGroups);
-    FlattenGroupVector(bGroups);
+    FlattenGroups(aGroups);
+    FlattenGroups(bGroups);
 
     // Combine groups between meshes
     for (auto &aGroup : aGroups)
@@ -433,8 +433,10 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::
     }
     for (auto &bGroup : bGroups)
     {
-        if (combinedGroups.count(bGroup.material) == 0)
-            uniqueGroups.push_back(bGroup);
+        if (combinedGroups.count(bGroup.material) != 0)
+            continue;
+        bGroup.offsetIndices(result->getPositionOffset(), result->getUVOffset(), result->getNormalOffset(), result->getTangentOffset());
+        uniqueGroups.push_back(bGroup);
     }
 
     // Set offsets for transformations
@@ -504,7 +506,7 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const std::vector<MeshData> &m
     return result;
 }
 
-void MeshData::FlattenGroupVector(std::vector<MeshGroup> &groups)
+void MeshData::FlattenGroups(std::vector<MeshGroup> &groups)
 {
     for (auto it = groups.begin(); it != groups.end(); ++it)
     {
@@ -674,4 +676,15 @@ MeshGroup MeshGroup::CombineGroups(const MeshGroup &a, const MeshGroup &b, unsig
 bool MeshGroup::canCombine(const MeshGroup &other) const
 {
     return vertexPerFace == other.vertexPerFace && material == other.material;
+}
+
+void MeshGroup::offsetIndices(unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset)
+{
+    for (size_t i = 0; i < indices.size() / INDEX_PER_VERTEX; i++)
+    {
+        indices[i * INDEX_PER_VERTEX + POSITION_OFFSET] += positionOffset;
+        indices[i * INDEX_PER_VERTEX + UV_OFFSET] += uvOffset;
+        indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET] += normalOffset;
+        indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET] += tangentOffset;
+    }
 }

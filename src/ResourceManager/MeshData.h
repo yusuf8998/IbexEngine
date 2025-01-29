@@ -46,6 +46,7 @@ public:
 private:
     static MeshGroup CombineGroups(const MeshGroup &a, const MeshGroup &b, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset);
     bool canCombine(const MeshGroup &other) const;
+    void offsetIndices(unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset);
 };
 
 class RenderObject;
@@ -91,7 +92,7 @@ public:
     static std::shared_ptr<MeshData> CombineMeshes(const MeshData &a, const glm::mat4 &a_tr, const MeshData &b, const glm::mat4 &b_tr);
     static std::shared_ptr<MeshData> CombineMeshes(const std::vector<std::shared_ptr<MeshData>> &meshes, const std::vector<glm::mat4> &transforms);
     static std::shared_ptr<MeshData> CombineMeshes(const std::vector<MeshData> &meshes, const std::vector<glm::mat4> &transforms);
-    static void FlattenGroupVector(std::vector<MeshGroup> &groups);
+    static void FlattenGroups(std::vector<MeshGroup> &groups);
 
     friend class RenderObject;
 

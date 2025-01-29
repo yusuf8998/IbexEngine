@@ -49,7 +49,7 @@ bool TestMeshDataNormalizeGroupVector()
 
     std::vector<MeshGroup> groups = {group1, group2};
 
-    MeshData::FlattenGroupVector(groups);
+    MeshData::FlattenGroups(groups);
 
     return groups.size() == 1 && groups[0].name == expectedGroup.name && groups[0].indices == expectedGroup.indices && groups[0].material == expectedGroup.material && groups[0].vertexPerFace == expectedGroup.vertexPerFace;
 }
@@ -73,13 +73,6 @@ int main()
 
     castNode<Renderable>(root->children[0])->renderName = "res/Combine1.obj+res/Combine2.obj";
     castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
-
-    // auto obj = RenderObject::GetRenderObject("res/Combine1.obj+res/Combine2.obj");
-
-    // printf("pos count: %lu\n", obj->data->getVertexAttribute("position").size());
-    // obj->data->removeDuplicateAttributes();
-    // obj->reuploadToGLBuffers();
-    // printf("pos count: %lu\n", obj->data->getVertexAttribute("position").size());
 
     // NodePtr root;
     // loadSceneGraph("root.json", root);
