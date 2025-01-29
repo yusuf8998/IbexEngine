@@ -74,12 +74,12 @@ int main()
     castNode<Renderable>(root->children[0])->renderName = "res/Combine1.obj+res/Combine2.obj";
     castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
 
-    auto obj = RenderObject::GetRenderObject("res/Combine1.obj+res/Combine2.obj");
+    // auto obj = RenderObject::GetRenderObject("res/Combine1.obj+res/Combine2.obj");
 
-    printf("pos count: %lu\n", obj->data->getVertexAttribute("position").size());
-    obj->data->removeDuplicateAttributes();
-    obj->reuploadToGLBuffers();
-    printf("pos count: %lu\n", obj->data->getVertexAttribute("position").size());
+    // printf("pos count: %lu\n", obj->data->getVertexAttribute("position").size());
+    // obj->data->removeDuplicateAttributes();
+    // obj->reuploadToGLBuffers();
+    // printf("pos count: %lu\n", obj->data->getVertexAttribute("position").size());
 
     // NodePtr root;
     // loadSceneGraph("root.json", root);

@@ -253,7 +253,7 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
     shader->use();
 
     // Set material properties (e.g., diffuse color)
-    const auto material = data->getGroup(name).material;
+    const auto &material = data->getGroup(name).material;
     // Set shader uniform for material properties (diffuse, specular, etc.)
     shader->setVec3("material.diffuse", material->diffuse);
     shader->setVec3("material.specular", material->specular);
