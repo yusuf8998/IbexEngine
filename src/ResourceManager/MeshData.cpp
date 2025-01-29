@@ -336,7 +336,51 @@ void MeshData::removeDuplicateAttributes()
     vertexAttributes["tangent"].shrink_to_fit();
 }
 
-std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshData &b)
+void MeshData::applyTransformation(const glm::mat4 &transformation)
+{
+    std::vector<unsigned int> posIndices, normalIndices, tangentIndices;
+    for (unsigned int i = 0; i < getPositionOffset(); i++)
+        posIndices.push_back(i);
+    for (unsigned int i = 0; i < getNormalOffset(); i++)
+        normalIndices.push_back(i);
+    for (unsigned int i = 0; i < getTangentOffset(); i++)
+        tangentIndices.push_back(i);
+    applyTransformationToIndices(transformation, posIndices, normalIndices, tangentIndices);
+}
+
+void MeshData::applyTransformationToIndices(const glm::mat4 &transformation, const std::vector<unsigned int> &posIndices, const std::vector<unsigned int> &normalIndices, const std::vector<unsigned int> &tangentIndices)
+{
+    glm::mat4 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transformation)));
+    for (unsigned int i = 0; i < posIndices.size(); i++)
+    {
+        auto index = posIndices[i];
+        glm::vec4 position(vertexAttributes["position"][index * 3 + 0], vertexAttributes["position"][index * 3 + 1], vertexAttributes["position"][index * 3 + 2], 1.0f);
+        position = transformation * position;
+        vertexAttributes["position"][index * 3 + 0] = position.x;
+        vertexAttributes["position"][index * 3 + 1] = position.y;
+        vertexAttributes["position"][index * 3 + 2] = position.z;
+    }
+    for (unsigned int i = 0; i < normalIndices.size(); i++)
+    {
+        auto index = normalIndices[i];
+        glm::vec4 normal(vertexAttributes["normal"][index * 3 + 0], vertexAttributes["normal"][index * 3 + 1], vertexAttributes["normal"][index * 3 + 2], 1.0f);
+        normal = glm::normalize(normalMatrix * normal);
+        vertexAttributes["normal"][index * 3 + 0] = normal.x;
+        vertexAttributes["normal"][index * 3 + 1] = normal.y;
+        vertexAttributes["normal"][index * 3 + 2] = normal.z;
+    }
+    for (unsigned int i = 0; i < tangentIndices.size(); i++)
+    {
+        auto index = tangentIndices[i];
+        glm::vec4 tangent(vertexAttributes["tangent"][index * 3 + 0], vertexAttributes["tangent"][index * 3 + 1], vertexAttributes["tangent"][index * 3 + 2], 1.0f);
+        tangent = glm::normalize(normalMatrix * tangent);
+        vertexAttributes["tangent"][index * 3 + 0] = tangent.x;
+        vertexAttributes["tangent"][index * 3 + 1] = tangent.y;
+        vertexAttributes["tangent"][index * 3 + 2] = tangent.z;
+    }
+}
+
+std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::mat4 &a_tr, const MeshData &b, const glm::mat4 &b_tr)
 {
     std::shared_ptr<MeshData> result = std::make_shared<MeshData>();
     result->objectName = a.objectName + "+" + b.objectName;
@@ -369,8 +413,6 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshD
     // Combine groups in meshes seperately
     FlattenGroupVector(aGroups);
     FlattenGroupVector(bGroups);
-    
-    // This doesn't work
 
     // Combine groups between meshes
     for (auto &aGroup : aGroups)
@@ -380,7 +422,6 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshD
             if (aGroup.canCombine(bGroup))
             {
                 MeshGroup combinedGroup = MeshGroup::CombineGroups(aGroup, bGroup, result->getPositionOffset(), result->getUVOffset(), result->getNormalOffset(), result->getTangentOffset());
-
                 combinedGroups[combinedGroup.material] = combinedGroup;
             }
         }
@@ -395,15 +436,71 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const MeshD
         if (combinedGroups.count(bGroup.material) == 0)
             uniqueGroups.push_back(bGroup);
     }
+
+    // Set offsets for transformations
+    unsigned int positionOffset = result->getPositionOffset();
+    unsigned int normalOffset = result->getNormalOffset();
+    unsigned int tangentOffset = result->getTangentOffset();
+
+    // Set indices for transformation a
+    std::vector<unsigned int> posIndices, normalIndices, tangentIndices;
+    for (unsigned int i = 0; i < positionOffset; i++)
+        posIndices.push_back(i);
+    for (unsigned int i = 0; i < normalOffset; i++)
+        normalIndices.push_back(i);
+    for (unsigned int i = 0; i < tangentOffset; i++)
+        tangentIndices.push_back(i);
+    
+    // Apply transformations a to vertices
+    result->applyTransformationToIndices(a_tr, posIndices, normalIndices, tangentIndices);
+
+    // Add vertex attributes from mesh b
     for (const auto &kvp : result->vertexAttributes)
     {
         std::copy(b.vertexAttributes.at(kvp.first).begin(), b.vertexAttributes.at(kvp.first).end(), std::inserter(result->vertexAttributes.at(kvp.first), result->vertexAttributes.at(kvp.first).end()));
     }
     
+    // Update offsets and indices for transformation b
+    posIndices.clear(); normalIndices.clear(); tangentIndices.clear();
+    for (unsigned int i = positionOffset; i < result->getPositionOffset(); i++)
+        posIndices.push_back(i);
+    for (unsigned int i = normalOffset; i < result->getNormalOffset(); i++)
+        normalIndices.push_back(i);
+    for (unsigned int i = tangentOffset; i < result->getTangentOffset(); i++)
+        tangentIndices.push_back(i);
+    
+    // Apply transformations b to vertices
+    result->applyTransformationToIndices(b_tr, posIndices, normalIndices, tangentIndices);
+    
     // Copy combined groups to result
     result->groups = std::vector<MeshGroup>(combinedGroups.size());
     std::transform(combinedGroups.begin(), combinedGroups.end(), result->groups.begin(), [](const std::pair<std::shared_ptr<Material>, MeshGroup> &kvp) { return kvp.second; });
     std::copy(uniqueGroups.begin(), uniqueGroups.end(), std::back_inserter(result->groups));
+    return result;
+}
+
+std::shared_ptr<MeshData> MeshData::CombineMeshes(const std::vector<std::shared_ptr<MeshData>> &meshes, const std::vector<glm::mat4> &transforms)
+{
+    if (meshes.size() != transforms.size())
+        throw std::runtime_error("Meshes and transforms size mismatch");
+    std::shared_ptr<MeshData> result = meshes[0];
+    result->applyTransformation(transforms[0]);
+    for (size_t i = 1; i < meshes.size(); i++)
+    {
+        result = CombineMeshes(*result, glm::mat4(1.0f), *meshes[i], transforms[i]);
+    }
+    return result;
+}
+std::shared_ptr<MeshData> MeshData::CombineMeshes(const std::vector<MeshData> &meshes, const std::vector<glm::mat4> &transforms)
+{
+    if (meshes.size() != transforms.size())
+        throw std::runtime_error("Meshes and transforms size mismatch");
+    std::shared_ptr<MeshData> result = std::make_shared<MeshData>(meshes[0]);
+    result->applyTransformation(transforms[0]);
+    for (size_t i = 1; i < meshes.size(); i++)
+    {
+        result = CombineMeshes(*result, glm::mat4(1.0f), meshes[i], transforms[i]);
+    }
     return result;
 }
 

@@ -85,9 +85,15 @@ public:
 
     void removeDuplicateAttributes();
 
-    friend class RenderObject;
-    static std::shared_ptr<MeshData> CombineMeshes(const MeshData &a, const MeshData &b);
+    void applyTransformation(const glm::mat4 &transformation);
+    void applyTransformationToIndices(const glm::mat4 &transformation, const std::vector<unsigned int> &posIndices, const std::vector<unsigned int> &normalIndices, const std::vector<unsigned int> &tangentIndices);
+
+    static std::shared_ptr<MeshData> CombineMeshes(const MeshData &a, const glm::mat4 &a_tr, const MeshData &b, const glm::mat4 &b_tr);
+    static std::shared_ptr<MeshData> CombineMeshes(const std::vector<std::shared_ptr<MeshData>> &meshes, const std::vector<glm::mat4> &transforms);
+    static std::shared_ptr<MeshData> CombineMeshes(const std::vector<MeshData> &meshes, const std::vector<glm::mat4> &transforms);
     static void FlattenGroupVector(std::vector<MeshGroup> &groups);
+
+    friend class RenderObject;
 
 private:
     std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes: position, uv, normal, tangent, bitangent
