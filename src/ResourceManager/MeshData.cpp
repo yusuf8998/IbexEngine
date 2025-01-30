@@ -473,11 +473,16 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::
     
     // Apply transformations b to vertices
     result->applyTransformationToIndices(b_tr, posIndices, normalIndices, tangentIndices);
-    
+
     // Copy combined groups to result
     result->groups = std::vector<MeshGroup>(combinedGroups.size());
     std::transform(combinedGroups.begin(), combinedGroups.end(), result->groups.begin(), [](const std::pair<std::shared_ptr<Material>, MeshGroup> &kvp) { return kvp.second; });
     std::copy(uniqueGroups.begin(), uniqueGroups.end(), std::back_inserter(result->groups));
+
+    // Recalculate tangents
+    result->vertexAttributes["tangent"].clear();
+    result->calcTangentBitangentForMesh();
+
     return result;
 }
 
