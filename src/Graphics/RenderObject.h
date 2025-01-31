@@ -53,7 +53,7 @@ public:
     TextureObject *loadTexture(const std::string &texturePath);
 
     static std::shared_ptr<RenderObject> GetRenderObject(const std::string &name);
-    static void AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object);
+    static std::shared_ptr<RenderObject> AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object);
     static void ReleaseAllMeshes();
 
     void reuploadToGLBuffers();

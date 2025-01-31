@@ -80,9 +80,10 @@ std::shared_ptr<RenderObject> RenderObject::GetRenderObject(const std::string &n
     return Meshes[name];
 }
 
-void RenderObject::AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object)
+std::shared_ptr<RenderObject> RenderObject::AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object)
 {
     Meshes[name] = object;
+    return Meshes[name];
 }
 
 void RenderObject::ReleaseAllMeshes()
