@@ -17,6 +17,13 @@ layout(location = 3) out vec3 f_tangentViewPos;
 layout(location = 4) out vec3 f_tangentFragPos;
 layout(location = 5) out vec3 f_fragNormal;
 
+vec3 GetNormal()
+{
+   vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
+   vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
+   return normalize(cross(a, b));
+} 
+
 void main() {
     // Pass through the input vertices to the output
     f_fragPos = g_fragPos[0];

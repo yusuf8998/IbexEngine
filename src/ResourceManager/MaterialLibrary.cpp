@@ -43,6 +43,16 @@ bool MaterialLibrary::loadMaterialsFromMTL(const std::string &mtlFilePath)
     return true;
 }
 
+std::string MaterialLibrary::findMaterialName(const std::shared_ptr<Material> &mat) const
+{
+    for (const auto &kvp : materials)
+    {
+        if (mat == kvp.second)
+            return kvp.first;
+    }
+    throw std::runtime_error("Can't find name from given material");
+}
+
 void MaterialLibrary::parseMTLLine(const std::string &line, std::shared_ptr<Material> &currentMaterial, std::string &currentName)
 {
     if (line.empty())

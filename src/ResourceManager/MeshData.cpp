@@ -374,7 +374,8 @@ void MeshData::applyTransformation(const glm::mat4 &transformation)
 
 void MeshData::applyTransformationToIndices(const glm::mat4 &transformation, const std::vector<unsigned int> &posIndices, const std::vector<unsigned int> &normalIndices, const std::vector<unsigned int> &tangentIndices)
 {
-    glm::mat4 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transformation)));
+    if (transformation == glm::mat4(1.f))
+        return;
     for (unsigned int i = 0; i < posIndices.size(); i++)
     {
         auto index = posIndices[i];
@@ -384,6 +385,9 @@ void MeshData::applyTransformationToIndices(const glm::mat4 &transformation, con
         vertexAttributes["position"][index * 3 + 1] = position.y;
         vertexAttributes["position"][index * 3 + 2] = position.z;
     }
+    glm::mat4 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transformation)));
+    if (normalMatrix == glm::mat4(1.f))
+        return;
     for (unsigned int i = 0; i < normalIndices.size(); i++)
     {
         auto index = normalIndices[i];
@@ -402,6 +406,79 @@ void MeshData::applyTransformationToIndices(const glm::mat4 &transformation, con
         vertexAttributes["tangent"][index * 3 + 1] = tangent.y;
         vertexAttributes["tangent"][index * 3 + 2] = tangent.z;
     }
+}
+
+std::string MeshData::getMaterialName(const MeshGroup &group) const
+{
+    for (const auto &kvp : materials)
+    {
+        for (const auto &mat : kvp.second)
+        {
+            if (group.material == materialLibraries.at(kvp.first)->getMaterial(mat))
+                return mat;
+        }
+    }
+    throw std::runtime_error("Can't the material associated with given group!");
+}
+
+void MeshData::exportObject(const std::string &filepath) const
+{
+    std::ofstream outFile(filepath);
+    if (!outFile.is_open())
+    {
+        std::cerr << "Error: Could not open file " << filepath << std::endl;
+        return;
+    }
+
+    // Write object name
+    outFile << "o " << objectName << "\n";
+
+    for (const auto &kvp : materialLibraries)
+    {
+        outFile << "mtllib " <<  kvp.first << "\n";
+    }
+
+    // Write vertex positions
+    const auto &positions = vertexAttributes.at("position");
+    for (size_t i = 0; i < positions.size(); i += 3)
+    {
+        outFile << "v " << positions[i] << " " << positions[i + 1] << " " << positions[i + 2] << "\n";
+    }
+
+    // Write vertex texture coordinates
+    const auto &uvs = vertexAttributes.at("uv");
+    for (size_t i = 0; i < uvs.size(); i += 2)
+    {
+        outFile << "vt " << uvs[i] << " " << uvs[i + 1] << "\n";
+    }
+
+    // Write vertex normals
+    const auto &normals = vertexAttributes.at("normal");
+    for (size_t i = 0; i < normals.size(); i += 3)
+    {
+        outFile << "vn " << normals[i] << " " << normals[i + 1] << " " << normals[i + 2] << "\n";
+    }
+
+    // Write faces
+    for (const auto &group : groups)
+    {
+        outFile << "g " << group.name << "\n";
+        outFile << "usemtl " << getMaterialName(group) << '\n';
+        for (size_t i = 0; i < group.indices.size(); i += INDEX_PER_VERTEX * group.vertexPerFace)
+        {
+            outFile << "f";
+            for (size_t j = 0; j < group.vertexPerFace; ++j)
+            {
+                unsigned int posIdx = group.indices[i + j * INDEX_PER_VERTEX + POSITION_OFFSET] + 1;
+                unsigned int uvIdx = group.indices[i + j * INDEX_PER_VERTEX + UV_OFFSET] + 1;
+                unsigned int normalIdx = group.indices[i + j * INDEX_PER_VERTEX + NORMAL_OFFSET] + 1;
+                outFile << " " << posIdx << "/" << uvIdx << "/" << normalIdx;
+            }
+            outFile << "\n";
+        }
+    }
+
+    outFile.close();
 }
 
 std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::mat4 &a_tr, const MeshData &b, const glm::mat4 &b_tr)
@@ -481,9 +558,9 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::
     result->applyTransformationToIndices(a_tr, posIndices, normalIndices, tangentIndices);
 
     // Add vertex attributes from mesh b
-    for (const auto &kvp : result->vertexAttributes)
+    for (auto &kvp : result->vertexAttributes)
     {
-        std::copy(b.vertexAttributes.at(kvp.first).begin(), b.vertexAttributes.at(kvp.first).end(), std::inserter(result->vertexAttributes.at(kvp.first), result->vertexAttributes.at(kvp.first).end()));
+        std::copy(b.vertexAttributes.at(kvp.first).begin(), b.vertexAttributes.at(kvp.first).end(), std::back_inserter(kvp.second));
     }
     
     // Update offsets and indices for transformation b
@@ -499,13 +576,13 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::
     result->applyTransformationToIndices(b_tr, posIndices, normalIndices, tangentIndices);
 
     // Copy combined groups to result
-    result->groups = std::vector<MeshGroup>(combinedGroups.size());
+    result->groups = std::vector<MeshGroup>();
     std::transform(combinedGroups.begin(), combinedGroups.end(), result->groups.begin(), [](const std::pair<std::shared_ptr<Material>, MeshGroup> &kvp) { return kvp.second; });
     std::copy(uniqueGroups.begin(), uniqueGroups.end(), std::back_inserter(result->groups));
 
     // Recalculate tangents
-    result->vertexAttributes["tangent"].clear();
-    result->calcTangentBitangentForMesh();
+    // result->vertexAttributes["tangent"].clear();
+    // result->calcTangentBitangentForMesh();
 
     return result;
 }

@@ -23,6 +23,8 @@ public:
 
     bool loadMaterialsFromMTL(const std::string &mtlFilePath);
 
+    std::string findMaterialName(const std::shared_ptr<Material> &mat) const;
+
 private:
     std::unordered_map<std::string, std::shared_ptr<Material>> materials;
 
