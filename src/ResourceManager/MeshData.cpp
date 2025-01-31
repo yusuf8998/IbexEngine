@@ -56,7 +56,7 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
 }
 #include "algorithm"
 #include <glm/gtx/string_cast.hpp>
-void MeshData::UseMaterial(const std::string &materialName, MeshGroup &group)
+void MeshData::useMaterial(const std::string &materialName, MeshGroup &group)
 {
     for (auto it = materialLibraries.begin(); it != materialLibraries.end(); it++)
     {
@@ -73,7 +73,7 @@ void MeshData::generateGroup(const std::string &name)
     groups.push_back(MeshGroup{currentGroupName});
     if (queuedMaterialLibrary != "")
     {
-        UseMaterial(queuedMaterialLibrary, groups.back());
+        useMaterial(queuedMaterialLibrary, groups.back());
     }
 }
 void MeshData::parseOBJLine(const std::string &line)
@@ -157,7 +157,7 @@ void MeshData::parseOBJLine(const std::string &line)
         if (tokens.size() != 2)
             throw std::runtime_error("Token size for material usage is not correct");
         if (hasGroup(currentGroupName))
-            UseMaterial(tokens[1], getGroup(currentGroupName));
+            useMaterial(tokens[1], getGroup(currentGroupName));
         else
             queuedMaterialLibrary = tokens[1];
     }
@@ -299,6 +299,30 @@ void MeshData::removeDuplicateAttribute(const std::string &name, unsigned int st
                 break;
             }
         }
+    }
+}
+
+void MeshData::normalizeNormals()
+{
+    for (size_t i = 0 ; i < vertexAttributes["normal"].size() / 3; i++)
+    {
+        glm::vec3 normal(vertexAttributes["normal"][i * 3 + 0], vertexAttributes["normal"][i * 3 + 1], vertexAttributes["normal"][i * 3 + 2]);
+        normal = glm::normalize(normal);
+        vertexAttributes["normal"][i * 3 + 0] = normal.x;
+        vertexAttributes["normal"][i * 3 + 1] = normal.y;
+        vertexAttributes["normal"][i * 3 + 2] = normal.z;
+    }
+}
+
+void MeshData::normalizeTangents()
+{
+    for (size_t i = 0 ; i < vertexAttributes["tangent"].size() / 3; i++)
+    {
+        glm::vec3 tangent(vertexAttributes["tangent"][i * 3 + 0], vertexAttributes["tangent"][i * 3 + 1], vertexAttributes["tangent"][i * 3 + 2]);
+        tangent = glm::normalize(tangent);
+        vertexAttributes["tangent"][i * 3 + 0] = tangent.x;
+        vertexAttributes["tangent"][i * 3 + 1] = tangent.y;
+        vertexAttributes["tangent"][i * 3 + 2] = tangent.z;
     }
 }
 
@@ -478,6 +502,14 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::
     result->groups = std::vector<MeshGroup>(combinedGroups.size());
     std::transform(combinedGroups.begin(), combinedGroups.end(), result->groups.begin(), [](const std::pair<std::shared_ptr<Material>, MeshGroup> &kvp) { return kvp.second; });
     std::copy(uniqueGroups.begin(), uniqueGroups.end(), std::back_inserter(result->groups));
+
+    result->normalizeNormals();
+
+    // result->vertexAttributes["tangent"].clear();
+    // result->calcTangentBitangentForMesh();
+
+    result->normalizeTangents();
+
     return result;
 }
 
@@ -527,9 +559,9 @@ void MeshData::FlattenGroups(std::vector<MeshGroup> &groups)
 
 void MeshData::CalcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
 {
-    // glm::vec3 face_normal = normals[0];
-    // if (normals[0] != normals[1] || normals[1] != normals[2])
-    //     face_normal = (normals[0] + normals[1] + normals[2]) / 3.0f;
+    glm::vec3 face_normal = normals[0];
+    if (normals[0] != normals[1] || normals[1] != normals[2])
+        face_normal = (normals[0] + normals[1] + normals[2]) / 3.0f;
 
     glm::vec3 edge1 = positions[1] - positions[0];
     glm::vec3 edge2 = positions[2] - positions[0];
@@ -552,8 +584,8 @@ void MeshData::CalcTangentBitangentForTri(const std::array<glm::vec3, 3> &positi
     tangent = glm::normalize(tangent);
     bitangent = glm::normalize(bitangent);
 
-    // if (glm::dot(tangent, bitangent) > 0.01f || glm::dot(tangent, face_normal) > 0.01f || glm::dot(bitangent, face_normal) > 0.01f)
-    //     throw std::runtime_error("Tangent, bitangent, and normal are not orthogonal");
+    if (glm::dot(tangent, bitangent) > 0.01f || glm::dot(tangent, face_normal) > 0.01f || glm::dot(bitangent, face_normal) > 0.01f)
+        throw std::runtime_error("Tangent, bitangent, and normal are not orthogonal");
 }
 
 std::vector<std::vector<float>> MeshData::getFace(const std::string &groupName, unsigned int face_index)
