@@ -64,7 +64,7 @@ private:
     static std::unordered_map<std::string, std::shared_ptr<RenderObject>> Meshes;
 };
 
-void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, std::array<VertexAttrib, INDEX_PER_VERTEX> &attribs);
+void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::array<VertexAttrib, INDEX_PER_VERTEX> &attribs);
 
 // inline std::vector<unsigned int> generateIndices(int numVertices)
 // {

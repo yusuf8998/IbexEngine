@@ -11,7 +11,7 @@ void BillboardNode::render(const std::shared_ptr<ShaderObject> &_shader)
     if (!renderObject)
     {
         auto data = std::make_shared<MeshData>();
-        data->loadFromSource("v 0.000000 0.000000 0.000000\np 1");
+        data->loadFromSource("v 0.000000 0.000000 0.000000\np 1", false);
         renderObject = RenderObject::AddRenderObject(name, std::make_shared<RenderObject>(data));
     }
     auto shader = resolveShader(_shader);

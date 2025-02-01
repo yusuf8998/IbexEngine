@@ -68,7 +68,6 @@ RenderObject::RenderObject(std::shared_ptr<MeshData> data)
 {
     if (Meshes[data->filepath] != nullptr)
         throw std::runtime_error("Mesh already loaded");
-    data->removeDuplicateAttributes();
     extractGroups();
 }
 
@@ -101,7 +100,7 @@ void RenderObject::reuploadToGLBuffers()
 
 std::unordered_map<std::string, std::shared_ptr<RenderObject>> RenderObject::Meshes = {};
 
-void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, std::array<VertexAttrib, INDEX_PER_VERTEX> &attribs)
+void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::array<VertexAttrib, INDEX_PER_VERTEX> &attribs)
 {
     for (size_t i = 0; i < group.indices.size(); i++)
     {
@@ -110,7 +109,12 @@ void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, std::array
             unsigned int idx = group.indices[i][j];
             unsigned stride = attribs[j].getStride();
             for (unsigned int k = 0; k < stride; k++)
-                vertexData->push_back(attribs[j].values[idx * stride + k]);
+            {
+                if (attribs[j].values.size() != 0)
+                    vertexData->push_back(attribs[j].values[idx * stride + k]);
+                else
+                    vertexData->push_back(0.f);
+            }
         }
     }
 }

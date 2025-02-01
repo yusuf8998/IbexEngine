@@ -40,6 +40,9 @@ int main()
     root->addChild(makeNode<BillboardNode>("billboard1"));
     root->addChild(makeNode<SkyboxNode>("skybox"));
 
+    castNode<BillboardNode>(root->children[1])->getTransform().translate(glm::vec3(0, 1, 0));
+    castNode<BillboardNode>(root->children[1])->getTransform().rescale(glm::vec3(2.f));
+
     // glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 1));
 
     // auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine1.obj")->data, glm::mat4(1.f), *RenderObject::GetRenderObject("res/Combine2.obj")->data, glm::mat4(1.f));
