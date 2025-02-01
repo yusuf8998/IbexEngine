@@ -472,6 +472,9 @@ std::array<VertexAttrib, INDEX_PER_VERTEX> &MeshData::getAttribs()
     return vertexAttributes;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::mat4 &a_tr, const MeshData &b, const glm::mat4 &b_tr)
 {
     std::shared_ptr<MeshData> result = std::make_shared<MeshData>();
@@ -585,7 +588,7 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const std::vector<std::shared_
 {
     if (meshes.size() != transforms.size())
         throw std::runtime_error("Meshes and transforms size mismatch");
-    std::shared_ptr<MeshData> result = meshes[0];
+    std::shared_ptr<MeshData> result = std::make_shared<MeshData>(*meshes[0]);
     result->applyTransformation(transforms[0]);
     for (size_t i = 1; i < meshes.size(); i++)
     {
@@ -624,6 +627,8 @@ void MeshData::FlattenGroups(std::vector<MeshGroup> &groups)
         }
     }
 }
+
+#pragma GCC diagnostic pop
 
 void MeshData::CalcTangentBitangentForTri(const std::array<glm::vec3, 3> &positions, const std::array<glm::vec2, 3> &uvs, const std::array<glm::vec3, 3> &normals, glm::vec3 &tangent, glm::vec3 &bitangent)
 {

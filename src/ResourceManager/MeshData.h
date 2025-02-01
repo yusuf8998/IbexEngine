@@ -130,6 +130,7 @@ public:
     friend class MeshData;
 
 private:
+    [[deprecated("Combine 'em yourself")]]
     static MeshGroup CombineGroups(const MeshGroup &a, const MeshGroup &b, unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset);
     bool canCombine(const MeshGroup &other) const;
     void offsetIndices(unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset);
@@ -181,9 +182,13 @@ public:
 
     std::array<VertexAttrib, INDEX_PER_VERTEX> &getAttribs();
 
+    [[deprecated("Combine 'em yourself")]]
     static std::shared_ptr<MeshData> CombineMeshes(const MeshData &a, const glm::mat4 &a_tr, const MeshData &b, const glm::mat4 &b_tr);
+    [[deprecated("Combine 'em yourself")]]
     static std::shared_ptr<MeshData> CombineMeshes(const std::vector<std::shared_ptr<MeshData>> &meshes, const std::vector<glm::mat4> &transforms);
+    [[deprecated("Combine 'em yourself")]]
     static std::shared_ptr<MeshData> CombineMeshes(const std::vector<MeshData> &meshes, const std::vector<glm::mat4> &transforms);
+    [[deprecated("Combine 'em yourself")]]
     static void FlattenGroups(std::vector<MeshGroup> &groups);
 
     friend class RenderObject;

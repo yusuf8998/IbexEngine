@@ -30,6 +30,7 @@ int main()
     auto &renderer = Renderer::instance();
     renderer.loadShader(0, "res/Shaders/Shader_Illum/vertex_illum.glsl", "res/Shaders/Shader_Illum/geometry_illum.glsl", "res/Shaders/Shader_Illum/fragment_illum.glsl");
     renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
+    renderer.loadShader(2, "res/Shaders/Shader_Normal/vertex_normal.glsl",  "res/Shaders/Shader_Normal/geometry_normal.glsl", "res/Shaders/Shader_Normal/fragment_normal.glsl");
     renderer.assignSkyboxShader(1);
 
     NodePtr root = makeNode<Transformable>("root");
@@ -39,15 +40,15 @@ int main()
     // glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 1));
 
     // auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine1.obj")->data, glm::mat4(1.f), *RenderObject::GetRenderObject("res/Combine2.obj")->data, glm::mat4(1.f));
-    auto combined = MeshData::CombineMeshes({RenderObject::GetRenderObject("res/Combine2.obj")->data, RenderObject::GetRenderObject("res/Pebble_Sphere.obj")->data}, {glm::mat4(1.f), glm::mat4(1.f)});
-    auto combinedobj = RenderObject::AddRenderObject("res/Combine2.obj+res/Pebble_Sphere.obj", std::make_shared<RenderObject>(combined));
+    // auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine2.obj")->data, glm::mat4(1.f), *RenderObject::GetRenderObject("res/Pebble_Sphere.obj")->data, glm::mat4(1.f));
+    // auto combinedobj = RenderObject::AddRenderObject("res/Combine2.obj+res/Pebble_Sphere.obj", std::make_shared<RenderObject>(combined));
 
     // auto combine2 = ResourceManager::instance().getResource<MeshData>("res/Combine2.obj");
     // combine2->applyTransformation(glm::translate(glm::mat4(1.f), glm::vec3(0, -1, 0)));
 
     // auto combine2obj = RenderObject::AddRenderObject(combine2->filepath, std::make_shared<RenderObject>(combine2));
 
-    castNode<Renderable>(root->children[0])->renderName = "res/Combine2.obj+res/Pebble_Sphere.obj";
+    castNode<Renderable>(root->children[0])->renderName = "res/Pebble_Sphere.obj";
     castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
 
     // NodePtr root;
@@ -63,6 +64,8 @@ int main()
     auto movementInputVector = InputVector("Horizontal", "Z", "Vertical");
     auto rotationInputVector = InputVector("RotationHorizontal", "RotationVertical", "");
 
+    bool drawNormals = false;
+
     glm::vec4 transformedInput;
 
     while (!renderer.shouldClose())
@@ -76,7 +79,7 @@ int main()
 
         if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_N))
         {
-            castNode<Renderable>(root->children[0])->visible = !castNode<Renderable>(root->children[0])->visible;
+            drawNormals = !drawNormals;
         }
 
         if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_ESCAPE))
@@ -98,6 +101,8 @@ int main()
         // Simple update and render cycle
         updateSceneGraph(root);
         renderSceneGraph(root, renderer.getShader(0));
+        if (drawNormals)
+            renderSceneGraph(root, renderer.getShader(2), true);
 
         castNode<Transformable>(root)->getTransform().rotate(rotationInputVector.getValue() * renderer.getDeltaTime());
 
