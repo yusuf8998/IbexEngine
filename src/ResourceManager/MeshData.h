@@ -17,6 +17,7 @@
 #include <splitString.h>
 
 #include <ResourceManager/MaterialLibrary.h>
+#include <string.h>
 
 class MeshData;
 
@@ -27,14 +28,99 @@ constexpr unsigned int TANGENT_OFFSET = 3;
 
 constexpr unsigned int INDEX_PER_VERTEX = 4;
 
+constexpr const char *ATTRIB_NAME[INDEX_PER_VERTEX] = {
+    "position",
+    "uv",
+    "normal",
+    "tangent"
+};
+
+constexpr unsigned int ATTRIB_STRIDE[INDEX_PER_VERTEX] = {
+    3,
+    2,
+    3,
+    3
+};
+
+constexpr bool const_strcmp(const char *a, const char *b)
+{
+    for (;*a || *b;){
+        if (*a++!=*b++)
+            return false;
+    }
+    return true;
+}
+
+constexpr unsigned int FindAttribIndex(const char *name)
+{
+    for (unsigned int i = 0; i < INDEX_PER_VERTEX; i++)
+    {
+        if (const_strcmp(name, ATTRIB_NAME[i]))
+            return i;
+    }
+    return -1;
+}
+
 // Just keep in mind
-// typedef glm::vec<INDEX_PER_VERTEX, unsigned int, glm::defaultp> Vertex; // Position, UV, Normal, Tangent
+typedef std::array<unsigned int, INDEX_PER_VERTEX> VertexIndex; // Position, UV, Normal, Tangent
+
+// typedef std::array<std::vector<float>, INDEX_PER_VERTEX> Vertex; // Position, UV, Normal, Tangent
+
+struct VertexAttrib
+{
+public:
+    std::string name;
+    std::vector<float> values;
+
+    inline unsigned int getStride() const
+    {
+        return ATTRIB_STRIDE[FindAttribIndex(name.c_str())];
+    }
+
+    inline void push(const glm::vec4 &v)
+    {
+        assert(getStride() == 4);
+        values.push_back(v.x);
+        values.push_back(v.y);
+        values.push_back(v.z);
+        values.push_back(v.w);
+    }
+    inline void push(const glm::vec3 &v)
+    {
+        assert(getStride() == 3);
+        values.push_back(v.x);
+        values.push_back(v.y);
+        values.push_back(v.z);
+    }
+    inline void push(const glm::vec2 &v)
+    {
+        assert(getStride() == 2);
+        values.push_back(v.x);
+        values.push_back(v.y);
+    }
+
+    inline glm::vec4 getVector4(unsigned int index)
+    {
+        assert(getStride() == 4);
+        return glm::vec4(values[index * 4 + 0], values[index * 4 + 1], values[index * 4 + 2], values[index * 4 + 3]);
+    }
+    inline glm::vec3 getVector3(unsigned int index)
+    {
+        assert(getStride() == 3);
+        return glm::vec3(values[index * 3 + 0], values[index * 3 + 1], values[index * 3 + 2]);
+    }
+    inline glm::vec2 getVector2(unsigned int index)
+    {
+        assert(getStride() == 2);
+        return glm::vec2(values[index * 2 + 0], values[index * 2 + 1]);
+    }
+};
 
 class MeshGroup
 {
 public:
     std::string name;
-    std::vector<unsigned int> indices;
+    std::vector<VertexIndex> indices;
     std::shared_ptr<Material> material;
 
     short vertexPerFace = 0;
@@ -93,6 +179,8 @@ public:
 
     void exportObject(const std::string &filepath) const;
 
+    std::array<VertexAttrib, INDEX_PER_VERTEX> &getAttribs();
+
     static std::shared_ptr<MeshData> CombineMeshes(const MeshData &a, const glm::mat4 &a_tr, const MeshData &b, const glm::mat4 &b_tr);
     static std::shared_ptr<MeshData> CombineMeshes(const std::vector<std::shared_ptr<MeshData>> &meshes, const std::vector<glm::mat4> &transforms);
     static std::shared_ptr<MeshData> CombineMeshes(const std::vector<MeshData> &meshes, const std::vector<glm::mat4> &transforms);
@@ -101,8 +189,11 @@ public:
     friend class RenderObject;
 
 private:
-    std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes: position, uv, normal, tangent, bitangent
+    // std::map<std::string, std::vector<float>> vertexAttributes; // Vertex attributes: position, uv, normal, tangent
+    std::array<VertexAttrib, INDEX_PER_VERTEX> vertexAttributes;
     std::vector<MeshGroup> groups;
+
+    void initializeVertexAttributes();
 
     void parseOBJLine(const std::string &line);
 
@@ -111,7 +202,7 @@ private:
 
     bool compareAttributes(std::vector<float>::const_iterator &it, std::vector<float>::const_iterator &jt, unsigned int stride);
     bool compareAttributes(std::vector<float>::iterator &it, std::vector<float>::iterator &jt, unsigned int stride);
-    void removeDuplicateAttribute(const std::string &name, unsigned int stride, std::map<unsigned int, unsigned int> &map);
+    void removeDuplicateAttribute(unsigned int index, std::map<unsigned int, unsigned int> &map);
 
     void normalizeNormals();
     void normalizeTangents();

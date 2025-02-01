@@ -25,35 +25,6 @@ void save(const std::shared_ptr<Node> &root)
     printf("Saved!\n");
 }
 
-bool TestMeshDataNormalizeGroupVector()
-{
-    std::shared_ptr<Material> mat = std::make_shared<Material>();
-
-    MeshGroup group1;
-    group1.name = "group1";
-    group1.indices = {0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 2, 0};
-    group1.material = mat;
-    group1.vertexPerFace = 3;
-
-    MeshGroup group2;
-    group2.name = "group2";
-    group2.indices = {3, 3, 3, 0, 2, 2, 2, 0, 1, 1, 1, 0};
-    group2.material = mat;
-    group2.vertexPerFace = 3;
-
-    MeshGroup expectedGroup;
-    expectedGroup.name = "group1+group2";
-    expectedGroup.indices = {0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 2, 0, 3, 3, 3, 0, 2, 2, 2, 0, 1, 1, 1, 0};
-    expectedGroup.material = mat;
-    expectedGroup.vertexPerFace = 3;
-
-    std::vector<MeshGroup> groups = {group1, group2};
-
-    MeshData::FlattenGroups(groups);
-
-    return groups.size() == 1 && groups[0].name == expectedGroup.name && groups[0].indices == expectedGroup.indices && groups[0].material == expectedGroup.material && groups[0].vertexPerFace == expectedGroup.vertexPerFace;
-}
-
 int main()
 {
     auto &renderer = Renderer::instance();
@@ -61,26 +32,26 @@ int main()
     renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
     renderer.assignSkyboxShader(1);
 
-    NodePtr root = makeNode<Transformable>("root");
-    root->addChild(makeNode<Renderable>("dynamic1"));
-    root->addChild(makeNode<SkyboxNode>("skybox"));
+    // NodePtr root = makeNode<Transformable>("root");
+    // root->addChild(makeNode<Renderable>("dynamic1"));
+    // root->addChild(makeNode<SkyboxNode>("skybox"));
 
-    glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 1));
+    // glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 1));
 
     // auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine1.obj")->data, glm::mat4(1.f), *RenderObject::GetRenderObject("res/Combine2.obj")->data, glm::mat4(1.f));
-    auto combined = MeshData::CombineMeshes({RenderObject::GetRenderObject("res/Combine2.obj")->data, RenderObject::GetRenderObject("res/Pebble_Sphere.obj")->data}, {glm::mat4(1.f), glm::mat4(1.f)});
-    auto combinedobj = RenderObject::AddRenderObject("res/Combine2.obj+res/Pebble_Sphere.obj", std::make_shared<RenderObject>(combined));
+    // auto combined = MeshData::CombineMeshes({RenderObject::GetRenderObject("res/Combine2.obj")->data, RenderObject::GetRenderObject("res/Pebble_Sphere.obj")->data}, {glm::mat4(1.f), glm::mat4(1.f)});
+    // auto combinedobj = RenderObject::AddRenderObject("res/Combine2.obj+res/Pebble_Sphere.obj", std::make_shared<RenderObject>(combined));
 
     // auto combine2 = ResourceManager::instance().getResource<MeshData>("res/Combine2.obj");
     // combine2->applyTransformation(glm::translate(glm::mat4(1.f), glm::vec3(0, -1, 0)));
 
     // auto combine2obj = RenderObject::AddRenderObject(combine2->filepath, std::make_shared<RenderObject>(combine2));
 
-    castNode<Renderable>(root->children[0])->renderName = "res/Combine2.obj+res/Pebble_Sphere.obj";
-    castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
+    // castNode<Renderable>(root->children[0])->renderName = "res/Combine2.obj+res/Pebble_Sphere.obj";
+    // castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
 
-    // NodePtr root;
-    // loadSceneGraph("root.json", root);
+    NodePtr root;
+    loadSceneGraph("root.json", root);
 
     InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, renderer.getInputHandler());
     InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_S, GLFW_KEY_W, renderer.getInputHandler());
