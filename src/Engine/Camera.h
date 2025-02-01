@@ -20,8 +20,8 @@ public:
 
     Camera(glm::vec3 startPosition, glm::vec3 startUp, float startYaw, float startPitch);
 
-    glm::mat4 getViewMatrix();
-    glm::mat4 getRotationMatrix();
+    glm::mat4 getViewMatrix() const;
+    glm::mat4 getRotationMatrix() const;
     void processMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
     void processMouseScroll(float yOffset);
 
