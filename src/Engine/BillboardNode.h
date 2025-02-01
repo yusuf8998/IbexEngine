@@ -8,8 +8,10 @@
 class BillboardNode : public Renderable
 {
 public:
+    bool lockHorizontal;
+
     BillboardNode(const std::string &name = "Unnamed")
-        : Renderable(name) { forced_shader = 3; }
+        : Renderable(name), lockHorizontal(false) { forced_shader = 3; }
 
     void render(const std::shared_ptr<ShaderObject> &shader) override;
 

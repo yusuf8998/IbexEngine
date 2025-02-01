@@ -43,20 +43,11 @@ int main()
     castNode<BillboardNode>(root->children[1])->getTransform().translate(glm::vec3(0, 1, 0));
     castNode<BillboardNode>(root->children[1])->getTransform().rescale(glm::vec3(2.f));
 
-    // glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 1));
-
-    // auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine1.obj")->data, glm::mat4(1.f), *RenderObject::GetRenderObject("res/Combine2.obj")->data, glm::mat4(1.f));
-    // auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine2.obj")->data, glm::mat4(1.f), *RenderObject::GetRenderObject("res/Pebble_Sphere.obj")->data, glm::mat4(1.f));
-    // auto combinedobj = RenderObject::AddRenderObject("res/Combine2.obj+res/Pebble_Sphere.obj", std::make_shared<RenderObject>(combined));
-
-    // auto combine2 = ResourceManager::instance().getResource<MeshData>("res/Combine2.obj");
-    // combine2->applyTransformation(glm::translate(glm::mat4(1.f), glm::vec3(0, -1, 0)));
-
-    // auto combine2obj = RenderObject::AddRenderObject(combine2->filepath, std::make_shared<RenderObject>(combine2));
-
     castNode<Renderable>(root->children[0])->renderName = "res/Pebble_Sphere.obj";
     castNode<BillboardNode>(root->children[1])->renderName = "res/Textures/box.png";
     castNode<SkyboxNode>(root->children[2])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
+
+    castNode<BillboardNode>(root->children[1])->lockHorizontal = true;
 
     // NodePtr root;
     // loadSceneGraph("root.json", root);
