@@ -58,6 +58,7 @@ int main()
     InputAxis::Axes["Z"] = InputAxis(GLFW_KEY_E, GLFW_KEY_Q, renderer.getInputHandler());
     InputAxis::Axes["RotationVertical"] = InputAxis(GLFW_KEY_UP, GLFW_KEY_DOWN, renderer.getInputHandler());
     InputAxis::Axes["RotationHorizontal"] = InputAxis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT, renderer.getInputHandler());
+    InputAxis::Axes["Sprint"] = InputAxis(GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL, renderer.getInputHandler());
 
     auto movementInputVector = InputVector("Horizontal", "Z", "Vertical");
     auto rotationInputVector = InputVector("RotationHorizontal", "RotationVertical", "");
@@ -85,6 +86,11 @@ int main()
 
         transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
         transformedInput = mainCamera.getRotationMatrix() * transformedInput;
+
+        float sprint = renderer.getInputHandler()->getAxis("Sprint").getValue();
+        float speedMult = sprint > 0.f ? sprint * 5.f : sprint < 0.f ? abs(sprint) * .5f : 1.f;
+        transformedInput *= speedMult;
+
         mainCamera.position += glm::vec3(transformedInput) * renderer.getDeltaTime();
 
         renderer.setViewProjectionUniforms();
