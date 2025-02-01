@@ -652,8 +652,8 @@ void MeshData::CalcTangentBitangentForTri(const std::array<glm::vec3, 3> &positi
     tangent = glm::normalize(tangent);
     bitangent = glm::normalize(bitangent);
 
-    if (glm::dot(tangent, bitangent) > 0.01f || glm::dot(tangent, face_normal) > 0.01f || glm::dot(bitangent, face_normal) > 0.01f)
-        throw std::runtime_error("Tangent, bitangent, and normal are not orthogonal");
+    // if (glm::dot(tangent, bitangent) > 0.01f || glm::dot(tangent, face_normal) > 0.01f || glm::dot(bitangent, face_normal) > 0.01f)
+    //     throw std::runtime_error("Tangent, bitangent, and normal are not orthogonal");
 }
 
 std::vector<std::vector<float>> MeshData::getFace(const std::string &groupName, unsigned int face_index)

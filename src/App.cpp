@@ -32,26 +32,26 @@ int main()
     renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
     renderer.assignSkyboxShader(1);
 
-    // NodePtr root = makeNode<Transformable>("root");
-    // root->addChild(makeNode<Renderable>("dynamic1"));
-    // root->addChild(makeNode<SkyboxNode>("skybox"));
+    NodePtr root = makeNode<Transformable>("root");
+    root->addChild(makeNode<Renderable>("dynamic1"));
+    root->addChild(makeNode<SkyboxNode>("skybox"));
 
     // glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 1));
 
     // auto combined = MeshData::CombineMeshes(*RenderObject::GetRenderObject("res/Combine1.obj")->data, glm::mat4(1.f), *RenderObject::GetRenderObject("res/Combine2.obj")->data, glm::mat4(1.f));
-    // auto combined = MeshData::CombineMeshes({RenderObject::GetRenderObject("res/Combine2.obj")->data, RenderObject::GetRenderObject("res/Pebble_Sphere.obj")->data}, {glm::mat4(1.f), glm::mat4(1.f)});
-    // auto combinedobj = RenderObject::AddRenderObject("res/Combine2.obj+res/Pebble_Sphere.obj", std::make_shared<RenderObject>(combined));
+    auto combined = MeshData::CombineMeshes({RenderObject::GetRenderObject("res/Combine2.obj")->data, RenderObject::GetRenderObject("res/Pebble_Sphere.obj")->data}, {glm::mat4(1.f), glm::mat4(1.f)});
+    auto combinedobj = RenderObject::AddRenderObject("res/Combine2.obj+res/Pebble_Sphere.obj", std::make_shared<RenderObject>(combined));
 
     // auto combine2 = ResourceManager::instance().getResource<MeshData>("res/Combine2.obj");
     // combine2->applyTransformation(glm::translate(glm::mat4(1.f), glm::vec3(0, -1, 0)));
 
     // auto combine2obj = RenderObject::AddRenderObject(combine2->filepath, std::make_shared<RenderObject>(combine2));
 
-    // castNode<Renderable>(root->children[0])->renderName = "res/Combine2.obj+res/Pebble_Sphere.obj";
-    // castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
+    castNode<Renderable>(root->children[0])->renderName = "res/Combine2.obj+res/Pebble_Sphere.obj";
+    castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
 
-    NodePtr root;
-    loadSceneGraph("root.json", root);
+    // NodePtr root;
+    // loadSceneGraph("root.json", root);
 
     InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, renderer.getInputHandler());
     InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_S, GLFW_KEY_W, renderer.getInputHandler());
