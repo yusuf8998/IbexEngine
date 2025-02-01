@@ -25,6 +25,7 @@ add_executable(Ibex
     "src/Engine/SceneGraph.h"
     "src/Engine/SceneGraph.cpp"
     "src/Engine/SkyboxNode.cpp"
+    "src/Engine/BillboardNode.cpp"
     "src/Engine/InputHandler.cpp"
     "src/Engine/Camera.cpp"
 

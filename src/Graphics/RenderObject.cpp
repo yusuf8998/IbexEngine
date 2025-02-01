@@ -164,6 +164,10 @@ GLenum RenderGroup::getDrawMode() const
 {
     if (data->getVertexPerFace(name) == 0)
         return 0;
+    if (data->getVertexPerFace(name) == 1)
+        return GL_POINTS;
+    if (data->getVertexPerFace(name) == 2)
+        return GL_LINES;
     if (data->getVertexPerFace(name) == 3)
         return GL_TRIANGLES;
     if (data->getVertexPerFace(name) == 4)

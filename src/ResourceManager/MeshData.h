@@ -149,7 +149,8 @@ public:
 
     std::vector<std::string> getUsedTextures() const;
 
-    bool loadFromOBJ(const std::string &filepath);
+    bool loadFromOBJ(const std::string &filepath, bool calculate_tangents = true);
+    bool loadFromSource(const std::string &source, bool calculate_tangents = true);
 
     // Helper function to access vertex attributes
     const std::vector<float> &getVertexAttribute(const std::string &name) const;
@@ -160,6 +161,8 @@ public:
     size_t getFaceCount() const;
     size_t getFaceCount(const std::string &groupName) const;
     size_t getFaceCount(const MeshGroup &group) const;
+
+    MeshGroup &addGroup(const std::string &groupName);
 
     MeshGroup &getGroup(const std::string &groupName);
     const MeshGroup &getGroup(const std::string &groupName) const;

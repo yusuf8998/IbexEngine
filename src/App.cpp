@@ -14,6 +14,7 @@
 #include <thread>
 #include "Graphics/Renderer.h"
 #include "Engine/SkyboxNode.h"
+#include "Engine/BillboardNode.h"
 
 std::thread save_thread;
 
@@ -31,10 +32,12 @@ int main()
     renderer.loadShader(0, "res/Shaders/Shader_Illum/vertex_illum.glsl", "res/Shaders/Shader_Illum/geometry_illum.glsl", "res/Shaders/Shader_Illum/fragment_illum.glsl");
     renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
     renderer.loadShader(2, "res/Shaders/Shader_Normal/vertex_normal.glsl",  "res/Shaders/Shader_Normal/geometry_normal.glsl", "res/Shaders/Shader_Normal/fragment_normal.glsl");
+    renderer.loadShader(3, "res/Shaders/Shader_Billboard/vertex_billboard.glsl",  "res/Shaders/Shader_Billboard/geometry_billboard.glsl", "res/Shaders/Shader_Billboard/fragment_billboard.glsl");
     renderer.assignSkyboxShader(1);
 
     NodePtr root = makeNode<Transformable>("root");
     root->addChild(makeNode<Renderable>("dynamic1"));
+    root->addChild(makeNode<BillboardNode>("billboard1"));
     root->addChild(makeNode<SkyboxNode>("skybox"));
 
     // glm::mat4 model = glm::translate(glm::mat4(1.f), glm::vec3(0, 0, 1));
@@ -49,7 +52,8 @@ int main()
     // auto combine2obj = RenderObject::AddRenderObject(combine2->filepath, std::make_shared<RenderObject>(combine2));
 
     castNode<Renderable>(root->children[0])->renderName = "res/Pebble_Sphere.obj";
-    castNode<SkyboxNode>(root->children[1])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
+    castNode<BillboardNode>(root->children[1])->renderName = "res/Textures/box.png";
+    castNode<SkyboxNode>(root->children[2])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
 
     // NodePtr root;
     // loadSceneGraph("root.json", root);

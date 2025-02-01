@@ -33,7 +33,7 @@ std::vector<std::string> MeshData::getUsedTextures() const
 std::string currentGroupName;
 std::string queuedMaterialLibrary;
 
-bool MeshData::loadFromOBJ(const std::string &filepath)
+bool MeshData::loadFromOBJ(const std::string &filepath, bool calculate_tangents)
 {
     this->filepath = filepath;
     std::ifstream file(filepath);
@@ -52,7 +52,23 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
         parseOBJLine(line);
     }
     file.close();
-    calcTangentBitangentForMesh();
+    if (calculate_tangents)
+        calcTangentBitangentForMesh();
+    return true;
+}
+bool MeshData::loadFromSource(const std::string &source, bool calculate_tangents)
+{
+    std::stringstream stream(source);
+    std::string line;
+    currentGroupName = "Unnamed";
+    queuedMaterialLibrary = "";
+    initializeVertexAttributes();
+    while (std::getline(stream, line))
+    {
+        parseOBJLine(line);
+    }
+    if (calculate_tangents)
+        calcTangentBitangentForMesh();
     return true;
 }
 #include "algorithm"
@@ -133,17 +149,69 @@ void MeshData::parseOBJLine(const std::string &line)
     { // Face (index list)
         if (!hasGroup(currentGroupName))
             generateGroup(currentGroupName);
-        if (getGroup(currentGroupName).vertexPerFace == 0)
-            getGroup(currentGroupName).vertexPerFace = tokens.size() - 1;
+        auto &g = getGroup(currentGroupName);
+        if (g.vertexPerFace == 0)
+            g.vertexPerFace = tokens.size() - 1;
+        if (g.vertexPerFace == 2 || g.vertexPerFace == 1)
+            throw std::runtime_error("Token size for face definition is not correct. Use l for line and p for point. vertexPerFace: " + std::to_string(g.vertexPerFace));
         if (tokens.size() != getGroup(currentGroupName).vertexPerFace + 1)
-            throw std::runtime_error("Token size for face definition is not correct. vertexPerFace: " + std::to_string(getGroup(currentGroupName).vertexPerFace));
+            throw std::runtime_error("Token size for face definition is not correct. vertexPerFace: " + std::to_string(g.vertexPerFace));
         for (size_t i = 1; i < tokens.size(); ++i)
         {
             std::vector<std::string> vertexData = splitString(tokens[i], '/');
-            unsigned int posIdx = std::stoi(vertexData[0]) - 1;
-            unsigned int uvIdx = vertexData[1].empty() ? 0 : std::stoi(vertexData[1]) - 1;
-            unsigned int normalIdx = vertexData[2].empty() ? 0 : std::stoi(vertexData[2]) - 1;
-            getGroup(currentGroupName).indices.push_back({posIdx, uvIdx, normalIdx, 0});
+            unsigned int posIdx, uvIdx = 0, normalIdx = 0;
+            posIdx = std::stoi(vertexData[0]) - 1;
+            if (vertexData.size() > 1)
+                uvIdx = vertexData[1].empty() ? 0 : std::stoi(vertexData[1]) - 1;
+            if (vertexData.size() > 2)
+                normalIdx = vertexData[2].empty() ? 0 : std::stoi(vertexData[2]) - 1;
+            g.indices.push_back({posIdx, uvIdx, normalIdx, 0});
+        }
+    }
+    else if (tokens[0] == "l")
+    { // Line (index list)
+        if (!hasGroup(currentGroupName))
+            generateGroup(currentGroupName);
+        auto &g = getGroup(currentGroupName);
+        if (g.vertexPerFace == 0)
+            g.vertexPerFace = tokens.size() - 1;
+        if (g.vertexPerFace == 3 || g.vertexPerFace == 1)
+            throw std::runtime_error("Token size for line definition is not correct. Use f for face and p for point. vertexPerFace: " + std::to_string(g.vertexPerFace));
+        if (tokens.size() != getGroup(currentGroupName).vertexPerFace + 1)
+            throw std::runtime_error("Token size for line definition is not correct. vertexPerFace: " + std::to_string(g.vertexPerFace));
+        for (size_t i = 1; i < tokens.size(); ++i)
+        {
+            std::vector<std::string> vertexData = splitString(tokens[i], '/');
+            unsigned int posIdx, uvIdx = 0, normalIdx = 0;
+            posIdx = std::stoi(vertexData[0]) - 1;
+            if (vertexData.size() > 1)
+                uvIdx = vertexData[1].empty() ? 0 : std::stoi(vertexData[1]) - 1;
+            if (vertexData.size() > 2)
+                normalIdx = vertexData[2].empty() ? 0 : std::stoi(vertexData[2]) - 1;
+            g.indices.push_back({posIdx, uvIdx, normalIdx, 0});
+        }
+    }
+    else if (tokens[0] == "p")
+    { // Point (index list)
+        if (!hasGroup(currentGroupName))
+            generateGroup(currentGroupName);
+        auto &g = getGroup(currentGroupName);
+        if (g.vertexPerFace == 0)
+            g.vertexPerFace = tokens.size() - 1;
+        if (g.vertexPerFace == 3 || g.vertexPerFace == 2)
+            throw std::runtime_error("Token size for point definition is not correct. Use f for face and l for line. vertexPerFace: " + std::to_string(g.vertexPerFace));
+        if (tokens.size() != getGroup(currentGroupName).vertexPerFace + 1)
+            throw std::runtime_error("Token size for point definition is not correct. vertexPerFace: " + std::to_string(g.vertexPerFace));
+        for (size_t i = 1; i < tokens.size(); ++i)
+        {
+            std::vector<std::string> vertexData = splitString(tokens[i], '/');
+            unsigned int posIdx, uvIdx = 0, normalIdx = 0;
+            posIdx = std::stoi(vertexData[0]) - 1;
+            if (vertexData.size() > 1)
+                uvIdx = vertexData[1].empty() ? 0 : std::stoi(vertexData[1]) - 1;
+            if (vertexData.size() > 2)
+                normalIdx = vertexData[2].empty() ? 0 : std::stoi(vertexData[2]) - 1;
+            g.indices.push_back({posIdx, uvIdx, normalIdx, 0});
         }
     }
     else if (tokens[0] == "mtllib")
@@ -726,6 +794,13 @@ size_t MeshData::getFaceCount(const std::string &groupName) const
 size_t MeshData::getFaceCount(const MeshGroup &group) const
 {
     return group.indices.size() / (group.vertexPerFace);
+}
+
+MeshGroup &MeshData::addGroup(const std::string &groupName)
+{
+    groups.push_back(MeshGroup());
+    groups[groups.size() - 1].name = groupName;
+    return getGroup(groupName);
 }
 
 std::vector<std::string> MeshGroup::getUsedTextures() const
