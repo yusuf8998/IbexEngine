@@ -25,8 +25,8 @@ public:
 private:
     std::shared_ptr<MeshData> data;
     std::string name;
-    GLuint VAO, VBO, EBO;
-    std::vector<unsigned int> elementIndices = {};
+    GLuint VAO, VBO;//, EBO;
+    // std::vector<unsigned int> elementIndices = {};
 
     void generateOpenGLBuffers();
     void populateOpenGLBuffers();
@@ -64,22 +64,22 @@ private:
     static std::unordered_map<std::string, std::shared_ptr<RenderObject>> Meshes;
 };
 
-void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents);
+void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, std::array<VertexAttrib, INDEX_PER_VERTEX> &attribs);
 
-inline std::vector<unsigned int> generateIndices(int numVertices)
-{
-    std::vector<unsigned int> indices;
+// inline std::vector<unsigned int> generateIndices(int numVertices)
+// {
+//     std::vector<unsigned int> indices;
 
-    if (numVertices < 3)
-    {
-        // A valid polygon must have at least 3 vertices (triangle).
-        return indices;
-    }
+//     if (numVertices < 3)
+//     {
+//         // A valid polygon must have at least 3 vertices (triangle).
+//         return indices;
+//     }
 
-    for (int i = 0; i < numVertices; i++)
-    {
-        indices.push_back(i);
-    }
+//     for (int i = 0; i < numVertices; i++)
+//     {
+//         indices.push_back(i);
+//     }
 
-    return indices;
-}
+//     return indices;
+// }

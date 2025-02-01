@@ -101,33 +101,17 @@ void RenderObject::reuploadToGLBuffers()
 
 std::unordered_map<std::string, std::shared_ptr<RenderObject>> RenderObject::Meshes = {};
 
-void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::vector<float> &positions, const std::vector<float> &uvs, const std::vector<float> &normals, const std::vector<float> &tangents)
+void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, std::array<VertexAttrib, INDEX_PER_VERTEX> &attribs)
 {
-    for (size_t i = 0; i < group.indices.size() / INDEX_PER_VERTEX; i++)
+    for (size_t i = 0; i < group.indices.size(); i++)
     {
-        unsigned int posIdx = group.indices[i * INDEX_PER_VERTEX + POSITION_OFFSET];
-        unsigned int uvIdx = group.indices[i * INDEX_PER_VERTEX + UV_OFFSET];
-        unsigned int normalIdx = group.indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET];
-        unsigned int tangentIdx = group.indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET];
-
-        // Push position
-        vertexData->push_back(positions[posIdx * 3 + 0]);
-        vertexData->push_back(positions[posIdx * 3 + 1]);
-        vertexData->push_back(positions[posIdx * 3 + 2]);
-
-        // Push UV
-        vertexData->push_back(uvs[uvIdx * 2 + 0]);
-        vertexData->push_back(uvs[uvIdx * 2 + 1]);
-
-        // Push normal
-        vertexData->push_back(normals[normalIdx * 3 + 0]);
-        vertexData->push_back(normals[normalIdx * 3 + 1]);
-        vertexData->push_back(normals[normalIdx * 3 + 2]);
-
-        // Push tangent
-        vertexData->push_back(tangents[tangentIdx * 3 + 0]);
-        vertexData->push_back(tangents[tangentIdx * 3 + 1]);
-        vertexData->push_back(tangents[tangentIdx * 3 + 2]);
+        for (unsigned int j = 0; j < INDEX_PER_VERTEX; j++)
+        {
+            unsigned int idx = group.indices[i][j];
+            unsigned stride = attribs[j].getStride();
+            for (unsigned int k = 0; k < stride; k++)
+                vertexData->push_back(attribs[j].values[idx * stride + k]);
+        }
     }
 }
 
@@ -194,9 +178,9 @@ void RenderGroup::generateOpenGLBuffers()
     // Create a VBO (Vertex Buffer Object)
     glGenBuffers(1, &VBO);
     // Create an EBO (Element Buffer Object)
-    glGenBuffers(1, &EBO);
+    // glGenBuffers(1, &EBO);
 
-    elementIndices = generateIndices(data->getFaceCount(name) * data->getVertexPerFace(name));
+    // elementIndices = generateIndices(data->getFaceCount(name) * data->getVertexPerFace(name));
 }
 
 void RenderGroup::populateOpenGLBuffers()
@@ -205,32 +189,25 @@ void RenderGroup::populateOpenGLBuffers()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // Flatten vertex data (positions, normals, and UVs)
     std::vector<float> vertexData;
-    const std::vector<float> &positions = data->getVertexAttribute("position");
-    const std::vector<float> &uvs = data->getVertexAttribute("uv");
-    const std::vector<float> &normals = data->getVertexAttribute("normal");
-    const std::vector<float> &tangents = data->getVertexAttribute("tangent");
-
-    pushVertexData(data->getGroup(name), &vertexData, positions, uvs, normals, tangents);
+    pushVertexData(data->getGroup(name), &vertexData, data->getAttribs());
 
     // Populate the VBO with interleaved data
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementIndices.size() * sizeof(unsigned int), elementIndices.data(), GL_STATIC_DRAW);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementIndices.size() * sizeof(unsigned int), elementIndices.data(), GL_STATIC_DRAW);
 
     // Enable the vertex attributes
     // Position attribute
-    const size_t stride = sizeof(glm::vec3) + sizeof(glm::vec2) + sizeof(glm::vec3) + sizeof(glm::vec3);
+    const size_t stride = data->getVertexStride();
     size_t offset = 0;
 
-    defineVertexAttrib(0, 3, stride, offset); // position
-    defineVertexAttrib(1, 2, stride, offset); // UV
-    defineVertexAttrib(2, 3, stride, offset); // normal
-    defineVertexAttrib(3, 3, stride, offset); // tangent
+    for (unsigned int i = 0; i < INDEX_PER_VERTEX; i++)
+        defineVertexAttrib(i, ATTRIB_STRIDE[i], stride, offset);
 
     // Unbind the VAO and buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
     textureArray = std::make_shared<TextureArrayObject>(data->getGroup(name).getUsedTextures());
@@ -239,7 +216,7 @@ void RenderGroup::populateOpenGLBuffers()
 void RenderGroup::reuploadToGLBuffers()
 {
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
+    // glDeleteBuffers(1, &EBO);
     glDeleteVertexArrays(1, &VAO);
 
     generateOpenGLBuffers();
@@ -312,7 +289,8 @@ void RenderGroup::renderRaw()
     glBindVertexArray(VAO);
 
     // Draw the mesh
-    GLCall(glDrawElements(getDrawMode(), elementIndices.size(), GL_UNSIGNED_INT, elementIndices.data()));
+    // GLCall(glDrawElements(getDrawMode(), elementIndices.size(), GL_UNSIGNED_INT, elementIndices.data()));
+    GLCall(glDrawArrays(getDrawMode(), 0, data->getFaceCount(name) * data->getVertexPerFace(name)));
 
     // Unbind the VAO
     glBindVertexArray(0);

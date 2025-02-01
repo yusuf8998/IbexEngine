@@ -25,35 +25,6 @@ void save(const std::shared_ptr<Node> &root)
     printf("Saved!\n");
 }
 
-bool TestMeshDataNormalizeGroupVector()
-{
-    std::shared_ptr<Material> mat = std::make_shared<Material>();
-
-    MeshGroup group1;
-    group1.name = "group1";
-    group1.indices = {0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 2, 0};
-    group1.material = mat;
-    group1.vertexPerFace = 3;
-
-    MeshGroup group2;
-    group2.name = "group2";
-    group2.indices = {3, 3, 3, 0, 2, 2, 2, 0, 1, 1, 1, 0};
-    group2.material = mat;
-    group2.vertexPerFace = 3;
-
-    MeshGroup expectedGroup;
-    expectedGroup.name = "group1+group2";
-    expectedGroup.indices = {0, 0, 0, 0, 1, 1, 1, 0, 2, 2, 2, 0, 3, 3, 3, 0, 2, 2, 2, 0, 1, 1, 1, 0};
-    expectedGroup.material = mat;
-    expectedGroup.vertexPerFace = 3;
-
-    std::vector<MeshGroup> groups = {group1, group2};
-
-    MeshData::FlattenGroups(groups);
-
-    return groups.size() == 1 && groups[0].name == expectedGroup.name && groups[0].indices == expectedGroup.indices && groups[0].material == expectedGroup.material && groups[0].vertexPerFace == expectedGroup.vertexPerFace;
-}
-
 int main()
 {
     auto &renderer = Renderer::instance();

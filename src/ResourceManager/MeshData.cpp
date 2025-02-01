@@ -46,6 +46,7 @@ bool MeshData::loadFromOBJ(const std::string &filepath)
     std::string line;
     currentGroupName = "Unnamed";
     queuedMaterialLibrary = "";
+    initializeVertexAttributes();
     while (std::getline(file, line))
     {
         parseOBJLine(line);
@@ -74,6 +75,13 @@ void MeshData::generateGroup(const std::string &name)
     if (queuedMaterialLibrary != "")
     {
         useMaterial(queuedMaterialLibrary, groups.back());
+    }
+}
+void MeshData::initializeVertexAttributes()
+{
+    for (unsigned int i = 0; i < INDEX_PER_VERTEX; i++)
+    {
+        vertexAttributes[i] = VertexAttrib{ATTRIB_NAME[i], {}};
     }
 }
 void MeshData::parseOBJLine(const std::string &line)
@@ -105,26 +113,21 @@ void MeshData::parseOBJLine(const std::string &line)
         if (tokens.size() != 4)
             throw std::runtime_error("Token size for position definition is not correct");
         glm::vec3 position(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-        vertexAttributes["position"].push_back(position.x);
-        vertexAttributes["position"].push_back(position.y);
-        vertexAttributes["position"].push_back(position.z);
+        vertexAttributes[POSITION_OFFSET].push(position);
     }
     else if (tokens[0] == "vn")
     { // Vertex normal
         if (tokens.size() != 4)
             throw std::runtime_error("Token size for normal definition is not correct");
         glm::vec3 normal(std::stof(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-        vertexAttributes["normal"].push_back(normal.x);
-        vertexAttributes["normal"].push_back(normal.y);
-        vertexAttributes["normal"].push_back(normal.z);
+        vertexAttributes[NORMAL_OFFSET].push(normal);
     }
     else if (tokens[0] == "vt")
     { // Vertex texture coordinate
         if (tokens.size() != 3 && tokens.size() != 4)
             throw std::runtime_error("Token size for UV definition is not correct");
         glm::vec2 uv(std::stof(tokens[1]), std::stof(tokens[2]));
-        vertexAttributes["uv"].push_back(uv.x);
-        vertexAttributes["uv"].push_back(uv.y);
+        vertexAttributes[UV_OFFSET].push(uv);
     }
     else if (tokens[0] == "f")
     { // Face (index list)
@@ -140,10 +143,7 @@ void MeshData::parseOBJLine(const std::string &line)
             unsigned int posIdx = std::stoi(vertexData[0]) - 1;
             unsigned int uvIdx = vertexData[1].empty() ? 0 : std::stoi(vertexData[1]) - 1;
             unsigned int normalIdx = vertexData[2].empty() ? 0 : std::stoi(vertexData[2]) - 1;
-            getGroup(currentGroupName).indices.push_back(posIdx);
-            getGroup(currentGroupName).indices.push_back(uvIdx);
-            getGroup(currentGroupName).indices.push_back(normalIdx);
-            getGroup(currentGroupName).indices.push_back(0); // tangent
+            getGroup(currentGroupName).indices.push_back({posIdx, uvIdx, normalIdx, 0});
         }
     }
     else if (tokens[0] == "mtllib")
@@ -181,9 +181,7 @@ void MeshData::calcTangentBitangentForGroup(MeshGroup &group)
 
     if (normals.size() == 3 && glm::vec3(normals[0], normals[1], normals[2]) == glm::vec3(0.f) || group.vertexPerFace == 4)
     {
-        vertexAttributes["tangent"].push_back(0);
-        vertexAttributes["tangent"].push_back(0);
-        vertexAttributes["tangent"].push_back(0);
+        vertexAttributes[TANGENT_OFFSET].push(glm::vec3(0.f));
         return;
     }
 
@@ -209,13 +207,11 @@ void MeshData::calcTangentBitangentForGroup(MeshGroup &group)
         currentGroupName = group.name;
         CalcTangentBitangentForTri(face_positions, face_uvs, face_normals, tangent, bitangent);
 
-        vertexAttributes["tangent"].push_back(tangent.x);
-        vertexAttributes["tangent"].push_back(tangent.y);
-        vertexAttributes["tangent"].push_back(tangent.z);
+        vertexAttributes[TANGENT_OFFSET].push(tangent);
 
-        group.indices[((i * group.vertexPerFace + 0) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
-        group.indices[((i * group.vertexPerFace + 1) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
-        group.indices[((i * group.vertexPerFace + 2) * INDEX_PER_VERTEX) + TANGENT_OFFSET] = vertexAttributes["tangent"].size() / 3 - 1;
+        group.indices[i * group.vertexPerFace + 0][TANGENT_OFFSET] = vertexAttributes[TANGENT_OFFSET].values.size() / 3 - 1;
+        group.indices[i * group.vertexPerFace + 1][TANGENT_OFFSET] = vertexAttributes[TANGENT_OFFSET].values.size() / 3 - 1;
+        group.indices[i * group.vertexPerFace + 2][TANGENT_OFFSET] = vertexAttributes[TANGENT_OFFSET].values.size() / 3 - 1;
     }
 }
 
@@ -286,16 +282,17 @@ bool MeshData::compareAttributes(std::vector<float>::iterator &it, std::vector<f
     return true;
 }
 
-void MeshData::removeDuplicateAttribute(const std::string &name, unsigned int stride, std::map<unsigned int, unsigned int> &map)
+void MeshData::removeDuplicateAttribute(unsigned int index, std::map<unsigned int, unsigned int> &map)
 {
-    for (auto it = vertexAttributes[name].end() - stride; it != vertexAttributes[name].begin(); it -= stride)
+    auto stride = vertexAttributes[index].getStride();
+    for (auto it = vertexAttributes[index].values.end() - stride; it != vertexAttributes[index].values.begin(); it -= stride)
     {
-        for (auto jt = vertexAttributes[name].begin(); jt != it; jt += stride)
+        for (auto jt = vertexAttributes[index].values.begin(); jt != it; jt += stride)
         {
             if (compareAttributes(it, jt, stride))
             {
-                map[(it - vertexAttributes[name].begin()) / stride] = (jt - vertexAttributes[name].begin()) / stride;
-                vertexAttributes[name].erase(it, it + stride);
+                map[(it - vertexAttributes[index].values.begin()) / stride] = (jt - vertexAttributes[index].values.begin()) / stride;
+                vertexAttributes[index].values.erase(it, it + stride);
                 break;
             }
         }
@@ -304,60 +301,49 @@ void MeshData::removeDuplicateAttribute(const std::string &name, unsigned int st
 
 void MeshData::normalizeNormals()
 {
-    for (size_t i = 0 ; i < vertexAttributes["normal"].size() / 3; i++)
+    for (size_t i = 0; i < vertexAttributes[NORMAL_OFFSET].values.size() / 3; i++)
     {
-        glm::vec3 normal(vertexAttributes["normal"][i * 3 + 0], vertexAttributes["normal"][i * 3 + 1], vertexAttributes["normal"][i * 3 + 2]);
+        glm::vec3 normal(vertexAttributes[NORMAL_OFFSET].values[i * 3 + 0], vertexAttributes[NORMAL_OFFSET].values[i * 3 + 1], vertexAttributes[NORMAL_OFFSET].values[i * 3 + 2]);
         normal = glm::normalize(normal);
-        vertexAttributes["normal"][i * 3 + 0] = normal.x;
-        vertexAttributes["normal"][i * 3 + 1] = normal.y;
-        vertexAttributes["normal"][i * 3 + 2] = normal.z;
+        vertexAttributes[NORMAL_OFFSET].values[i * 3 + 0] = normal.x;
+        vertexAttributes[NORMAL_OFFSET].values[i * 3 + 1] = normal.y;
+        vertexAttributes[NORMAL_OFFSET].values[i * 3 + 2] = normal.z;
     }
 }
 
 void MeshData::normalizeTangents()
 {
-    for (size_t i = 0 ; i < vertexAttributes["tangent"].size() / 3; i++)
+    for (size_t i = 0; i < vertexAttributes[TANGENT_OFFSET].values.size() / 3; i++)
     {
-        glm::vec3 tangent(vertexAttributes["tangent"][i * 3 + 0], vertexAttributes["tangent"][i * 3 + 1], vertexAttributes["tangent"][i * 3 + 2]);
+        glm::vec3 tangent(vertexAttributes[TANGENT_OFFSET].values[i * 3 + 0], vertexAttributes[TANGENT_OFFSET].values[i * 3 + 1], vertexAttributes[TANGENT_OFFSET].values[i * 3 + 2]);
         tangent = glm::normalize(tangent);
-        vertexAttributes["tangent"][i * 3 + 0] = tangent.x;
-        vertexAttributes["tangent"][i * 3 + 1] = tangent.y;
-        vertexAttributes["tangent"][i * 3 + 2] = tangent.z;
+        vertexAttributes[TANGENT_OFFSET].values[i * 3 + 0] = tangent.x;
+        vertexAttributes[TANGENT_OFFSET].values[i * 3 + 1] = tangent.y;
+        vertexAttributes[TANGENT_OFFSET].values[i * 3 + 2] = tangent.z;
     }
 }
 
 void MeshData::removeDuplicateAttributes()
 {
-    std::map<unsigned int, unsigned int> positionMap, uvMap, normalMap, tangentMap;
-    removeDuplicateAttribute("position", 3, positionMap);
-    removeDuplicateAttribute("uv", 2, uvMap);
-    removeDuplicateAttribute("normal", 3, normalMap);
-    removeDuplicateAttribute("tangent", 3, tangentMap);
+    std::vector<std::map<unsigned int, unsigned int>> maps(INDEX_PER_VERTEX);
+    for (unsigned int i = 0; i < INDEX_PER_VERTEX; i++)
+        removeDuplicateAttribute(i, maps[i]);
 
     for (auto &group : groups)
     {
-        for (size_t i = 0; i < group.indices.size(); i += INDEX_PER_VERTEX)
+        for (size_t i = 0; i < group.indices.size(); i++)
         {
-            auto posIdx = group.indices[i + POSITION_OFFSET];
-            auto uvIdx = group.indices[i + UV_OFFSET];
-            auto normalIdx = group.indices[i + NORMAL_OFFSET];
-            auto tangentIdx = group.indices[i + TANGENT_OFFSET];
-
-            if (positionMap.count(posIdx) > 0)
-                group.indices[i + POSITION_OFFSET] = positionMap[posIdx];
-            if (uvMap.count(uvIdx) > 0)
-                group.indices[i + UV_OFFSET] = uvMap[uvIdx];
-            if (normalMap.count(normalIdx) > 0)
-                group.indices[i + NORMAL_OFFSET] = normalMap[normalIdx];
-            if (tangentMap.count(tangentIdx) > 0)
-                group.indices[i + TANGENT_OFFSET] = tangentMap[tangentIdx];
-        }   
+            for (unsigned int j = 0; j < INDEX_PER_VERTEX; j++)
+            {
+                auto idx = group.indices[i][j];
+                if (maps[j].count(idx) > 0)
+                    group.indices[i][j] = maps[j][idx];
+            }
+        }
     }
 
-    vertexAttributes["position"].shrink_to_fit();
-    vertexAttributes["uv"].shrink_to_fit();
-    vertexAttributes["normal"].shrink_to_fit();
-    vertexAttributes["tangent"].shrink_to_fit();
+    for (auto &attrib : vertexAttributes)
+        attrib.values.shrink_to_fit();
 }
 
 void MeshData::applyTransformation(const glm::mat4 &transformation)
@@ -379,11 +365,11 @@ void MeshData::applyTransformationToIndices(const glm::mat4 &transformation, con
     for (unsigned int i = 0; i < posIndices.size(); i++)
     {
         auto index = posIndices[i];
-        glm::vec4 position(vertexAttributes["position"][index * 3 + 0], vertexAttributes["position"][index * 3 + 1], vertexAttributes["position"][index * 3 + 2], 1.0f);
+        glm::vec4 position = glm::vec4(vertexAttributes[POSITION_OFFSET].getVector3(index), 1.f);
         position = transformation * position;
-        vertexAttributes["position"][index * 3 + 0] = position.x;
-        vertexAttributes["position"][index * 3 + 1] = position.y;
-        vertexAttributes["position"][index * 3 + 2] = position.z;
+        vertexAttributes[POSITION_OFFSET].values[index * 3 + 0] = position.x;
+        vertexAttributes[POSITION_OFFSET].values[index * 3 + 1] = position.y;
+        vertexAttributes[POSITION_OFFSET].values[index * 3 + 2] = position.z;
     }
     glm::mat4 normalMatrix = glm::transpose(glm::inverse(glm::mat3(transformation)));
     if (normalMatrix == glm::mat4(1.f))
@@ -391,20 +377,20 @@ void MeshData::applyTransformationToIndices(const glm::mat4 &transformation, con
     for (unsigned int i = 0; i < normalIndices.size(); i++)
     {
         auto index = normalIndices[i];
-        glm::vec4 normal(vertexAttributes["normal"][index * 3 + 0], vertexAttributes["normal"][index * 3 + 1], vertexAttributes["normal"][index * 3 + 2], 1.0f);
+        glm::vec4 normal = glm::vec4(vertexAttributes[NORMAL_OFFSET].getVector3(index), 1.f);
         normal = glm::normalize(normalMatrix * normal);
-        vertexAttributes["normal"][index * 3 + 0] = normal.x;
-        vertexAttributes["normal"][index * 3 + 1] = normal.y;
-        vertexAttributes["normal"][index * 3 + 2] = normal.z;
+        vertexAttributes[NORMAL_OFFSET].values[index * 3 + 0] = normal.x;
+        vertexAttributes[NORMAL_OFFSET].values[index * 3 + 1] = normal.y;
+        vertexAttributes[NORMAL_OFFSET].values[index * 3 + 2] = normal.z;
     }
     for (unsigned int i = 0; i < tangentIndices.size(); i++)
     {
         auto index = tangentIndices[i];
-        glm::vec4 tangent(vertexAttributes["tangent"][index * 3 + 0], vertexAttributes["tangent"][index * 3 + 1], vertexAttributes["tangent"][index * 3 + 2], 1.0f);
+        glm::vec4 tangent = glm::vec4(vertexAttributes[TANGENT_OFFSET].getVector3(index), 1.0f);
         tangent = glm::normalize(normalMatrix * tangent);
-        vertexAttributes["tangent"][index * 3 + 0] = tangent.x;
-        vertexAttributes["tangent"][index * 3 + 1] = tangent.y;
-        vertexAttributes["tangent"][index * 3 + 2] = tangent.z;
+        vertexAttributes[TANGENT_OFFSET].values[index * 3 + 0] = tangent.x;
+        vertexAttributes[TANGENT_OFFSET].values[index * 3 + 1] = tangent.y;
+        vertexAttributes[TANGENT_OFFSET].values[index * 3 + 2] = tangent.z;
     }
 }
 
@@ -435,28 +421,28 @@ void MeshData::exportObject(const std::string &filepath) const
 
     for (const auto &kvp : materialLibraries)
     {
-        outFile << "mtllib " <<  kvp.first << "\n";
+        outFile << "mtllib " << kvp.first << "\n";
     }
 
     // Write vertex positions
-    const auto &positions = vertexAttributes.at("position");
-    for (size_t i = 0; i < positions.size(); i += 3)
+    const auto &positions = vertexAttributes.at(POSITION_OFFSET);
+    for (size_t i = 0; i < positions.values.size(); i += 3)
     {
-        outFile << "v " << positions[i] << " " << positions[i + 1] << " " << positions[i + 2] << "\n";
+        outFile << "v " << positions.values[i] << " " << positions.values[i + 1] << " " << positions.values[i + 2] << "\n";
     }
 
     // Write vertex texture coordinates
-    const auto &uvs = vertexAttributes.at("uv");
-    for (size_t i = 0; i < uvs.size(); i += 2)
+    const auto &uvs = vertexAttributes.at(UV_OFFSET);
+    for (size_t i = 0; i < uvs.values.size(); i += 2)
     {
-        outFile << "vt " << uvs[i] << " " << uvs[i + 1] << "\n";
+        outFile << "vt " << uvs.values[i] << " " << uvs.values[i + 1] << "\n";
     }
 
     // Write vertex normals
-    const auto &normals = vertexAttributes.at("normal");
-    for (size_t i = 0; i < normals.size(); i += 3)
+    const auto &normals = vertexAttributes.at(NORMAL_OFFSET);
+    for (size_t i = 0; i < normals.values.size(); i += 3)
     {
-        outFile << "vn " << normals[i] << " " << normals[i + 1] << " " << normals[i + 2] << "\n";
+        outFile << "vn " << normals.values[i] << " " << normals.values[i + 1] << " " << normals.values[i + 2] << "\n";
     }
 
     // Write faces
@@ -464,14 +450,14 @@ void MeshData::exportObject(const std::string &filepath) const
     {
         outFile << "g " << group.name << "\n";
         outFile << "usemtl " << getMaterialName(group) << '\n';
-        for (size_t i = 0; i < group.indices.size(); i += INDEX_PER_VERTEX * group.vertexPerFace)
+        for (size_t i = 0; i < group.indices.size(); i += group.vertexPerFace)
         {
             outFile << "f";
             for (size_t j = 0; j < group.vertexPerFace; ++j)
             {
-                unsigned int posIdx = group.indices[i + j * INDEX_PER_VERTEX + POSITION_OFFSET] + 1;
-                unsigned int uvIdx = group.indices[i + j * INDEX_PER_VERTEX + UV_OFFSET] + 1;
-                unsigned int normalIdx = group.indices[i + j * INDEX_PER_VERTEX + NORMAL_OFFSET] + 1;
+                unsigned int posIdx = group.indices[i + j][POSITION_OFFSET] + 1;
+                unsigned int uvIdx = group.indices[i + j][UV_OFFSET] + 1;
+                unsigned int normalIdx = group.indices[i + j][NORMAL_OFFSET] + 1;
                 outFile << " " << posIdx << "/" << uvIdx << "/" << normalIdx;
             }
             outFile << "\n";
@@ -479,6 +465,11 @@ void MeshData::exportObject(const std::string &filepath) const
     }
 
     outFile.close();
+}
+
+std::array<VertexAttrib, INDEX_PER_VERTEX> &MeshData::getAttribs()
+{
+    return vertexAttributes;
 }
 
 std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::mat4 &a_tr, const MeshData &b, const glm::mat4 &b_tr)
@@ -553,31 +544,34 @@ std::shared_ptr<MeshData> MeshData::CombineMeshes(const MeshData &a, const glm::
         normalIndices.push_back(i);
     for (unsigned int i = 0; i < tangentOffset; i++)
         tangentIndices.push_back(i);
-    
+
     // Apply transformations a to vertices
     result->applyTransformationToIndices(a_tr, posIndices, normalIndices, tangentIndices);
 
     // Add vertex attributes from mesh b
-    for (auto &kvp : result->vertexAttributes)
+    for (unsigned int i = 0; i < INDEX_PER_VERTEX; i++)
     {
-        std::copy(b.vertexAttributes.at(kvp.first).begin(), b.vertexAttributes.at(kvp.first).end(), std::back_inserter(kvp.second));
+        std::copy(b.vertexAttributes[i].values.begin(), b.vertexAttributes[i].values.end(), std::back_inserter(result->vertexAttributes[i].values));
     }
-    
+
     // Update offsets and indices for transformation b
-    posIndices.clear(); normalIndices.clear(); tangentIndices.clear();
+    posIndices.clear();
+    normalIndices.clear();
+    tangentIndices.clear();
     for (unsigned int i = positionOffset; i < result->getPositionOffset(); i++)
         posIndices.push_back(i);
     for (unsigned int i = normalOffset; i < result->getNormalOffset(); i++)
         normalIndices.push_back(i);
     for (unsigned int i = tangentOffset; i < result->getTangentOffset(); i++)
         tangentIndices.push_back(i);
-    
+
     // Apply transformations b to vertices
     result->applyTransformationToIndices(b_tr, posIndices, normalIndices, tangentIndices);
 
     // Copy combined groups to result
     result->groups = std::vector<MeshGroup>();
-    std::transform(combinedGroups.begin(), combinedGroups.end(), result->groups.begin(), [](const std::pair<std::shared_ptr<Material>, MeshGroup> &kvp) { return kvp.second; });
+    std::transform(combinedGroups.begin(), combinedGroups.end(), result->groups.begin(), [](const std::pair<std::shared_ptr<Material>, MeshGroup> &kvp)
+                   { return kvp.second; });
     std::copy(uniqueGroups.begin(), uniqueGroups.end(), std::back_inserter(result->groups));
 
     // Recalculate tangents
@@ -670,13 +664,13 @@ std::vector<std::vector<float>> MeshData::getFace(const std::string &groupName, 
 std::vector<std::vector<float>> MeshData::getFace(const MeshGroup &group, unsigned int face_index)
 {
     std::vector<std::vector<float>> face;
-    size_t startIndex = face_index * group.vertexPerFace * INDEX_PER_VERTEX;
+    size_t startIndex = face_index * group.vertexPerFace;
     for (size_t i = 0; i < group.vertexPerFace; i++)
     {
         std::vector<float> vertex;
         for (size_t j = 0; j < INDEX_PER_VERTEX; j++)
         {
-            vertex.push_back(group.indices[startIndex + i * INDEX_PER_VERTEX + j]);
+            vertex.push_back(group.indices[startIndex + i][j]);
         }
         face.push_back(vertex);
     }
@@ -685,11 +679,10 @@ std::vector<std::vector<float>> MeshData::getFace(const MeshGroup &group, unsign
 
 const std::vector<float> &MeshData::getVertexAttribute(const std::string &name) const
 {
-    auto it = vertexAttributes.find(name);
-    if (it != vertexAttributes.end())
-        return it->second;
-    else
-        throw std::runtime_error("Attribute not found: " + name);
+    auto index = FindAttribIndex(name.c_str());
+    if (index != -1)
+        return vertexAttributes[index].values;
+    throw std::runtime_error("Attribute not found: " + name);
 }
 
 short MeshData::getVertexPerFace(const std::string &groupName) const
@@ -705,8 +698,8 @@ short MeshData::getVertexPerFace(const MeshGroup &group) const
 size_t MeshData::getVertexStride() const
 {
     size_t stride = 0;
-    for (const auto &kvp : vertexAttributes)
-        stride += kvp.second.size() * sizeof(float);
+    for (const auto &attrib : vertexAttributes)
+        stride += attrib.getStride() * sizeof(float);
     return stride;
 }
 
@@ -727,7 +720,7 @@ size_t MeshData::getFaceCount(const std::string &groupName) const
 
 size_t MeshData::getFaceCount(const MeshGroup &group) const
 {
-    return group.indices.size() / (INDEX_PER_VERTEX * group.vertexPerFace);
+    return group.indices.size() / (group.vertexPerFace);
 }
 
 std::vector<std::string> MeshGroup::getUsedTextures() const
@@ -758,22 +751,19 @@ MeshGroup MeshGroup::CombineGroups(const MeshGroup &a, const MeshGroup &b, unsig
     if (a.material != nullptr && b.material != nullptr && a.material != b.material)
         throw std::runtime_error("Material mismatch");
 
-    std::vector<unsigned int> indices;
+    std::vector<VertexIndex> indices;
 
-    for (size_t i = 0; i < a.indices.size() / INDEX_PER_VERTEX; i++)
+    for (size_t i = 0; i < a.indices.size(); i++)
     {
-        indices.push_back(a.indices[i * INDEX_PER_VERTEX + POSITION_OFFSET]);
-        indices.push_back(a.indices[i * INDEX_PER_VERTEX + UV_OFFSET]);
-        indices.push_back(a.indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET]);
-        indices.push_back(a.indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET]);
+        indices.push_back(a.indices[i]);
     }
 
-    for (size_t i = 0; i < b.indices.size() / INDEX_PER_VERTEX; i++)
+    for (size_t i = 0; i < b.indices.size(); i++)
     {
-        indices.push_back(b.indices[i * INDEX_PER_VERTEX + POSITION_OFFSET] + positionOffset);
-        indices.push_back(b.indices[i * INDEX_PER_VERTEX + UV_OFFSET] + uvOffset);
-        indices.push_back(b.indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET] + normalOffset);
-        indices.push_back(b.indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET] + tangentOffset);
+        indices.push_back({b.indices[i][POSITION_OFFSET] + positionOffset,
+                           b.indices[i][UV_OFFSET] + uvOffset,
+                           b.indices[i][NORMAL_OFFSET] + normalOffset,
+                           b.indices[i][TANGENT_OFFSET] + tangentOffset});
     }
 
     return MeshGroup{a.name + "+" + b.name, indices, a.material, a.vertexPerFace};
@@ -786,11 +776,11 @@ bool MeshGroup::canCombine(const MeshGroup &other) const
 
 void MeshGroup::offsetIndices(unsigned int positionOffset, unsigned int uvOffset, unsigned int normalOffset, unsigned int tangentOffset)
 {
-    for (size_t i = 0; i < indices.size() / INDEX_PER_VERTEX; i++)
+    for (size_t i = 0; i < indices.size(); i++)
     {
-        indices[i * INDEX_PER_VERTEX + POSITION_OFFSET] += positionOffset;
-        indices[i * INDEX_PER_VERTEX + UV_OFFSET] += uvOffset;
-        indices[i * INDEX_PER_VERTEX + NORMAL_OFFSET] += normalOffset;
-        indices[i * INDEX_PER_VERTEX + TANGENT_OFFSET] += tangentOffset;
+        indices[i][POSITION_OFFSET] += positionOffset;
+        indices[i][UV_OFFSET] += uvOffset;
+        indices[i][NORMAL_OFFSET] += normalOffset;
+        indices[i][TANGENT_OFFSET] += tangentOffset;
     }
 }
