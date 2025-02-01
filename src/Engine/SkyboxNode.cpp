@@ -1,5 +1,4 @@
 #include "SkyboxNode.h"
-#include "Graphics/Renderer.h"
 
 void to_json(nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
 {
@@ -41,7 +40,7 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
         setCubemap(split[0], split[1]);
     }
     cubeMap->bind(GL_TEXTURE0);
-    auto shader = Renderer::instance().getSkyboxShader();
+    auto shader = resolveShader(_shader);
     shader->use();
     shader->setInt("cubemap", 0);
     glDepthMask(GL_FALSE);

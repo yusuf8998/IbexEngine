@@ -68,6 +68,7 @@ public:
 
     std::shared_ptr<ShaderObject> getShader(int key) const;
     std::shared_ptr<ShaderObject> getSkyboxShader() const;
+    int getSkyboxShaderIndex() const;
 
     void setClearColor(const glm::vec3 &color);
     void setCursorState(int state);

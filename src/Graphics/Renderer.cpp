@@ -72,6 +72,11 @@ std::shared_ptr<ShaderObject> Renderer::getSkyboxShader() const
     return getShader(skyboxShader);
 }
 
+int Renderer::getSkyboxShaderIndex() const
+{
+    return skyboxShader;
+}
+
 void Renderer::setClearColor(const glm::vec3 &color)
 {
     clearColor = color;

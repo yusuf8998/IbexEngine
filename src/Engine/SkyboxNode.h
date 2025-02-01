@@ -2,7 +2,7 @@
 
 #include "SceneGraph.h"
 #include <Graphics/RenderObject.h>
-
+#include <Graphics/Renderer.h>
 #include <Graphics/CubemapObject.h>
 
 class SkyboxNode : public Renderable
@@ -10,9 +10,10 @@ class SkyboxNode : public Renderable
 private:
     std::shared_ptr<CubemapObject> cubeMap;
     const std::string SkyboxMesh = "res/Models/skybox.obj";
+
 public:
     SkyboxNode(const std::string &name = "Unnamed")
-        : Renderable(name) {}
+        : Renderable(name) { forced_shader = Renderer::instance().getSkyboxShaderIndex(); }
 
     void setCubemap(const std::array<std::string, 6> &sides);
     void setCubemap(const std::string &cubemapDir, const std::string &extension = "png");

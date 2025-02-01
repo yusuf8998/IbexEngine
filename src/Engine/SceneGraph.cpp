@@ -144,11 +144,18 @@ void from_json(const json &j, const TransformablePtr &node)
     node->updateTransform();
 }
 
-void Renderable::render(const std::shared_ptr<ShaderObject> &shader)
+void Renderable::render(const std::shared_ptr<ShaderObject> &_shader)
 {
     // Render the mesh
+    auto shader = resolveShader(_shader);
     if (enabled && visible)
         RenderObject::GetRenderObject(renderName)->render(shader, transform.globalTransform);
+}
+const std::shared_ptr<ShaderObject> Renderable::resolveShader(const std::shared_ptr<ShaderObject> &shader) const
+{
+    if (forced_shader == -1)
+        return shader;
+    return Renderer::instance().getShader(forced_shader);
 }
 void to_json(json &j, const RenderablePtr &node)
 {
@@ -194,4 +201,10 @@ void renderSceneGraph(const NodePtr &root, const std::shared_ptr<ShaderObject> &
 {
     root->traverse([&](Node *node)
                    { if (auto *cast = dynamic_cast<Renderable *>(node)) { cast->render(shader); } });
+}
+
+void renderSceneGraph(const NodePtr &root, const std::shared_ptr<ShaderObject> &shader, bool ignore_forced_shaders)
+{
+    root->traverse([&](Node *node)
+                   { if (auto *cast = dynamic_cast<Renderable *>(node)) { if (ignore_forced_shaders && cast->forced_shader != -1) return; cast->render(shader); } });
 }

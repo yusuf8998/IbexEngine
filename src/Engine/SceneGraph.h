@@ -72,11 +72,15 @@ public:
     std::string renderName;
     bool visible;
     bool static_;
+    int forced_shader;
 
     Renderable(const std::string &name = "Unnamed")
-        : Transformable(name), renderName(""), visible(true), static_(false) {}
+        : Transformable(name), renderName(""), visible(true), static_(false), forced_shader(-1) {}
 
     virtual void render(const std::shared_ptr<ShaderObject> &shader);
+
+protected:
+    const std::shared_ptr<ShaderObject> resolveShader(const std::shared_ptr<ShaderObject> &shader) const;
 };
 void to_json(nlohmann::json &j, const RenderablePtr &node);
 void to_json(nlohmann::json &j, const Renderable *node);
@@ -99,3 +103,4 @@ inline std::shared_ptr<T> castNode(const NodePtr &node)
 
 void updateSceneGraph(const NodePtr &root);
 void renderSceneGraph(const NodePtr &root, const std::shared_ptr<ShaderObject> &shader);
+void renderSceneGraph(const NodePtr &root, const std::shared_ptr<ShaderObject> &shader, bool ignore_forced_shaders);
