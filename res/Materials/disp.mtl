@@ -1,0 +1,9 @@
+newmtl disp
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ns 32.000000
+illum 2
+map_Kd res/Textures/disp2_color.png
+#map_Ks res/Textures/box.specular.png
+#norm res/Textures/box.normal.png
+disp res/Textures/disp2.png

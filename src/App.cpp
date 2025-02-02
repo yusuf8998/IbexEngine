@@ -33,6 +33,7 @@ int main()
     renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
     renderer.loadShader(2, "res/Shaders/Shader_Normal/vertex_normal.glsl",  "res/Shaders/Shader_Normal/geometry_normal.glsl", "res/Shaders/Shader_Normal/fragment_normal.glsl");
     renderer.loadShader(3, "res/Shaders/Shader_Billboard/vertex_billboard.glsl",  "res/Shaders/Shader_Billboard/geometry_billboard.glsl", "res/Shaders/Shader_Billboard/fragment_billboard.glsl");
+    renderer.loadShader(4, "res/Shaders/Shader_Displacement/vertex_displacement.glsl",  "res/Shaders/Shader_Displacement/geometry_displacement.glsl", "res/Shaders/Shader_Displacement/fragment_displacement.glsl");
     renderer.assignSkyboxShader(1);
 
     NodePtr root = makeNode<Transformable>("root");
@@ -43,8 +44,9 @@ int main()
     castNode<BillboardNode>(root->children[1])->getTransform().translate(glm::vec3(0, 1, 0));
     castNode<BillboardNode>(root->children[1])->getTransform().rescale(glm::vec3(2.f));
 
-    castNode<Renderable>(root->children[0])->renderName = "res/Pebble_Sphere.obj";
+    castNode<Renderable>(root->children[0])->renderName = "res/Models/disp_cube.obj";
     castNode<BillboardNode>(root->children[1])->renderName = "res/Textures/box.png";
+    castNode<BillboardNode>(root->children[1])->visible = false;
     castNode<SkyboxNode>(root->children[2])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
 
     castNode<BillboardNode>(root->children[1])->lockHorizontal = true;
@@ -98,7 +100,7 @@ int main()
 
         // Simple update and render cycle
         updateSceneGraph(root);
-        renderSceneGraph(root, renderer.getShader(0));
+        renderSceneGraph(root, renderer.getShader(4));
         if (drawNormals)
             renderSceneGraph(root, renderer.getShader(2), true);
 

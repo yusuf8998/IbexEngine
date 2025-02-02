@@ -103,4 +103,8 @@ void MaterialLibrary::parseMTLLine(const std::string &line, std::shared_ptr<Mate
     { // Normal map
         currentMaterial->normalMap = tokens[1];
     }
+    else if (tokens[0] == "disp")
+    { // Displacement map
+        currentMaterial->dispMap = tokens[1];
+    }
 }

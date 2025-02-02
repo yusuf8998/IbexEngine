@@ -808,18 +808,7 @@ std::vector<std::string> MeshGroup::getUsedTextures() const
     std::vector<std::string> textures;
     if (material != nullptr)
     {
-        if (!material->diffuseTexture.empty())
-        {
-            textures.push_back(material->diffuseTexture);
-        }
-        if (!material->specularTexture.empty())
-        {
-            textures.push_back(material->specularTexture);
-        }
-        if (!material->normalMap.empty())
-        {
-            textures.push_back(material->normalMap);
-        }
+        textures = material->getTextures();
     }
     return textures;
 }

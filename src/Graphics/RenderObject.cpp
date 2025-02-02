@@ -250,6 +250,7 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
     shader->setInt("material.diffuseIndex", -1);
     shader->setInt("material.specularIndex", -1);
     shader->setInt("material.normalIndex", -1);
+    shader->setInt("material.displacementIndex", -1);
 
     for (size_t i = 0; i < textureArray->getFilePaths().size(); i++)
     {
@@ -264,6 +265,10 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
         else if (textureArray->getFilePaths()[i] == material->normalMap)
         {
             shader->setInt("material.normalIndex", i);
+        }
+        else if (textureArray->getFilePaths()[i] == material->dispMap)
+        {
+            shader->setInt("material.displacementIndex", i);
         }
     }
 
