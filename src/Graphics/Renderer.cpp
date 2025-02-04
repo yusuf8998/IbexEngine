@@ -124,6 +124,7 @@ void Renderer::loadShader(int key, const std::string &vertexPath, const std::str
 
 void Renderer::assignSkyboxShader(int key)
 {
+    assert(shaders.count(key) != 0);
     skyboxShader = key;
 }
 
