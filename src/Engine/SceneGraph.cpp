@@ -1,6 +1,7 @@
 #include "SceneGraph.h"
 #include <Graphics/RenderObject.h>
 #include "SkyboxNode.h"
+#include "BillboardNode.h"
 
 using namespace std;
 using namespace glm;
@@ -55,6 +56,10 @@ void to_json(json &j, const NodePtr &node)
     {
         ::to_json(j, skybox);
     }
+    else if (auto *billboard = dynamic_cast<BillboardNode *>(node.get()))
+    {
+        ::to_json(j, billboard);
+    }
     else if (auto *renderable = dynamic_cast<Renderable *>(node.get()))
     {
         ::to_json(j, renderable);
@@ -92,7 +97,13 @@ void constructNodeFromJson(const json &j, NodePtr &node)
         ::from_json(j, dynamic_pointer_cast<SkyboxNode>(node));
         return;
     }
-    if (j.contains("meshName"))
+    if (j.contains("lockHorizontal"))
+    {
+        node = make_shared<BillboardNode>();
+        ::from_json(j, dynamic_pointer_cast<BillboardNode>(node));
+        return;
+    }
+    if (j.contains("renderName"))
     {
         node = make_shared<Renderable>();
         ::from_json(j, dynamic_pointer_cast<Renderable>(node));
@@ -164,14 +175,14 @@ void to_json(json &j, const RenderablePtr &node)
 void to_json(nlohmann::json &j, const Renderable *node)
 {
     ::to_json(j, dynamic_cast<const Transformable *>(node));
-    j += {"meshName", node->renderName};
+    j += {"renderName", node->renderName};
     j += {"visible", node->visible};
     j += {"static", node->static_};
 }
 void from_json(const json &j, const RenderablePtr &node)
 {
     ::from_json(j, dynamic_pointer_cast<Transformable>(node));
-    j.at("meshName").get_to(node->renderName);
+    j.at("renderName").get_to(node->renderName);
     j.at("visible").get_to(node->visible);
     j.at("static").get_to(node->static_);
 }
