@@ -207,6 +207,7 @@ void Renderer::initialize()
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable V-Sync
+    glfwWindowHint(GLFW_SAMPLES, 4);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, cursorState);
 
@@ -220,6 +221,7 @@ void Renderer::initialize()
     glViewport(0, 0, screenSize.x, screenSize.y);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(DEFAULT_DEPTH_FUNC);
+    glEnable(GL_MULTISAMPLE);  
 
     inputHandler = new InputHandler(window);
 }
