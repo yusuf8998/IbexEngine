@@ -49,15 +49,12 @@ void constructNodeFromJson(const nlohmann::json &j, NodePtr &node);
 
 class Transformable : public Node
 {
-protected:
-    Transform transform;
-
 public:
-    Transformable(const std::string &name = "Unnamed")
-        : Node(name), transform() {}
+    Transform transform;
+    bool isStatic;
 
-    inline Transform &getTransform() { return transform; }
-    inline const Transform &getTransform() const { return transform; }
+    Transformable(const std::string &name = "Unnamed")
+        : Node(name), transform(), isStatic(false) {}
 
     void updateTransform(bool keep_global = false);
 };
@@ -71,11 +68,10 @@ class Renderable : public Transformable
 public:
     std::string renderName;
     bool visible;
-    bool static_;
     int forced_shader;
 
     Renderable(const std::string &name = "Unnamed")
-        : Transformable(name), renderName(""), visible(true), static_(false), forced_shader(-1) {}
+        : Transformable(name), renderName(""), visible(true), forced_shader(-1) {}
 
     virtual void render(const std::shared_ptr<ShaderObject> &shader);
 

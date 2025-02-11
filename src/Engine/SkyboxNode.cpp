@@ -13,10 +13,10 @@ void from_json(const nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
 {
     j.at("skyboxName").get_to(node->renderName);
     j.at("visible").get_to(node->visible);
-    node->static_ = true;
-    node->getTransform().position = glm::vec3(0.f);
-    node->getTransform().rotation = glm::quat(glm::vec3(0.f));
-    node->getTransform().scale = glm::vec3(0.f);
+    node->isStatic = true;
+    node->transform.position = glm::vec3(0.f);
+    node->transform.rotation = glm::quat(glm::vec3(0.f));
+    node->transform.scale = glm::vec3(0.f);
 }
 
 void SkyboxNode::setCubemap(const std::array<std::string, 6> &sides)

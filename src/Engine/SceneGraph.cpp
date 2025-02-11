@@ -121,6 +121,9 @@ void constructNodeFromJson(const json &j, NodePtr &node)
 
 void Transformable::updateTransform(bool keep_global)
 {
+    if (isStatic)
+        transform.transformChanged = false;
+
     if (transform.transformChanged)
     {
         transform.applyTransformToLocal();
@@ -136,8 +139,6 @@ void Transformable::updateTransform(bool keep_global)
         transform.applyLocalToGlobal();
     }
 
-    // Traverse children
-
     transform.transformChanged = false;
 }
 void to_json(json &j, const TransformablePtr &node)
@@ -146,12 +147,14 @@ void to_json(json &j, const TransformablePtr &node)
 }
 void to_json(nlohmann::json &j, const Transformable *node)
 {
-    j += {"transform", node->getTransform()};
+    j += {"transform", node->transform};
+    j += {"static", node->isStatic};
 }
 void from_json(const json &j, const TransformablePtr &node)
 {
-    j.at("transform").get_to(node->getTransform());
-    node->getTransform().transformChanged = true;
+    j.at("transform").get_to(node->transform);
+    j.at("static").get_to(node->isStatic);
+    node->transform.transformChanged = true;
     node->updateTransform();
 }
 
@@ -177,14 +180,12 @@ void to_json(nlohmann::json &j, const Renderable *node)
     ::to_json(j, dynamic_cast<const Transformable *>(node));
     j += {"renderName", node->renderName};
     j += {"visible", node->visible};
-    j += {"static", node->static_};
 }
 void from_json(const json &j, const RenderablePtr &node)
 {
     ::from_json(j, dynamic_pointer_cast<Transformable>(node));
     j.at("renderName").get_to(node->renderName);
     j.at("visible").get_to(node->visible);
-    j.at("static").get_to(node->static_);
 }
 
 void loadSceneGraph(const string &filename, NodePtr &root)
