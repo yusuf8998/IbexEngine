@@ -68,6 +68,7 @@ int main()
     auto rotationInputVector = InputVector("RotationHorizontal", "RotationVertical", "");
 
     bool drawNormals = false;
+    bool drawWireframe = false;
 
     glm::vec4 transformedInput;
 
@@ -83,6 +84,11 @@ int main()
         if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_N))
         {
             drawNormals = !drawNormals;
+        }
+
+        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_L))
+        {
+            drawWireframe = !drawWireframe;
         }
 
         if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_ESCAPE))
@@ -103,6 +109,7 @@ int main()
 
         // Simple update and render cycle
         updateSceneGraph(root);
+        glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL) );
         renderSceneGraph(root, renderer.getShader(4));
         if (drawNormals)
             renderSceneGraph(root, renderer.getShader(2), true);
