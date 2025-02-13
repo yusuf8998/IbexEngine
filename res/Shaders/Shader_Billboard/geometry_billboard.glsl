@@ -13,13 +13,29 @@ uniform mat4 model;
 
 uniform int lockHorizontal;
 
+mat4 new_model = mat4(1.0);
+
 vec4 getCorner(mat4 inv_view, vec2 offset)
 {
-    return inv_view * model * vec4(vec3(offset, 0.0), 0.0);
+    return inv_view * new_model * vec4(vec3(offset, 0.0), 0.0);
 }
 
 void main()
 {
+    vec3 scale, translation;
+
+    scale.x = length(vec3(model[0]));
+    scale.y = length(vec3(model[1]));
+    scale.z = length(vec3(model[2]));
+
+    translation = vec3(model[3]);
+
+    new_model = mat4(1.0);
+    new_model[0] = vec4(scale.x, 0.0, 0.0, 0.0);
+    new_model[1] = vec4(0.0, scale.y, 0.0, 0.0);
+    new_model[2] = vec4(0.0, 0.0, scale.z, 0.0);
+    new_model[3] = vec4(translation, 1.0);
+
     mat3 rot = mat3(view);
     rot[0] = vec3(1.0, 0.0, 0.0);
     rot[2] = vec3(0.0, 0.0, 1.0);

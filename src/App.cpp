@@ -26,8 +26,6 @@ void save(const std::shared_ptr<Node> &root)
     printf("Saved!\n");
 }
 
-// FIX: Billboards react weirdly to being rotated
-
 int main()
 {
     auto &renderer = Renderer::instance();
@@ -38,24 +36,24 @@ int main()
     renderer.loadShader(4, "res/Shaders/Shader_Displacement/vertex_displacement.glsl",  "res/Shaders/Shader_Displacement/geometry_displacement.glsl", "res/Shaders/Shader_Displacement/fragment_displacement.glsl");
     renderer.assignSkyboxShader(1);
 
-    NodePtr root = makeNode<Transformable>("root");
-    root->addChild(makeNode<Renderable>("dynamic1"));
-    root->addChild(makeNode<BillboardNode>("billboard1"));
-    root->addChild(makeNode<SkyboxNode>("skybox"));
+    // NodePtr root = makeNode<Transformable>("root");
+    // root->addChild(makeNode<Renderable>("dynamic1"));
+    // root->addChild(makeNode<BillboardNode>("billboard1"));
+    // root->addChild(makeNode<SkyboxNode>("skybox"));
 
-    // castNode<Transformable>(root)->isStatic = true;
+    // // castNode<Transformable>(root)->isStatic = true;
 
-    castNode<BillboardNode>(root->children[1])->transform.translate(glm::vec3(0, 5, 0));
-    castNode<BillboardNode>(root->children[1])->transform.rescale(glm::vec3(2.f));
+    // castNode<BillboardNode>(root->children[1])->transform.translate(glm::vec3(0, 5, 0));
+    // castNode<BillboardNode>(root->children[1])->transform.rescale(glm::vec3(2.f));
 
-    castNode<Renderable>(root->children[0])->renderName = "res/Models/disp_cube.obj";
-    castNode<BillboardNode>(root->children[1])->renderName = "res/Textures/box.png";
-    castNode<SkyboxNode>(root->children[2])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
+    // castNode<Renderable>(root->children[0])->renderName = "res/Models/disp_cube.obj";
+    // castNode<BillboardNode>(root->children[1])->renderName = "res/Textures/box.png";
+    // castNode<SkyboxNode>(root->children[2])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
 
-    castNode<BillboardNode>(root->children[1])->lockHorizontal = true;
+    // castNode<BillboardNode>(root->children[1])->lockHorizontal = true;
 
-    // NodePtr root;
-    // loadSceneGraph("root.json", root);
+    NodePtr root;
+    loadSceneGraph("root.json", root);
 
     InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, renderer.getInputHandler());
     InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_S, GLFW_KEY_W, renderer.getInputHandler());
