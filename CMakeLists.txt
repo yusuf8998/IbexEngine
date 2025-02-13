@@ -41,7 +41,7 @@ target_include_directories(Ibex PUBLIC
 add_library(glfw STATIC IMPORTED)
 set_property(TARGET glfw PROPERTY IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/Dependencies/GLFW-static/lib-mingw32/libglfw3.a")
 else()
-find_package(nlohmann_json 3.11.3 REQUIRED)
+find_package(nlohmann_json 3.10.5 REQUIRED)
 target_include_directories(Ibex PUBLIC
     "src/"
     "src/vendor/"
