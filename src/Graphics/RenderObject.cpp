@@ -7,14 +7,14 @@ bool GLLogCall(const char *function, const char *file, int line);
 #define ASSERT(x) \
     if (!(x))     \
         throw;
-// #if DEBUG
+#if DEBUG
 #define GLCall(x)   \
     GLClearError(); \
     x;              \
     ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-// #else
-// #define GLCall(x) x;
-// #endif
+#else
+#define GLCall(x) x;
+#endif
 
 inline void GLClearError()
 {
@@ -87,14 +87,6 @@ std::shared_ptr<RenderObject> RenderObject::AddRenderObject(const std::string &n
 void RenderObject::ReleaseAllMeshes()
 {
     Meshes.clear();
-}
-
-void RenderObject::reuploadToGLBuffers()
-{
-    for (auto &g : groups)
-    {
-        g.reuploadToGLBuffers();
-    }
 }
 
 std::unordered_map<std::string, std::shared_ptr<RenderObject>> RenderObject::Meshes = {};
@@ -180,14 +172,8 @@ GLenum RenderGroup::getDrawMode() const
 
 void RenderGroup::generateOpenGLBuffers()
 {
-    // Create a VAO (Vertex Array Object)
     glGenVertexArrays(1, &VAO);
-    // Create a VBO (Vertex Buffer Object)
     glGenBuffers(1, &VBO);
-    // Create an EBO (Element Buffer Object)
-    // glGenBuffers(1, &EBO);
-
-    // elementIndices = generateIndices(data->getFaceCount(name) * data->getVertexPerFace(name));
 }
 
 void RenderGroup::populateOpenGLBuffers()
@@ -201,9 +187,6 @@ void RenderGroup::populateOpenGLBuffers()
     // Populate the VBO with interleaved data
     glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
 
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementIndices.size() * sizeof(unsigned int), elementIndices.data(), GL_STATIC_DRAW);
-
     // Enable the vertex attributes
     // Position attribute
     const size_t stride = data->getVertexStride();
@@ -214,7 +197,6 @@ void RenderGroup::populateOpenGLBuffers()
 
     // Unbind the VAO and buffers
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
     textureArray = std::make_shared<TextureArrayObject>(data->getGroup(name).getUsedTextures());
@@ -223,7 +205,6 @@ void RenderGroup::populateOpenGLBuffers()
 void RenderGroup::reuploadToGLBuffers()
 {
     glDeleteBuffers(1, &VBO);
-    // glDeleteBuffers(1, &EBO);
     glDeleteVertexArrays(1, &VAO);
 
     generateOpenGLBuffers();
@@ -284,8 +265,6 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
     shader->setVec3("viewPos", mainCamera.position);
 
     // Draw the mesh
-    // GLCall(glDrawElements(getDrawMode(), elementIndices.size(), GL_UNSIGNED_INT, elementIndices.data()));
-
     GLCall(glDrawArrays(getDrawMode(), 0, data->getFaceCount(name) * data->getVertexPerFace(name)));
 
     // Unbind the VAO
@@ -301,7 +280,6 @@ void RenderGroup::renderRaw()
     glBindVertexArray(VAO);
 
     // Draw the mesh
-    // GLCall(glDrawElements(getDrawMode(), elementIndices.size(), GL_UNSIGNED_INT, elementIndices.data()));
     GLCall(glDrawArrays(getDrawMode(), 0, data->getFaceCount(name) * data->getVertexPerFace(name)));
 
     // Unbind the VAO

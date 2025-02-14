@@ -25,8 +25,7 @@ public:
 private:
     std::shared_ptr<MeshData> data;
     std::string name;
-    GLuint VAO, VBO;//, EBO;
-    // std::vector<unsigned int> elementIndices = {};
+    GLuint VAO, VBO;
 
     void generateOpenGLBuffers();
     void populateOpenGLBuffers();
@@ -54,8 +53,6 @@ public:
     static std::shared_ptr<RenderObject> GetRenderObject(const std::string &name);
     static std::shared_ptr<RenderObject> AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object);
     static void ReleaseAllMeshes();
-
-    void reuploadToGLBuffers();
 
 private:
     void extractGroups(const std::shared_ptr<MeshData> &data);

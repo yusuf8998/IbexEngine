@@ -48,6 +48,8 @@ target_include_directories(Ibex PUBLIC
 )
 endif()
 
+target_compile_definitions(Ibex PUBLIC "$<$<CONFIG:DEBUG>:DEBUG>")
+
 set(DEPENDENCY_TARGET ResourceStuff)
 add_custom_target(
     ResourceStuff
