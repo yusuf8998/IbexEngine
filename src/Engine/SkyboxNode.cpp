@@ -6,14 +6,14 @@ void to_json(nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
 }
 void to_json(nlohmann::json &j, const SkyboxNode *node)
 {
-    j += {"skyboxName", node->renderName};
+    j += {"skyboxName", node->render_name};
     j += {"visible", node->visible};
 }
 void from_json(const nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node)
 {
-    j.at("skyboxName").get_to(node->renderName);
+    j.at("skyboxName").get_to(node->render_name);
     j.at("visible").get_to(node->visible);
-    node->isStatic = true;
+    node->is_static = true;
     node->transform.position = glm::vec3(0.f);
     node->transform.rotation = glm::quat(glm::vec3(0.f));
     node->transform.scale = glm::vec3(0.f);
@@ -35,7 +35,7 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
         return;
     if (!cubeMap)
     {
-        auto split = splitString(renderName, '*');
+        auto split = splitString(render_name, '*');
         assert(split.size() == 2);
         setCubemap(split[0], split[1]);
     }

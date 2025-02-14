@@ -121,7 +121,7 @@ void constructNodeFromJson(const json &j, NodePtr &node)
 
 void Transformable::updateTransform(bool keep_global)
 {
-    if (isStatic)
+    if (is_static)
         transform.transformChanged = false;
 
     if (transform.transformChanged)
@@ -148,12 +148,12 @@ void to_json(json &j, const TransformablePtr &node)
 void to_json(nlohmann::json &j, const Transformable *node)
 {
     j += {"transform", node->transform};
-    j += {"static", node->isStatic};
+    j += {"static", node->is_static};
 }
 void from_json(const json &j, const TransformablePtr &node)
 {
     j.at("transform").get_to(node->transform);
-    j.at("static").get_to(node->isStatic);
+    j.at("static").get_to(node->is_static);
     node->transform.transformChanged = true;
     node->updateTransform();
 }
@@ -163,7 +163,7 @@ void Renderable::render(const std::shared_ptr<ShaderObject> &_shader)
     // Render the mesh
     auto shader = resolveShader(_shader);
     if (enabled && visible)
-        RenderObject::GetRenderObject(renderName)->render(shader, transform.globalTransform);
+        RenderObject::GetRenderObject(render_name)->render(shader, transform.globalTransform);
 }
 const std::shared_ptr<ShaderObject> Renderable::resolveShader(const std::shared_ptr<ShaderObject> &shader) const
 {
@@ -178,13 +178,13 @@ void to_json(json &j, const RenderablePtr &node)
 void to_json(nlohmann::json &j, const Renderable *node)
 {
     ::to_json(j, dynamic_cast<const Transformable *>(node));
-    j += {"renderName", node->renderName};
+    j += {"renderName", node->render_name};
     j += {"visible", node->visible};
 }
 void from_json(const json &j, const RenderablePtr &node)
 {
     ::from_json(j, dynamic_pointer_cast<Transformable>(node));
-    j.at("renderName").get_to(node->renderName);
+    j.at("renderName").get_to(node->render_name);
     j.at("visible").get_to(node->visible);
 }
 

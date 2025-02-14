@@ -6,7 +6,7 @@ void BillboardNode::render(const std::shared_ptr<ShaderObject> &_shader)
         return;
     if (!texture)
     {
-        texture = std::make_shared<TextureObject>(renderName);
+        texture = std::make_shared<TextureObject>(render_name);
     }
     if (!renderObject)
     {
@@ -30,14 +30,14 @@ void to_json(nlohmann::json &j, const std::shared_ptr<BillboardNode> &node)
 void to_json(nlohmann::json &j, const BillboardNode *node)
 {
     ::to_json(j, dynamic_cast<const Transformable *>(node));
-    j += {"billboardName", node->renderName};
+    j += {"billboardName", node->render_name};
     j += {"visible", node->visible};
     j += {"lockHorizontal", node->lockHorizontal};
 }
 void from_json(const nlohmann::json &j, const std::shared_ptr<BillboardNode> &node)
 {
     ::from_json(j, std::dynamic_pointer_cast<Transformable>(node));
-    j.at("billboardName").get_to(node->renderName);
+    j.at("billboardName").get_to(node->render_name);
     j.at("visible").get_to(node->visible);
     j.at("lockHorizontal").get_to(node->lockHorizontal);
 }

@@ -41,14 +41,14 @@ int main()
     // root->addChild(makeNode<BillboardNode>("billboard1"));
     // root->addChild(makeNode<SkyboxNode>("skybox"));
 
-    // // castNode<Transformable>(root)->isStatic = true;
+    // // castNode<Transformable>(root)->is_static = true;
 
     // castNode<BillboardNode>(root->children[1])->transform.translate(glm::vec3(0, 5, 0));
     // castNode<BillboardNode>(root->children[1])->transform.rescale(glm::vec3(2.f));
 
-    // castNode<Renderable>(root->children[0])->renderName = "res/Models/disp_cube.obj";
-    // castNode<BillboardNode>(root->children[1])->renderName = "res/Textures/box.png";
-    // castNode<SkyboxNode>(root->children[2])->renderName = "res/Textures/Skybox/skybox-biglake*jpg";
+    // castNode<Renderable>(root->children[0])->render_name = "res/Models/disp_cube.obj";
+    // castNode<BillboardNode>(root->children[1])->render_name = "res/Textures/box.png";
+    // castNode<SkyboxNode>(root->children[2])->render_name = "res/Textures/Skybox/skybox-biglake*jpg";
 
     // castNode<BillboardNode>(root->children[1])->lockHorizontal = true;
 

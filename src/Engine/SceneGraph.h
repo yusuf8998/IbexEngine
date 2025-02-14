@@ -51,10 +51,10 @@ class Transformable : public Node
 {
 public:
     Transform transform;
-    bool isStatic;
+    bool is_static;
 
     Transformable(const std::string &name = "Unnamed")
-        : Node(name), transform(), isStatic(false) {}
+        : Node(name), transform(), is_static(false) {}
 
     void updateTransform(bool keep_global = false);
 };
@@ -66,12 +66,12 @@ void from_json(const nlohmann::json &j, const TransformablePtr &node);
 class Renderable : public Transformable
 {
 public:
-    std::string renderName;
+    std::string render_name;
     bool visible;
     int forced_shader;
 
     Renderable(const std::string &name = "Unnamed")
-        : Transformable(name), renderName(""), visible(true), forced_shader(-1) {}
+        : Transformable(name), render_name(""), visible(true), forced_shader(-1) {}
 
     virtual void render(const std::shared_ptr<ShaderObject> &shader);
 
