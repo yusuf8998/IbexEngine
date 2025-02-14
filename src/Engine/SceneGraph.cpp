@@ -109,6 +109,12 @@ void constructNodeFromJson(const json &j, NodePtr &node)
         ::from_json(j, dynamic_pointer_cast<Renderable>(node));
         return;
     }
+    if (j.contains("activeChild"))
+    {
+        node = make_shared<SwitchNode>();
+        ::from_json(j, dynamic_pointer_cast<SwitchNode>(node));
+        return;
+    }
     if (j.contains("transform"))
     {
         node = make_shared<Transformable>();
@@ -117,6 +123,19 @@ void constructNodeFromJson(const json &j, NodePtr &node)
     }
     node = make_shared<Node>();
     return;
+}
+
+void to_json(nlohmann::json &j, const std::shared_ptr<SwitchNode> &node)
+{
+    ::to_json(j, node.get());
+}
+void to_json(nlohmann::json &j, const SwitchNode *node)
+{
+    j += {"activeChild", node->active_child};
+}
+void from_json(const nlohmann::json &j, const std::shared_ptr<SwitchNode> &node)
+{
+    j.at("activeChild").get_to(node->active_child);
 }
 
 void Transformable::updateTransform(bool keep_global)

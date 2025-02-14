@@ -29,8 +29,7 @@ public:
     Node(const std::string &name = "Unnamed");
     virtual ~Node() = default;
 
-    template <typename F>
-    inline void traverse(F &&f)
+    virtual inline void traverse(std::function<void(Node *)> f)
     {
         std::unique_lock<std::shared_mutex> lock(mutex_);
         f(this);
@@ -46,6 +45,25 @@ void to_json(nlohmann::json &j, const NodePtr &node);
 void from_json(const nlohmann::json &j, NodePtr &node);
 
 void constructNodeFromJson(const nlohmann::json &j, NodePtr &node);
+
+class SwitchNode : public Node
+{
+public:
+    int active_child;
+
+    SwitchNode(const std::string &name = "Unnamed")
+        : Node(name) {}
+    
+    inline void traverse(std::function<void(Node *)> f) override
+    {
+        std::unique_lock<std::shared_mutex> lock(mutex_);
+        f(this);
+        children[active_child]->traverse(f);
+    }
+};
+void to_json(nlohmann::json &j, const std::shared_ptr<SwitchNode> &node);
+void to_json(nlohmann::json &j, const SwitchNode *node);
+void from_json(const nlohmann::json &j, const std::shared_ptr<SwitchNode> &node);
 
 class Transformable : public Node
 {
