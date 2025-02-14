@@ -15,6 +15,7 @@
 #include "Graphics/Renderer.h"
 #include "Engine/SkyboxNode.h"
 #include "Engine/BillboardNode.h"
+#include "Graphics/ParticleObject.h"
 
 std::thread save_thread;
 
@@ -34,7 +35,20 @@ int main()
     renderer.loadShader(2, "res/Shaders/Shader_Normal/vertex_normal.glsl",  "res/Shaders/Shader_Normal/geometry_normal.glsl", "res/Shaders/Shader_Normal/fragment_normal.glsl");
     renderer.loadShader(3, "res/Shaders/Shader_Billboard/vertex_billboard.glsl",  "res/Shaders/Shader_Billboard/geometry_billboard.glsl", "res/Shaders/Shader_Billboard/fragment_billboard.glsl");
     renderer.loadShader(4, "res/Shaders/Shader_Displacement/vertex_displacement.glsl",  "res/Shaders/Shader_Displacement/geometry_displacement.glsl", "res/Shaders/Shader_Displacement/fragment_displacement.glsl");
+    renderer.loadShader(5, "res/Shaders/Shader_Particle/vertex_particle.glsl", "res/Shaders/Shader_Particle/fragment_particle.glsl");
     renderer.assignSkyboxShader(1);
+
+    ParticleObject particleObj;
+    particleObj.particles = std::vector<Particle>(50);
+    for (size_t i = 0; i < particleObj.particles.size(); i++) {
+        particleObj.particles[i].position = glm::vec3(rand() % 10, rand() % 10, rand() % 10);  // Random position
+        particleObj.particles[i].velocity = glm::vec3(0.0f, -1.0f, 0.0f);  // Example velocity
+        particleObj.particles[i].size = .25f;
+        particleObj.particles[i].color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);  // White color
+        particleObj.particles[i].lifetime = 0.0f;
+    }
+
+    particleObj.updateInstanceBuffer();
 
     // NodePtr root = makeNode<Transformable>("root");
     // root->addChild(makeNode<Renderable>("dynamic1"));
@@ -107,6 +121,11 @@ int main()
 
         // Simple update and render cycle
         updateSceneGraph(root);
+
+        particleObj.updateParticles();
+        particleObj.updateInstanceBuffer();
+        particleObj.render(renderer.getShader(5), glm::mat4(1.f));
+
         glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL) );
         renderSceneGraph(root, renderer.getShader(4));
         if (drawNormals)
