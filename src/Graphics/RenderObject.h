@@ -42,11 +42,10 @@ private:
 class RenderObject
 {
 public:
-    std::shared_ptr<MeshData> data;
     std::vector<RenderGroup> groups;
 
     RenderObject(const std::string &filepath);
-    RenderObject(std::shared_ptr<MeshData> data);
+    RenderObject(const std::shared_ptr<MeshData> &data);
 
     void render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation);
     void renderRaw();
@@ -59,27 +58,9 @@ public:
     void reuploadToGLBuffers();
 
 private:
-    void extractGroups();
+    void extractGroups(const std::shared_ptr<MeshData> &data);
 
     static std::unordered_map<std::string, std::shared_ptr<RenderObject>> Meshes;
 };
 
 void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::array<VertexAttrib, INDEX_PER_VERTEX> &attribs);
-
-// inline std::vector<unsigned int> generateIndices(int numVertices)
-// {
-//     std::vector<unsigned int> indices;
-
-//     if (numVertices < 3)
-//     {
-//         // A valid polygon must have at least 3 vertices (triangle).
-//         return indices;
-//     }
-
-//     for (int i = 0; i < numVertices; i++)
-//     {
-//         indices.push_back(i);
-//     }
-
-//     return indices;
-// }

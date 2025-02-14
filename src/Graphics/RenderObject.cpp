@@ -63,12 +63,11 @@ RenderObject::RenderObject(const std::string &filepath)
     : RenderObject(ResourceManager::instance().getResource<MeshData>(filepath))
 {
 }
-RenderObject::RenderObject(std::shared_ptr<MeshData> data)
-    : data(data)
+RenderObject::RenderObject(const std::shared_ptr<MeshData> &data)
 {
     if (Meshes[data->filepath] != nullptr)
         throw std::runtime_error("Mesh already loaded");
-    extractGroups();
+    extractGroups(data);
 }
 
 std::shared_ptr<RenderObject> RenderObject::GetRenderObject(const std::string &name)
@@ -126,7 +125,7 @@ void defineVertexAttrib(int i, int count, size_t stride, size_t &offset)
     glEnableVertexAttribArray(i);
 }
 
-void RenderObject::extractGroups()
+void RenderObject::extractGroups(const std::shared_ptr<MeshData> &data)
 {
     for (const auto &g : data->groups)
     {
