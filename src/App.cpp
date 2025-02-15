@@ -39,13 +39,13 @@ int main()
     renderer.assignSkyboxShader(1);
 
     ParticleObject particleObj("res/Textures/disp2.png");
-    particleObj.particles = std::vector<Particle>(50);
+    particleObj.particles = std::vector<Particle>(10000);
     for (size_t i = 0; i < particleObj.particles.size(); i++) {
         particleObj.particles[i].position = glm::vec3(0.f, 5.f, -5.f);
-        particleObj.particles[i].velocity = glm::normalize(glm::vec3(rand() % 10, rand() % 10, rand() % 10)) * 15.f;  // Random velocity
+        particleObj.particles[i].velocity = glm::normalize(glm::vec3(rand() % 10 - 5, rand() % 3 - 1, rand() % 10 - 5)) * 15.f;  // Random velocity
         particleObj.particles[i].acceleration = glm::vec3(.0f, -9.8f, .0f);
         particleObj.particles[i].size = .25f;
-        particleObj.particles[i].color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);  // White color
+        particleObj.particles[i].color = glm::vec4(1.0f, 0.125f, 0.0f, 1.0f);
         particleObj.particles[i].lifetime = 0.0f;
     }
 

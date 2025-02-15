@@ -24,7 +24,7 @@ constexpr GLenum DEFAULT_DEPTH_FUNC = GL_LESS;
 class Renderer
 {
 private:
-    glm::uvec2 screenSize = {800, 600};
+    glm::uvec2 screenSize = {1280, 720};
     const char *windowTitle = "Ibex Engine";
     GLFWwindow *window;
 

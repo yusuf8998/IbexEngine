@@ -153,12 +153,23 @@ void Transformable::updateTransform(bool keep_global)
         transform.globalTransform = mat4(1.f);
         if (auto *parent_cast = dynamic_cast<Transformable *>(parent))
         {
-            transform.applyParentToGlobal(parent_cast->transform.globalTransform);
+            applyParentToGlobal(parent);
+        }
+        else if (auto *switch_cast = dynamic_cast<SwitchNode *>(parent))
+        {
+            applyParentToGlobal(parent->parent);
         }
         transform.applyLocalToGlobal();
     }
 
     transform.transformChanged = false;
+}
+void Transformable::applyParentToGlobal(Node *node)
+{
+    if (auto *parent_cast = dynamic_cast<Transformable *>(node))
+    {
+        transform.applyParentToGlobal(parent_cast->transform.globalTransform);
+    }
 }
 void to_json(json &j, const TransformablePtr &node)
 {

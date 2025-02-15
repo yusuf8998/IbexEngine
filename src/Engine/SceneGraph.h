@@ -75,6 +75,10 @@ public:
         : Node(name), transform(), is_static(false) {}
 
     void updateTransform(bool keep_global = false);
+
+protected:
+
+    void applyParentToGlobal(Node *node);
 };
 
 void to_json(nlohmann::json &j, const TransformablePtr &node);
