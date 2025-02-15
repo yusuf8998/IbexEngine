@@ -1,22 +1,46 @@
 #include <Graphics/ParticleObject.h>
-#include <Graphics/GLDebug.h>
+#include <Graphics/GL.h>
 #include <Graphics/Renderer.h>
 
-ParticleObject::ParticleObject()
+ParticleObject::ParticleObject(const std::string &texture_path)
 {
     generateOpenGLBuffers();
     populateOpenGLBuffers();
+
+    texture = std::make_shared<TextureObject>(texture_path);
+}
+
+ParticleObject::~ParticleObject()
+{
+    glDeleteBuffers(1, &quadVBO);
+    glDeleteBuffers(1, &instanceVBO);
+    glDeleteVertexArrays(1, &quadVAO);
 }
 
 void ParticleObject::updateParticles()
 {
-    auto &renderer = Renderer::instance();
+    auto dt = Renderer::instance().getDeltaTime();
     for (auto &p : particles)
-        p.lifetime += renderer.getDeltaTime();
+    {
+        if (p.lifetime == -1.f)
+            continue;
+        if (p.lifetime < MAX_LIFETIME)
+        {
+            p.lifetime += dt;
+            continue;
+        }
+        p.lifetime = -1.f;
+        deleted_particles++;
+        p.acceleration = glm::vec3(0.f);
+        p.velocity = glm::vec3(0.f);
+        p.color = glm::vec4(glm::vec3(0.f), 1.f);
+    }
 }
 
 void ParticleObject::updateInstanceBuffer()
 {
+    if (particles.size() == deleted_particles)
+        return;
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * particles.size(), &particles[0], GL_DYNAMIC_DRAW);
 }
@@ -43,20 +67,13 @@ void ParticleObject::populateOpenGLBuffers()
     updateInstanceBuffer();
 
     // Set up the instance data (position, velocity, size, color, lifetime)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (void *)0); // Position
-    glEnableVertexAttribArray(1);
-
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (void *)(sizeof(glm::vec3))); // Velocity
-    glEnableVertexAttribArray(2);
-
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (void *)(2 * sizeof(glm::vec3))); // Size
-    glEnableVertexAttribArray(3);
-
-    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (void *)(2 * sizeof(glm::vec3) + sizeof(float))); // Color
-    glEnableVertexAttribArray(4);
-
-    glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (void *)(2 * sizeof(glm::vec3) + sizeof(float) + sizeof(glm::vec4))); // Lifetime
-    glEnableVertexAttribArray(5);
+    size_t offset = 0;
+    defineVertexAttrib(1, 3, sizeof(Particle), offset); // Position
+    defineVertexAttrib(2, 3, sizeof(Particle), offset); // Velocity
+    defineVertexAttrib(3, 3, sizeof(Particle), offset); // Acceleration
+    defineVertexAttrib(4, 1, sizeof(Particle), offset); // Size
+    defineVertexAttrib(5, 4, sizeof(Particle), offset); // Color
+    defineVertexAttrib(6, 1, sizeof(Particle), offset); // Velocity
 
     // Set the instance data as "per-instance"
     glVertexAttribDivisor(1, 1);
@@ -64,22 +81,23 @@ void ParticleObject::populateOpenGLBuffers()
     glVertexAttribDivisor(3, 1);
     glVertexAttribDivisor(4, 1);
     glVertexAttribDivisor(5, 1);
+    glVertexAttribDivisor(6, 1);
 }
 
 void ParticleObject::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
 {
+    if (particles.size() == deleted_particles)
+        return;
     // Check for OpenGL errors
     GLClearError();
 
     shader->use();
-
     shader->setMat4("model", transformation);
+    texture->bind(0);
+    shader->setInt("image", 0);
 
     // Bind the VAO, draw instances then unbind
     glBindVertexArray(quadVAO);
-    glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, particles.size()); // For a quad, we render 4 vertices per instance
+    GLCall(glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, particles.size())); // For a quad, we render 4 vertices per instance
     glBindVertexArray(0);
-
-    // Check for OpenGL errors
-    ASSERT(GLLogCall("glDrawElements", __FILE__, __LINE__));
 }

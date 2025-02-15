@@ -14,7 +14,7 @@ add_executable(Ibex
     "src/ResourceManager/ShaderData.cpp"
     "src/ResourceManager/MeshData.cpp"
 
-    "src/Graphics/GLDebug.h"
+    "src/Graphics/GL.h"
     "src/Graphics/ShaderObject.cpp"
     "src/Graphics/TextureObject.cpp"
     "src/Graphics/TextureArrayObject.cpp"

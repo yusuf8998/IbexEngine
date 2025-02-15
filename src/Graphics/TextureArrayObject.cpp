@@ -17,7 +17,7 @@ TextureArrayObject::~TextureArrayObject()
 
 void TextureArrayObject::bind(GLuint unit) const
 {
-    if (unit >= GL_TEXTURE0 && unit <= GL_TEXTURE31)
+    if (unit >= 0 && unit <= 31)
     {
         glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D_ARRAY, textureArrayID);

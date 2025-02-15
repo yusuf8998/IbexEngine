@@ -1,6 +1,6 @@
 #include "RenderObject.h"
 #include <Engine/Camera.h>
-#include <Graphics/GLDebug.h>
+#include <Graphics/GL.h>
 
 RenderObject::RenderObject(const std::string &filepath)
     : RenderObject(ResourceManager::instance().getResource<MeshData>(filepath))
@@ -51,13 +51,6 @@ void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std:
             }
         }
     }
-}
-
-void defineVertexAttrib(int i, int count, size_t stride, size_t &offset)
-{
-    glVertexAttribPointer(i, count, GL_FLOAT, GL_FALSE, stride, (void *)offset);
-    offset += count * sizeof(float);
-    glEnableVertexAttribArray(i);
 }
 
 void RenderObject::extractGroups(const std::shared_ptr<MeshData> &data)
@@ -195,7 +188,7 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
         }
     }
 
-    textureArray->bind(GL_TEXTURE0);
+    textureArray->bind(0);
     shader->setInt("material.textures", 0);
 
     shader->setMat4("model", transformation);

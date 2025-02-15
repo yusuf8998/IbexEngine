@@ -9,11 +9,12 @@
 #include <ResourceManager/MeshData.h>
 #include <Graphics/ShaderObject.h>
 #include <Graphics/TextureObject.h>
-#include "TextureArrayObject.h"
+#include <Graphics/TextureArrayObject.h>
 
 struct Particle {
     glm::vec3 position;
     glm::vec3 velocity;
+    glm::vec3 acceleration;
     float size;
     glm::vec4 color;
     float lifetime;
@@ -24,7 +25,10 @@ class ParticleObject
 public:
     std::vector<Particle> particles;
 
-    ParticleObject();
+    static constexpr float MAX_LIFETIME = 10.f;
+
+    ParticleObject(const std::string &texture_path);
+    ~ParticleObject();
 
     void updateParticles();
     void updateInstanceBuffer();
@@ -33,6 +37,8 @@ public:
 
 protected:
     GLuint quadVAO, quadVBO, instanceVBO;
+    std::shared_ptr<TextureObject> texture;
+    size_t deleted_particles;
     const float QuadVertices[12] = {
         -0.5f, -0.5f, 0.0f,   // bottom left
         0.5f, -0.5f, 0.0f,    // bottom right

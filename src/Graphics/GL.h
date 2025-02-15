@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GLAD/glad.h>
+#include <string>
 
 void GLClearError();
 bool GLLogCall(const char *function, const char *file, int line);
@@ -58,4 +59,11 @@ inline bool GLLogCall(const char *function, const char *file, int line)
         return false;
     }
     return true;
+}
+
+inline void defineVertexAttrib(int i, int count, size_t stride, size_t &offset)
+{
+    glVertexAttribPointer(i, count, GL_FLOAT, GL_FALSE, stride, (void *)offset);
+    offset += count * sizeof(float);
+    glEnableVertexAttribArray(i);
 }

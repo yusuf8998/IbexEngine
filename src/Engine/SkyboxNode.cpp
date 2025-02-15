@@ -39,7 +39,7 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
         assert(split.size() == 2);
         setCubemap(split[0], split[1]);
     }
-    cubeMap->bind(GL_TEXTURE0);
+    cubeMap->bind(0);
     auto shader = resolveShader(_shader);
     shader->use();
     shader->setInt("cubemap", 0);

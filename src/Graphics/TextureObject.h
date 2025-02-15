@@ -38,9 +38,6 @@ private:
     void loadTexture();
 
     void generateTexture(unsigned char *data, int width, int height, int channels);
-
-    // Utility function for flipping the image vertically
-    static void flipVertically(unsigned char *data, int width, int height, int channels);
 };
 
 #endif

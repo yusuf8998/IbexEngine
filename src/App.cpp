@@ -38,11 +38,12 @@ int main()
     renderer.loadShader(5, "res/Shaders/Shader_Particle/vertex_particle.glsl", "res/Shaders/Shader_Particle/fragment_particle.glsl");
     renderer.assignSkyboxShader(1);
 
-    ParticleObject particleObj;
+    ParticleObject particleObj("res/Textures/disp2.png");
     particleObj.particles = std::vector<Particle>(50);
     for (size_t i = 0; i < particleObj.particles.size(); i++) {
-        particleObj.particles[i].position = glm::vec3(rand() % 10, rand() % 10, rand() % 10);  // Random position
-        particleObj.particles[i].velocity = glm::vec3(0.0f, -1.0f, 0.0f);  // Example velocity
+        particleObj.particles[i].position = glm::vec3(0.f, 5.f, -5.f);
+        particleObj.particles[i].velocity = glm::normalize(glm::vec3(rand() % 10, rand() % 10, rand() % 10)) * 15.f;  // Random velocity
+        particleObj.particles[i].acceleration = glm::vec3(.0f, -9.8f, .0f);
         particleObj.particles[i].size = .25f;
         particleObj.particles[i].color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);  // White color
         particleObj.particles[i].lifetime = 0.0f;
@@ -81,6 +82,7 @@ int main()
 
     bool drawNormals = false;
     bool drawWireframe = false;
+    bool updateParticles = false;
 
     glm::vec4 transformedInput;
 
@@ -108,6 +110,11 @@ int main()
             renderer.flipCursorState();
         }
 
+        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_F))
+        {
+            updateParticles = !updateParticles;
+        }
+
         transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
         transformedInput = mainCamera.getRotationMatrix() * transformedInput;
 
@@ -122,8 +129,11 @@ int main()
         // Simple update and render cycle
         updateSceneGraph(root);
 
-        particleObj.updateParticles();
-        particleObj.updateInstanceBuffer();
+        if (updateParticles)
+        {
+            particleObj.updateParticles();
+            particleObj.updateInstanceBuffer();
+        }
         particleObj.render(renderer.getShader(5), glm::mat4(1.f));
 
         glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL) );

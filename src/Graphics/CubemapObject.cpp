@@ -68,9 +68,9 @@ CubemapObject::~CubemapObject()
 
 void CubemapObject::bind(GLuint unit) const
 {
-    if (unit >= GL_TEXTURE0 && unit <= GL_TEXTURE31)
+    if (unit >= 0 && unit <= 31)
     {
-        glActiveTexture(unit);
+        glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
     }
     else

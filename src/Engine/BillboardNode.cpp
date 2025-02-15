@@ -19,7 +19,7 @@ void BillboardNode::render(const std::shared_ptr<ShaderObject> &_shader)
     shader->setInt("image", 0);
     shader->setInt("lockHorizontal", lockHorizontal ? 1 : 0);
     shader->setMat4("model", transform.globalTransform);
-    texture->bind(GL_TEXTURE0);
+    texture->bind(0);
     RenderObject::GetRenderObject(name)->renderRaw();
 }
 

@@ -1,12 +1,12 @@
-#version 330 core
+#version 450
 
-// Input from the vertex shader
-in vec4 fragColor;        // Color of the particle
+layout(location = 0) in vec4 fragColor;
+layout(location = 1) in vec2 fragUV;
 
-// Output to the framebuffer
-out vec4 finalColor;      // Final color output
+uniform sampler2D image;
+
+layout(location = 0) out vec4 finalColor;
 
 void main() {
-    // Combine the texture color with the particle color (you can adjust the alpha for fading)
-    finalColor = fragColor;
+    finalColor = fragColor * texture(image, fragUV);
 }

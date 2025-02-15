@@ -2,6 +2,7 @@
 #include <iostream>
 #include "ResourceManager/TextureData.h"
 #include "ResourceManager/ResourceManager.h"
+#include <Graphics/GL.h>
 
 std::map<std::string, TextureObject *> TextureObject::Textures = {};
 TextureObject *TextureObject::getTextureByName(const std::string &name)
@@ -37,10 +38,10 @@ TextureObject::~TextureObject()
 
 void TextureObject::bind(GLuint unit) const
 {
-    if (unit >= GL_TEXTURE0 && unit <= GL_TEXTURE31)
+    if (unit >= 0 && unit <= 31)
     {
-        glActiveTexture(GL_TEXTURE0 + unit);
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        GLCall(glActiveTexture(GL_TEXTURE0 + unit));
+        GLCall(glBindTexture(GL_TEXTURE_2D, textureID));
     }
     else
     {
@@ -69,12 +70,6 @@ void TextureObject::generateTexture(unsigned char *data, int width, int height, 
     GLenum format = (channels == 3) ? GL_RGB : (channels == 4 ? GL_RGBA : GL_RED);
 
     // Generate the texture
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-}
-
-void TextureObject::flipVertically(unsigned char *data, int width, int height, int channels)
-{
-    // Flip the image vertically (if needed, this is done using stb_image).
-    // This function is just for illustration and can be ignored if flipping is handled by stb_image.
+    GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data));
+    GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 }
