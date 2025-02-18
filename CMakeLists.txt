@@ -21,6 +21,7 @@ add_executable(Ibex
     "src/Graphics/CubemapObject.cpp"
     "src/Graphics/RenderObject.cpp"
     "src/Graphics/ParticleObject.cpp"
+    "src/Graphics/InputManager/InputManager.cpp"
     "src/Graphics/Renderer.cpp"
 
     "src/Engine/Transform.cpp"
@@ -28,8 +29,10 @@ add_executable(Ibex
     "src/Engine/SceneGraph.cpp"
     "src/Engine/SkyboxNode.cpp"
     "src/Engine/BillboardNode.cpp"
-    "src/Engine/InputHandler.cpp"
+    #"src/Engine/InputHandler.cpp"
     "src/Engine/Camera.cpp"
+
+    "src/Engine/FSM/PlayerMachine.cpp"
 
     "src/App.cpp"
 )

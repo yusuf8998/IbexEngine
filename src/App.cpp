@@ -9,13 +9,14 @@
 #include "ResourceManager/ResourceManager.h"
 #include "Graphics/RenderObject.h"
 #include "Engine/SceneGraph.h"
-#include "Engine/InputHandler.h"
+#include "Graphics/InputManager/InputManager.h"
 #include "Engine/Camera.h"
 #include <thread>
 #include "Graphics/Renderer.h"
 #include "Engine/SkyboxNode.h"
 #include "Engine/BillboardNode.h"
 #include "Graphics/ParticleObject.h"
+#include "Engine/FSM/PlayerMachine.h"
 
 std::thread save_thread;
 
@@ -30,6 +31,7 @@ void save(const std::shared_ptr<Node> &root)
 int main()
 {
     auto &renderer = Renderer::instance();
+    auto &input = InputManager::instance();
     renderer.loadShader(0, "res/Shaders/Shader_Illum/vertex_illum.glsl", "res/Shaders/Shader_Illum/geometry_illum.glsl", "res/Shaders/Shader_Illum/fragment_illum.glsl");
     renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
     renderer.loadShader(2, "res/Shaders/Shader_Normal/vertex_normal.glsl",  "res/Shaders/Shader_Normal/geometry_normal.glsl", "res/Shaders/Shader_Normal/fragment_normal.glsl");
@@ -68,15 +70,18 @@ int main()
     NodePtr root;
     loadSceneGraph("root.json", root);
 
-    InputAxis::Axes["Horizontal"] = InputAxis(GLFW_KEY_D, GLFW_KEY_A, renderer.getInputHandler());
-    InputAxis::Axes["Vertical"] = InputAxis(GLFW_KEY_S, GLFW_KEY_W, renderer.getInputHandler());
-    InputAxis::Axes["Z"] = InputAxis(GLFW_KEY_E, GLFW_KEY_Q, renderer.getInputHandler());
-    InputAxis::Axes["RotationVertical"] = InputAxis(GLFW_KEY_UP, GLFW_KEY_DOWN, renderer.getInputHandler());
-    InputAxis::Axes["RotationHorizontal"] = InputAxis(GLFW_KEY_RIGHT, GLFW_KEY_LEFT, renderer.getInputHandler());
-    InputAxis::Axes["Sprint"] = InputAxis(GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL, renderer.getInputHandler());
+    InputAxis::Axes["Horizontal"] = std::make_shared<InputAxis>(GLFW_KEY_D, GLFW_KEY_A);
+    InputAxis::Axes["Vertical"] = std::make_shared<InputAxis>(GLFW_KEY_S, GLFW_KEY_W);
+    InputAxis::Axes["Z"] = std::make_shared<InputAxis>(GLFW_KEY_E, GLFW_KEY_Q);
+    InputAxis::Axes["RotationVertical"] = std::make_shared<InputAxis>(GLFW_KEY_UP, GLFW_KEY_DOWN);
+    InputAxis::Axes["RotationHorizontal"] = std::make_shared<InputAxis>(GLFW_KEY_RIGHT, GLFW_KEY_LEFT);
+    InputAxis::Axes["Sprint"] = std::make_shared<InputAxis>(GLFW_KEY_LEFT_SHIFT, GLFW_KEY_LEFT_CONTROL);
 
     auto movementInputVector = InputVector("Horizontal", "Z", "Vertical");
     auto rotationInputVector = InputVector("RotationHorizontal", "RotationVertical", "");
+
+    PlayerEvent playerEvent;
+    tinyfsm::FsmList<PlayerMachine>::start();
 
     bool drawNormals = false;
     bool drawWireframe = false;
@@ -88,39 +93,45 @@ int main()
     {
         renderer.update();
 
-        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_P))
+        if (input.isKeyPressed(GLFW_KEY_P))
         {
             save(root);
         }
 
-        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_N))
+        if (input.isKeyPressed(GLFW_KEY_N))
         {
             drawNormals = !drawNormals;
         }
 
-        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_L))
+        if (input.isKeyPressed(GLFW_KEY_L))
         {
             drawWireframe = !drawWireframe;
         }
 
-        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_ESCAPE))
+        if (input.isKeyPressed(GLFW_KEY_ESCAPE))
         {
             renderer.flipCursorState();
         }
 
-        if (renderer.getInputHandler()->isKeyPressed(GLFW_KEY_F))
+        if (input.isKeyPressed(GLFW_KEY_F))
         {
             updateParticles = !updateParticles;
         }
 
         transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
         transformedInput = mainCamera.getRotationMatrix() * transformedInput;
+        playerEvent.direction = glm::vec3(transformedInput);
 
-        float sprint = renderer.getInputHandler()->getAxis("Sprint").getValue();
-        float speedMult = sprint > 0.f ? sprint * 5.f : sprint < 0.f ? abs(sprint) * .5f : 1.f;
-        transformedInput *= speedMult;
+        sendPlayerEvent(playerEvent);
 
-        mainCamera.position += glm::vec3(transformedInput) * renderer.getDeltaTime();
+        // transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
+        // transformedInput = mainCamera.getRotationMatrix() * transformedInput;
+
+        // float sprint = input.getAxis("Sprint").getValue();
+        // float speedMult = sprint > 0.f ? sprint * 5.f : sprint < 0.f ? abs(sprint) * .5f : 1.f;
+        // transformedInput *= speedMult;
+
+        // mainCamera.position += glm::vec3(transformedInput) * renderer.getDeltaTime();
 
         renderer.setViewProjectionUniforms();
 

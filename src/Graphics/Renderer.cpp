@@ -4,6 +4,7 @@
 
 #include <ResourceManager/ResourceManager.h>
 #include <ResourceManager/ShaderData.h>
+#include "InputManager/InputManager.h"
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
@@ -19,19 +20,12 @@ Renderer::~Renderer()
 {
     shaders.clear();
     cleanup();
-    delete inputHandler;
 }
 
 glm::uvec2 Renderer::getScreenSize() const
 {
     std::shared_lock lock(mutex_);
     return screenSize;
-}
-
-InputHandler *Renderer::getInputHandler() const
-{
-    std::shared_lock lock(mutex_);
-    return inputHandler;
 }
 
 GLFWwindow *Renderer::getWindow() const
@@ -166,9 +160,9 @@ void Renderer::update()
     lastFrame = currentFrame;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    inputHandler->update();
+    InputManager::instance().update();
+    InputManager::instance().getMouseDelta(deltaMouse.x, deltaMouse.y);
 
-    inputHandler->getMouseDelta(deltaMouse.x, deltaMouse.y);
     mainCamera.processMouseMovement(deltaMouse.x, deltaMouse.y);
 
     // Setup view and projection matrices
@@ -221,7 +215,7 @@ void Renderer::initialize()
     glViewport(0, 0, screenSize.x, screenSize.y);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(DEFAULT_DEPTH_FUNC);
-    glEnable(GL_MULTISAMPLE);  
+    glEnable(GL_MULTISAMPLE);
 
-    inputHandler = new InputHandler(window);
+    InputManager::instance().setWindow(window);
 }

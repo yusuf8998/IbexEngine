@@ -13,8 +13,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include <Engine/InputHandler.h>
-
 #include <Graphics/ShaderObject.h>
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
@@ -29,8 +27,6 @@ private:
     GLFWwindow *window;
 
     glm::vec3 clearColor = {0.2f, 0.3f, 0.3f};
-
-    InputHandler *inputHandler;
 
     int cursorState = GLFW_CURSOR_NORMAL;
     float deltaTime = 0.f;
@@ -59,7 +55,6 @@ public:
     void initialize();
 
     glm::uvec2 getScreenSize() const;
-    InputHandler *getInputHandler() const;
     GLFWwindow *getWindow() const;
     glm::vec3 getClearColor() const;
     int getCursorState() const;
