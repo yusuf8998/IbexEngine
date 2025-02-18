@@ -2,8 +2,11 @@
 #include <Graphics/GL.h>
 #include <Graphics/Renderer.h>
 
-ParticleObject::ParticleObject(const std::string &texture_path)
+ParticleObject::ParticleObject(const std::string &texture_path, const std::vector<Particle> &_particles)
+    : deleted_particles(0)
 {
+    particles.insert(particles.begin(), _particles.begin(), _particles.end());
+
     generateOpenGLBuffers();
     populateOpenGLBuffers();
 

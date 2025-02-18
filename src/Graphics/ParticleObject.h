@@ -27,7 +27,7 @@ public:
 
     static constexpr float MAX_LIFETIME = 10.f;
 
-    ParticleObject(const std::string &texture_path);
+    ParticleObject(const std::string &texture_path, const std::vector<Particle> &_particles);
     ~ParticleObject();
 
     void updateParticles();
