@@ -96,6 +96,7 @@ public:
         : Transformable(name), render_name(""), visible(true), forced_shader(-1) {}
 
     virtual void render(const std::shared_ptr<ShaderObject> &shader);
+    virtual void reset();
 
 protected:
     const std::shared_ptr<ShaderObject> resolveShader(const std::shared_ptr<ShaderObject> &shader) const;

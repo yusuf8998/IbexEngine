@@ -195,9 +195,13 @@ void Renderable::render(const std::shared_ptr<ShaderObject> &_shader)
     if (enabled && visible)
         RenderObject::GetRenderObject(render_name)->render(shader, transform.globalTransform);
 }
+void Renderable::reset()
+{
+    
+}
 const std::shared_ptr<ShaderObject> Renderable::resolveShader(const std::shared_ptr<ShaderObject> &shader) const
 {
-    if (forced_shader == -1)
+    if (forced_shader < 0)
         return shader;
     return Renderer::instance().getShader(forced_shader);
 }

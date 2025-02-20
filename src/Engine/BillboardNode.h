@@ -14,10 +14,10 @@ public:
         : Renderable(name), lockHorizontal(false) { forced_shader = 3; }
 
     void render(const std::shared_ptr<ShaderObject> &shader) override;
+    void reset() override;
 
 private:
     std::shared_ptr<TextureObject> texture;
-    std::shared_ptr<RenderObject> renderObject;
 };
 void to_json(nlohmann::json &j, const std::shared_ptr<BillboardNode> &node);
 void to_json(nlohmann::json &j, const BillboardNode *node);

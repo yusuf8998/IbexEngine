@@ -18,6 +18,7 @@ public:
     void setCubemap(const std::array<std::string, 6> &sides);
     void setCubemap(const std::string &cubemapDir, const std::string &extension = "png");
     void render(const std::shared_ptr<ShaderObject> &shader) override;
+    void reset() override;
 };
 void to_json(nlohmann::json &j, const std::shared_ptr<SkyboxNode> &node);
 void to_json(nlohmann::json &j, const SkyboxNode *node);

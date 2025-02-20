@@ -18,6 +18,8 @@
 #include "Graphics/ParticleObject.h"
 #include "Engine/FSM/PlayerMachine.h"
 
+#include <Engine/Editor/Inspector.h>
+
 std::thread save_thread;
 
 void save(const std::shared_ptr<Node> &root)
@@ -34,16 +36,17 @@ int main()
     auto &input = InputManager::instance();
     renderer.loadShader(0, "res/Shaders/Shader_Illum/vertex_illum.glsl", "res/Shaders/Shader_Illum/geometry_illum.glsl", "res/Shaders/Shader_Illum/fragment_illum.glsl");
     renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
-    renderer.loadShader(2, "res/Shaders/Shader_Normal/vertex_normal.glsl",  "res/Shaders/Shader_Normal/geometry_normal.glsl", "res/Shaders/Shader_Normal/fragment_normal.glsl");
-    renderer.loadShader(3, "res/Shaders/Shader_Billboard/vertex_billboard.glsl",  "res/Shaders/Shader_Billboard/geometry_billboard.glsl", "res/Shaders/Shader_Billboard/fragment_billboard.glsl");
-    renderer.loadShader(4, "res/Shaders/Shader_Displacement/vertex_displacement.glsl",  "res/Shaders/Shader_Displacement/geometry_displacement.glsl", "res/Shaders/Shader_Displacement/fragment_displacement.glsl");
+    renderer.loadShader(2, "res/Shaders/Shader_Normal/vertex_normal.glsl", "res/Shaders/Shader_Normal/geometry_normal.glsl", "res/Shaders/Shader_Normal/fragment_normal.glsl");
+    renderer.loadShader(3, "res/Shaders/Shader_Billboard/vertex_billboard.glsl", "res/Shaders/Shader_Billboard/geometry_billboard.glsl", "res/Shaders/Shader_Billboard/fragment_billboard.glsl");
+    renderer.loadShader(4, "res/Shaders/Shader_Displacement/vertex_displacement.glsl", "res/Shaders/Shader_Displacement/geometry_displacement.glsl", "res/Shaders/Shader_Displacement/fragment_displacement.glsl");
     renderer.loadShader(5, "res/Shaders/Shader_Particle/vertex_particle.glsl", "res/Shaders/Shader_Particle/fragment_particle.glsl");
     renderer.assignSkyboxShader(1);
 
     std::vector<Particle> particles = std::vector<Particle>(25);
-    for (size_t i = 0; i < particles.size(); i++) {
+    for (size_t i = 0; i < particles.size(); i++)
+    {
         particles[i].position = glm::vec3(0.f, 5.f, -5.f);
-        particles[i].velocity = glm::normalize(glm::vec3(rand() % 10 - 5, rand() % 3 - 1, rand() % 10 - 5)) * ((rand() % 151) / 10.f);  // Random velocity
+        particles[i].velocity = glm::normalize(glm::vec3(rand() % 10 - 5, rand() % 3 - 1, rand() % 10 - 5)) * ((rand() % 151) / 10.f); // Random velocity
         particles[i].acceleration = glm::vec3(.0f, -9.8f, .0f);
         particles[i].size = .25f;
         particles[i].color = glm::vec4(1.0f, 0.125f, 0.0f, 1.0f);
@@ -86,6 +89,7 @@ int main()
     bool drawNormals = false;
     bool drawWireframe = false;
     bool updateParticles = false;
+    bool mouseLook = true;
 
     glm::vec4 transformedInput;
 
@@ -98,41 +102,35 @@ int main()
     {
         renderer.update();
 
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (input.isKeyPressed(GLFW_KEY_P))
-        {
+        if (input.isKeyPressed(GLFW_KEY_F1))
             save(root);
-        }
-
-        if (input.isKeyPressed(GLFW_KEY_N))
-        {
+        if (input.isKeyPressed(GLFW_KEY_F2))
             drawNormals = !drawNormals;
-        }
-
-        if (input.isKeyPressed(GLFW_KEY_L))
-        {
+        if (input.isKeyPressed(GLFW_KEY_F3))
             drawWireframe = !drawWireframe;
-        }
-
         if (input.isKeyPressed(GLFW_KEY_ESCAPE))
-        {
             renderer.flipCursorState();
-        }
-
-        if (input.isKeyPressed(GLFW_KEY_F))
-        {
+        if (input.isKeyPressed(GLFW_KEY_F4))
             updateParticles = !updateParticles;
+        if (input.isKeyPressed(GLFW_KEY_F5))
+            mouseLook = !mouseLook;
+        if (input.isKeyPressed(GLFW_KEY_F6))
+            root->traverse([&](Node *node)
+                           { if (auto *cast = dynamic_cast<Renderable *>(node)) { cast->reset(); } });
+
+        if (mouseLook)
+        {
+            mainCamera.processMouseMovement(renderer.getDeltaMouse().x, renderer.getDeltaMouse().y);
+            transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
+            transformedInput = mainCamera.getRotationMatrix() * transformedInput;
+            playerEvent.direction = glm::vec3(transformedInput);
+            castNode<Transformable>(root)->transform.rotate(rotationInputVector.getValue() * renderer.getDeltaTime());
+            sendPlayerEvent(playerEvent);
         }
-
-        transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
-        transformedInput = mainCamera.getRotationMatrix() * transformedInput;
-        playerEvent.direction = glm::vec3(transformedInput);
-
-        sendPlayerEvent(playerEvent);
 
         renderer.setViewProjectionUniforms();
 
@@ -144,18 +142,18 @@ int main()
             particleObj.updateParticles();
             particleObj.updateInstanceBuffer();
         }
-        glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL) );
+        glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL));
         particleObj.render(renderer.getShader(5), glm::mat4(1.f));
         renderSceneGraph(root, renderer.getShader(4));
         if (drawNormals)
             renderSceneGraph(root, renderer.getShader(2), true);
 
-        castNode<Transformable>(root)->transform.rotate(rotationInputVector.getValue() * renderer.getDeltaTime());
-
         {
             {
                 ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
                 (void)ImGui::Text("Delta Time: %f s", renderer.getDeltaTime());
+
+                Inspector::drawNode(root);
             }
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

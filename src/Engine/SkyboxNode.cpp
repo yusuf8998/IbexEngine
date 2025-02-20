@@ -50,3 +50,8 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
     glDepthFunc(DEFAULT_DEPTH_FUNC);
     glDepthMask(GL_TRUE);
 }
+
+void SkyboxNode::reset()
+{
+    cubeMap.reset();
+}

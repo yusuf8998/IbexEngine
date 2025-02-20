@@ -52,6 +52,7 @@ public:
 
     static std::shared_ptr<RenderObject> GetRenderObject(const std::string &name);
     static std::shared_ptr<RenderObject> AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object);
+    static bool HasRenderObject(const std::string &name);
     static void ReleaseAllMeshes();
 
 private:

@@ -27,6 +27,11 @@ std::shared_ptr<RenderObject> RenderObject::AddRenderObject(const std::string &n
     return Meshes[name];
 }
 
+bool RenderObject::HasRenderObject(const std::string &name)
+{
+    return Meshes.count(name) != 0;
+}
+
 void RenderObject::ReleaseAllMeshes()
 {
     Meshes.clear();
