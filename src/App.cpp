@@ -40,10 +40,10 @@ int main()
     renderer.loadShader(5, "res/Shaders/Shader_Particle/vertex_particle.glsl", "res/Shaders/Shader_Particle/fragment_particle.glsl");
     renderer.assignSkyboxShader(1);
 
-    std::vector<Particle> particles = std::vector<Particle>(1);
+    std::vector<Particle> particles = std::vector<Particle>(25);
     for (size_t i = 0; i < particles.size(); i++) {
         particles[i].position = glm::vec3(0.f, 5.f, -5.f);
-        particles[i].velocity = glm::normalize(glm::vec3(rand() % 10 - 5, rand() % 3 - 1, rand() % 10 - 5)) * 15.f;  // Random velocity
+        particles[i].velocity = glm::normalize(glm::vec3(rand() % 10 - 5, rand() % 3 - 1, rand() % 10 - 5)) * ((rand() % 151) / 10.f);  // Random velocity
         particles[i].acceleration = glm::vec3(.0f, -9.8f, .0f);
         particles[i].size = .25f;
         particles[i].color = glm::vec4(1.0f, 0.125f, 0.0f, 1.0f);
@@ -89,9 +89,19 @@ int main()
 
     glm::vec4 transformedInput;
 
+    (void)ImGui::CreateContext();
+    (void)ImGui_ImplGlfw_InitForOpenGL(renderer.getWindow(), true);
+    (void)ImGui_ImplOpenGL3_Init("#version 450");
+    ImGui::StyleColorsDark();
+
     while (!renderer.shouldClose())
     {
         renderer.update();
+
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
         if (input.isKeyPressed(GLFW_KEY_P))
         {
@@ -124,15 +134,6 @@ int main()
 
         sendPlayerEvent(playerEvent);
 
-        // transformedInput = glm::vec4(movementInputVector.getValue(), 1.f);
-        // transformedInput = mainCamera.getRotationMatrix() * transformedInput;
-
-        // float sprint = input.getAxis("Sprint").getValue();
-        // float speedMult = sprint > 0.f ? sprint * 5.f : sprint < 0.f ? abs(sprint) * .5f : 1.f;
-        // transformedInput *= speedMult;
-
-        // mainCamera.position += glm::vec3(transformedInput) * renderer.getDeltaTime();
-
         renderer.setViewProjectionUniforms();
 
         // Simple update and render cycle
@@ -143,14 +144,22 @@ int main()
             particleObj.updateParticles();
             particleObj.updateInstanceBuffer();
         }
-        particleObj.render(renderer.getShader(5), glm::mat4(1.f));
-
         glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL) );
+        particleObj.render(renderer.getShader(5), glm::mat4(1.f));
         renderSceneGraph(root, renderer.getShader(4));
         if (drawNormals)
             renderSceneGraph(root, renderer.getShader(2), true);
 
         castNode<Transformable>(root)->transform.rotate(rotationInputVector.getValue() * renderer.getDeltaTime());
+
+        {
+            {
+                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+                (void)ImGui::Text("Delta Time: %f s", renderer.getDeltaTime());
+            }
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
 
         renderer.postUpdate();
     }

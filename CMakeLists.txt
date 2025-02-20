@@ -34,6 +34,10 @@ add_executable(Ibex
 
     "src/Engine/FSM/PlayerMachine.cpp"
 
+    #ImGui
+    "src/vendor/imgui/imgui.cpp" "src/vendor/imgui/imgui_draw.cpp" "src/vendor/imgui/imgui_impl_glfw.cpp" "src/vendor/imgui/imgui_impl_opengl3.cpp"
+    "src/vendor/imgui/imgui_tables.cpp" "src/vendor/imgui/imgui_widgets.cpp"
+
     "src/App.cpp"
 )
 
