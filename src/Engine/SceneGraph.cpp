@@ -197,7 +197,6 @@ void Renderable::render(const std::shared_ptr<ShaderObject> &_shader)
 }
 void Renderable::reset()
 {
-    
 }
 const std::shared_ptr<ShaderObject> Renderable::resolveShader(const std::shared_ptr<ShaderObject> &shader) const
 {

@@ -71,7 +71,7 @@ int main()
     // castNode<BillboardNode>(root->children[1])->lockHorizontal = true;
 
     NodePtr root;
-    loadSceneGraph("root.json", root);
+    loadSceneGraph("res/root.json", root);
 
     InputAxis::Axes["Horizontal"] = std::make_shared<InputAxis>(GLFW_KEY_D, GLFW_KEY_A);
     InputAxis::Axes["Vertical"] = std::make_shared<InputAxis>(GLFW_KEY_S, GLFW_KEY_W);

@@ -100,6 +100,15 @@ inline void Inspector::drawContent<Renderable>(const std::shared_ptr<Renderable>
         drawChildren(node);
 }
 
+template <>
+inline void Inspector::drawContent<SwitchNode>(const std::shared_ptr<SwitchNode> &node, bool draw_children)
+{
+    using namespace ImGui;
+    InputInt("active child", &node->active_child);
+    if (draw_children)
+        drawChildren(node);
+}
+
 // template <>
 // inline void Inspector::draw<SceneGraph::CameraNode>(const std::shared_ptr<Node> &node)
 // {
@@ -187,8 +196,12 @@ inline void Inspector::drawNode(const std::shared_ptr<Node> &_node)
     {
         draw<Transformable>(node);
     }
+    else if (const auto &node = std::dynamic_pointer_cast<SwitchNode>(_node))
+    {
+        draw<SwitchNode>(node);
+    }
     else
     {
-        draw<Node>(node);
+        draw<Node>(_node);
     }
 }

@@ -53,12 +53,13 @@ public:
 
     SwitchNode(const std::string &name = "Unnamed")
         : Node(name) {}
-    
+
     inline void traverse(std::function<void(Node *)> f) override
     {
         std::unique_lock<std::shared_mutex> lock(mutex_);
         f(this);
-        children[active_child]->traverse(f);
+        if (active_child >= 0 && active_child < children.size())
+            children[active_child]->traverse(f);
     }
 };
 void to_json(nlohmann::json &j, const std::shared_ptr<SwitchNode> &node);
@@ -77,7 +78,6 @@ public:
     void updateTransform(bool keep_global = false);
 
 protected:
-
     void applyParentToGlobal(Node *node);
 };
 

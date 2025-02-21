@@ -162,7 +162,7 @@ void Renderer::update()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     InputManager::instance().update();
     InputManager::instance().getMouseDelta(deltaMouse.x, deltaMouse.y);
-
+    
     // Setup view and projection matrices
     view = mainCamera.getViewMatrix();
     projection = glm::perspective(glm::radians(mainCamera.zoom), (float)screenSize.x / screenSize.y, 0.1f, 100.f);
