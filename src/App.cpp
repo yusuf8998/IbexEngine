@@ -26,7 +26,7 @@ void save(const std::shared_ptr<Node> &root)
 {
     if (save_thread.joinable())
         save_thread.join();
-    save_thread = std::thread(saveSceneGraph, "root.json", root);
+    save_thread = std::thread(saveSceneGraph, "res/root.json", root);
     printf("Saved!\n");
 }
 
@@ -85,6 +85,9 @@ int main()
 
     PlayerEvent playerEvent;
     tinyfsm::FsmList<PlayerMachine>::start();
+
+    auto &switch1 = root->findNode("switch1");
+    deleteNode(switch1);
 
     bool drawNormals = false;
     bool drawWireframe = false;
@@ -161,6 +164,7 @@ int main()
 
         renderer.postUpdate();
     }
+    tinyfsm::FsmList<PlayerMachine>::reset();
     if (save_thread.joinable())
         save_thread.join();
     root.reset();

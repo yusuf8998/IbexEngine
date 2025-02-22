@@ -40,7 +40,11 @@ public:
     }
 
     void addChild(NodePtr child);
+    void removeChild(NodePtr child);
+    void removeChild(const std::string &name);
+    NodePtr &findNode(const std::string &name);
 };
+inline NodePtr EMPTY_NODE = std::make_shared<Node>("Empty");
 void to_json(nlohmann::json &j, const NodePtr &node);
 void from_json(const nlohmann::json &j, NodePtr &node);
 
@@ -118,6 +122,11 @@ template <typename T>
 inline std::shared_ptr<T> castNode(const NodePtr &node)
 {
     return std::dynamic_pointer_cast<T>(node);
+}
+
+inline void deleteNode(NodePtr &node)
+{
+    node->parent->removeChild(node);
 }
 
 void updateSceneGraph(const NodePtr &root);

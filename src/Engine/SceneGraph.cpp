@@ -40,6 +40,33 @@ void Node::addChild(NodePtr child)
     child->parent = this;
 }
 
+void Node::removeChild(NodePtr child)
+{
+    children.erase(std::remove(children.begin(), children.end(), child), children.end());
+    child->parent = nullptr;
+}
+
+void Node::removeChild(const std::string &name)
+{
+    children.erase(std::remove_if(children.begin(), children.end(), [&](const NodePtr &child)
+                                  { return child->name == name; }),
+                    children.end());
+}
+
+NodePtr &Node::findNode(const std::string &name)
+{
+    for (auto &child : children)
+    {
+        if (child->name == name)
+        {
+            return child;
+        }
+        if (auto &found = child->findNode(name))
+            return found;
+    }
+    return EMPTY_NODE;
+}
+
 void to_json(json &j, const NodePtr &node)
 {
     j = json{
