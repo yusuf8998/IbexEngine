@@ -34,6 +34,16 @@ Node::Node(const string &name)
 {
 }
 
+void Node::traverse(std::function<void(Node *)> f)
+{
+    std::unique_lock<std::shared_mutex> lock(mutex_);
+    f(this);
+    for (auto &child : children)
+    {
+        child->traverse(f);
+    }
+}
+
 void Node::addChild(NodePtr child)
 {
     children.push_back(child);
@@ -64,7 +74,7 @@ NodePtr &Node::findNode(const std::string &name)
         if (auto &found = child->findNode(name))
             return found;
     }
-    return EMPTY_NODE;
+    return NULL_NODE;
 }
 
 void to_json(json &j, const NodePtr &node)
@@ -114,6 +124,11 @@ void from_json(const json &j, NodePtr &node)
             child_node->parent = node.get();
         }
     }
+}
+
+bool IsNodeNull(const NodePtr &node)
+{
+    return node == NULL_NODE;
 }
 
 void constructNodeFromJson(const json &j, NodePtr &node)

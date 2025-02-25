@@ -29,24 +29,18 @@ public:
     Node(const std::string &name = "Unnamed");
     virtual ~Node() = default;
 
-    virtual inline void traverse(std::function<void(Node *)> f)
-    {
-        std::unique_lock<std::shared_mutex> lock(mutex_);
-        f(this);
-        for (auto &child : children)
-        {
-            child->traverse(f);
-        }
-    }
+    virtual void traverse(std::function<void(Node *)> f);
 
     void addChild(NodePtr child);
     void removeChild(NodePtr child);
     void removeChild(const std::string &name);
     NodePtr &findNode(const std::string &name);
 };
-inline NodePtr EMPTY_NODE = std::make_shared<Node>("Empty");
+inline NodePtr NULL_NODE = std::make_shared<Node>("NULL");
 void to_json(nlohmann::json &j, const NodePtr &node);
 void from_json(const nlohmann::json &j, NodePtr &node);
+
+bool IsNodeNull(const NodePtr &node);
 
 void constructNodeFromJson(const nlohmann::json &j, NodePtr &node);
 
