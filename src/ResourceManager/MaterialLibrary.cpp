@@ -40,6 +40,7 @@ bool MaterialLibrary::loadMaterialsFromMTL(const std::string &mtlFilePath)
     }
     materials[currentName] = currentMaterial;
     file.close();
+    std::cout << "Loaded material library from " << mtlFilePath << std::endl;
     return true;
 }
 

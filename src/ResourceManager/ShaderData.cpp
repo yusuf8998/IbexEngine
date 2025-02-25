@@ -15,6 +15,7 @@ ShaderData::ShaderData(const std::string &path)
     : filename(path)
 {
     source = readFile(path);
+    std::cout << "Loaded shader: " << path << std::endl;
 }
 
 ShaderData::~ShaderData()

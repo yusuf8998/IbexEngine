@@ -86,9 +86,6 @@ int main()
     PlayerEvent playerEvent;
     tinyfsm::FsmList<PlayerMachine>::start();
 
-    auto &switch1 = root->findNode("switch1");
-    deleteNode(switch1);
-
     bool drawNormals = false;
     bool drawWireframe = false;
     bool updateParticles = false;
@@ -100,6 +97,8 @@ int main()
     (void)ImGui_ImplGlfw_InitForOpenGL(renderer.getWindow(), true);
     (void)ImGui_ImplOpenGL3_Init("#version 450");
     ImGui::StyleColorsDark();
+
+    float purgeTimer = 0.f;
 
     while (!renderer.shouldClose())
     {
@@ -160,6 +159,14 @@ int main()
             }
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        }
+
+        purgeTimer += renderer.getDeltaTime();
+        if (purgeTimer > 1.f / renderer.getDeltaTime())
+        {
+            RenderObject::Purge();
+            ResourceManager::instance().purgeAll();
+            purgeTimer = 0.f;
         }
 
         renderer.postUpdate();

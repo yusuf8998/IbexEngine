@@ -30,6 +30,11 @@ public:
     template <typename ResourceType>
     std::shared_ptr<ResourceType> getResource(const std::string &filename);
 
+    template <typename ResourceType>
+    void purge();
+
+    void purgeAll();
+
     // Cleanup
     void clear();
 
@@ -42,6 +47,9 @@ private:
     std::map<std::string, std::shared_ptr<ShaderData>> shaderCache;
     std::map<std::string, std::shared_ptr<MeshData>> meshCache;
     std::map<std::string, std::shared_ptr<MaterialLibrary>> mtlCache;
+
+    template <typename ResourceType>
+    std::map<std::string, std::shared_ptr<ResourceType>> &getCache();
 
     // Disable copy/move operations for the singleton
     ResourceManager(const ResourceManager &) = delete;

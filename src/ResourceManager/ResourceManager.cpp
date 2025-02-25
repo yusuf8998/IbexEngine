@@ -136,6 +136,54 @@ std::shared_ptr<MaterialLibrary> ResourceManager::getResource<MaterialLibrary>(c
     return loadResource<MaterialLibrary>(filename);
 }
 
+template <typename ResourceType>
+void ResourceManager::purge()
+{
+    auto &cache = getCache<ResourceType>();
+    std::vector<std::string> purgeList = {};
+    for (auto &kvp : cache)
+    {
+        if (kvp.second.use_count() < 1)
+        {
+            purgeList.push_back(kvp.first);
+        }
+    }
+    for (auto &name : purgeList)
+    {
+        cache.erase(name);
+        printf("Purged resource %s\n", name.c_str());
+    }
+}
+
+void ResourceManager::purgeAll()
+{
+    purge<TextureData>();
+    purge<ShaderData>();
+    purge<MeshData>();
+    purge<MaterialLibrary>();
+}
+
+template <>
+std::map<std::string, std::shared_ptr<TextureData>> &ResourceManager::getCache()
+{
+    return textureCache;
+}
+template <>
+std::map<std::string, std::shared_ptr<ShaderData>> &ResourceManager::getCache()
+{
+    return shaderCache;
+}
+template <>
+std::map<std::string, std::shared_ptr<MeshData>> &ResourceManager::getCache()
+{
+    return meshCache;
+}
+template <>
+std::map<std::string, std::shared_ptr<MaterialLibrary>> &ResourceManager::getCache()
+{
+    return mtlCache;
+}
+
 void ResourceManager::clear()
 {
     textureCache.clear();
