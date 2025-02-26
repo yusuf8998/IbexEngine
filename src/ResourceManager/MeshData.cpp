@@ -54,6 +54,7 @@ bool MeshData::loadFromOBJ(const std::string &filepath, bool calculate_tangents)
     file.close();
     if (calculate_tangents)
         calcTangentBitangentForMesh();
+    std::cout << "Loaded mesh from " << filepath << std::endl;
     return true;
 }
 bool MeshData::loadFromSource(const std::string &source, bool calculate_tangents)

@@ -37,6 +37,24 @@ void RenderObject::ReleaseAllMeshes()
     Meshes.clear();
 }
 
+void RenderObject::Purge()
+{
+    std::vector<std::string> purgeList = {};
+    for (auto &kvp : Meshes)
+    {
+        if (kvp.second.use_count() < 1)
+        {
+            purgeList.push_back(kvp.first);
+        }
+    }
+
+    for (auto &name : purgeList)
+    {
+        Meshes.erase(name);
+        printf("Purged render object %s\n", name.c_str());
+    }
+}
+
 std::unordered_map<std::string, std::shared_ptr<RenderObject>> RenderObject::Meshes = {};
 
 void pushVertexData(MeshGroup &group, std::vector<float> *vertexData, const std::array<VertexAttrib, INDEX_PER_VERTEX> &attribs)
@@ -80,11 +98,6 @@ void RenderObject::renderRaw()
     {
         g.renderRaw();
     }
-}
-
-TextureObject *RenderObject::loadTexture(const std::string &texturePath)
-{
-    return TextureObject::getTextureByName(texturePath);
 }
 
 ///////////////////////////////////////////////////////////////////////////

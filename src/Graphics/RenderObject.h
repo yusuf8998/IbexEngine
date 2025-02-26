@@ -22,6 +22,9 @@ public:
 
     RenderGroup(const std::shared_ptr<MeshData> &data, const std::string &name);
 
+    const std::shared_ptr<MeshData> getData() const { return data; }
+    const std::string &getName() const { return name; }
+
 private:
     std::shared_ptr<MeshData> data;
     std::string name;
@@ -48,12 +51,13 @@ public:
 
     void render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation);
     void renderRaw();
-    TextureObject *loadTexture(const std::string &texturePath);
 
     static std::shared_ptr<RenderObject> GetRenderObject(const std::string &name);
     static std::shared_ptr<RenderObject> AddRenderObject(const std::string &name, std::shared_ptr<RenderObject> object);
     static bool HasRenderObject(const std::string &name);
     static void ReleaseAllMeshes();
+
+    static void Purge();
 
 private:
     void extractGroups(const std::shared_ptr<MeshData> &data);
