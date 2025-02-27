@@ -8,16 +8,13 @@
 #include <glm/glm.hpp>
 #include <memory>
 
-class ShaderData;
+class ShaderProgram;
 
 class ShaderObject
 {
 public:
     // Constructor
-    ShaderObject(const std::string &vertexPath, const std::string &fragmentPath);
-    ShaderObject(const std::shared_ptr<ShaderData> &vertex, const std::shared_ptr<ShaderData> &fragment);
-
-    ShaderObject(const std::shared_ptr<ShaderData> &vertex, const std::shared_ptr<ShaderData> &fragment, const std::shared_ptr<ShaderData> &geometry);
+    ShaderObject(const std::shared_ptr<ShaderProgram> &program);
 
     // Use the shader program
     void use() const;
@@ -35,7 +32,7 @@ private:
     // Shader program ID
     GLuint programID;
 
-    std::shared_ptr<ShaderData> vertex, fragment, geometry;
+    std::shared_ptr<ShaderProgram> program;
 
     // Helper functions for shader compilation and program linking
     std::string readFile(const std::string &filePath) const;

@@ -59,6 +59,8 @@ public:
 
     static void Purge();
 
+    static void DebugUseCounts();
+
 private:
     void extractGroups(const std::shared_ptr<MeshData> &data);
 

@@ -8,24 +8,27 @@ void BillboardNode::render(const std::shared_ptr<ShaderObject> &_shader)
     {
         texture = std::make_shared<TextureObject>(render_name);
     }
-    if (!RenderObject::HasRenderObject(name))
+    if (!RenderObject::HasRenderObject("Billboard"))
     {
         auto data = std::make_shared<MeshData>();
         data->loadFromSource("v 0.000000 0.000000 0.000000\np 1", false);
-        (void) RenderObject::AddRenderObject(name, std::make_shared<RenderObject>(data));
+        renderObject = RenderObject::AddRenderObject("Billboard", std::make_shared<RenderObject>(data));
     }
+    if (!renderObject)
+        renderObject = RenderObject::GetRenderObject("Billboard");
     auto shader = resolveShader(_shader);
     shader->use();
     shader->setInt("image", 0);
     shader->setInt("lockHorizontal", lockHorizontal ? 1 : 0);
     shader->setMat4("model", transform.globalTransform);
     texture->bind(0);
-    RenderObject::GetRenderObject(name)->renderRaw();
+    renderObject->renderRaw();
 }
 
 void BillboardNode::reset()
 {
     texture.reset();
+    renderObject.reset();
 }
 
 void to_json(nlohmann::json &j, const std::shared_ptr<BillboardNode> &node)

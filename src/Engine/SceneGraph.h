@@ -83,6 +83,8 @@ void to_json(nlohmann::json &j, const TransformablePtr &node);
 void to_json(nlohmann::json &j, const Transformable *node);
 void from_json(const nlohmann::json &j, const TransformablePtr &node);
 
+class RenderObject;
+
 class Renderable : public Transformable
 {
 public:
@@ -97,6 +99,7 @@ public:
     virtual void reset();
 
 protected:
+    std::shared_ptr<RenderObject> renderObject;
     const std::shared_ptr<ShaderObject> resolveShader(const std::shared_ptr<ShaderObject> &shader) const;
 };
 void to_json(nlohmann::json &j, const RenderablePtr &node);

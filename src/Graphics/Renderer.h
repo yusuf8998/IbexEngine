@@ -72,8 +72,8 @@ public:
     void setCursorState(int state);
     void setScreenSize(const glm::uvec2 &size);
 
-    void loadShader(int key, const std::string &vertexPath, const std::string &fragmentPath);
-    void loadShader(int key, const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath);
+    void loadShader(int key, const std::string &programPath);
+    void unloadShader(int key);
 
     void assignSkyboxShader(int key);
     void unassignSkyboxShader();

@@ -17,8 +17,8 @@ void Scene::extractUsedResources()
                 auto usedTextures = group.getData()->getGroup(group.getName()).getUsedTextures();
                 textures.insert(textures.end(), usedTextures.begin(), usedTextures.end());
             }
-            materials.insert(materials.end(), obj->groups[0].getData()->materialLibraries.begin(), obj->groups[0].getData()->materialLibraries.end());
-            meshes.push_back(obj->groups[0].getData());
+            // materials.insert(materials.end(), obj->groups[0].getData()->materialLibraries.begin(), obj->groups[0].getData()->materialLibraries.end());
+            meshes.push_back(cast->render_name);
         }
     };
 

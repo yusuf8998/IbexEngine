@@ -9,8 +9,8 @@ struct Scene
 private:
     std::vector<std::string> materials;
     std::vector<std::string> textures;
-    std::vector<std::shared_ptr<ShaderData>> shaders;
-    std::vector<std::shared_ptr<MeshData>> meshes;
+    std::vector<std::string> shaders;
+    std::vector<std::string> meshes;
 
 public:
     std::shared_ptr<Node> root;

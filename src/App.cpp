@@ -34,12 +34,12 @@ int main()
 {
     auto &renderer = Renderer::instance();
     auto &input = InputManager::instance();
-    renderer.loadShader(0, "res/Shaders/Shader_Illum/vertex_illum.glsl", "res/Shaders/Shader_Illum/geometry_illum.glsl", "res/Shaders/Shader_Illum/fragment_illum.glsl");
-    renderer.loadShader(1, "res/Shaders/Shader_Cube/vertex_cube.glsl", "res/Shaders/Shader_Cube/fragment_cube.glsl");
-    renderer.loadShader(2, "res/Shaders/Shader_Normal/vertex_normal.glsl", "res/Shaders/Shader_Normal/geometry_normal.glsl", "res/Shaders/Shader_Normal/fragment_normal.glsl");
-    renderer.loadShader(3, "res/Shaders/Shader_Billboard/vertex_billboard.glsl", "res/Shaders/Shader_Billboard/geometry_billboard.glsl", "res/Shaders/Shader_Billboard/fragment_billboard.glsl");
-    renderer.loadShader(4, "res/Shaders/Shader_Displacement/vertex_displacement.glsl", "res/Shaders/Shader_Displacement/geometry_displacement.glsl", "res/Shaders/Shader_Displacement/fragment_displacement.glsl");
-    renderer.loadShader(5, "res/Shaders/Shader_Particle/vertex_particle.glsl", "res/Shaders/Shader_Particle/fragment_particle.glsl");
+    renderer.loadShader(0, "res/Shaders/Shader_Illum");
+    renderer.loadShader(1, "res/Shaders/Shader_Cube");
+    renderer.loadShader(2, "res/Shaders/Shader_Normal");
+    renderer.loadShader(3, "res/Shaders/Shader_Billboard");
+    renderer.loadShader(4, "res/Shaders/Shader_Displacement");
+    renderer.loadShader(5, "res/Shaders/Shader_Particle");
     renderer.assignSkyboxShader(1);
 
     std::vector<Particle> particles = std::vector<Particle>(25);
@@ -123,6 +123,10 @@ int main()
         if (input.isKeyPressed(GLFW_KEY_F6))
             root->traverse([&](Node *node)
                            { if (auto *cast = dynamic_cast<Renderable *>(node)) { cast->reset(); } });
+        if (input.isKeyPressed(GLFW_KEY_F7))
+            RenderObject::DebugUseCounts();
+        if (input.isKeyPressed(GLFW_KEY_F8))
+            ResourceManager::instance().debugUseCounts();
 
         if (mouseLook)
         {

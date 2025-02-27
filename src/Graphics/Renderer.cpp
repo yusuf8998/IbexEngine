@@ -42,16 +42,19 @@ int Renderer::getCursorState() const
 
 glm::vec3 Renderer::getClearColor() const
 {
+    std::shared_lock lock(mutex_);
     return clearColor;
 }
 
 float Renderer::getDeltaTime() const
 {
+    std::shared_lock lock(mutex_);
     return deltaTime;
 }
 
 glm::dvec2 Renderer::getDeltaMouse() const
 {
+    std::shared_lock lock(mutex_);
     return deltaMouse;
 }
 
@@ -68,11 +71,13 @@ std::shared_ptr<ShaderObject> Renderer::getSkyboxShader() const
 
 int Renderer::getSkyboxShaderIndex() const
 {
+    std::shared_lock lock(mutex_);
     return skyboxShader;
 }
 
 void Renderer::setClearColor(const glm::vec3 &color)
 {
+    std::unique_lock lock(mutex_);
     clearColor = color;
     glClearColor(clearColor.r, clearColor.g, clearColor.b, 1.f);
 }
@@ -93,42 +98,38 @@ void Renderer::setScreenSize(const glm::uvec2 &size)
     glViewport(0, 0, size.x, size.y);
 }
 
-void Renderer::loadShader(int key, const std::string &vertexPath, const std::string &fragmentPath)
+void Renderer::loadShader(int key, const std::string &programPath)
 {
     assert(shaders.find(key) == shaders.end());
     std::unique_lock lock(mutex_);
-    auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>(vertexPath);
-    auto shader_frag = ResourceManager::instance().loadResource<ShaderData>(fragmentPath);
-
-    shaders[key] = std::make_shared<ShaderObject>(shader_vertex, shader_frag);
+    auto shader_program = ResourceManager::instance().loadResource<ShaderProgram>(programPath);
+    shaders[key] = std::make_shared<ShaderObject>(shader_program);
     shaders[key]->use();
 }
 
-void Renderer::loadShader(int key, const std::string &vertexPath, const std::string &geometryPath, const std::string &fragmentPath)
+void Renderer::unloadShader(int key)
 {
-    assert(shaders.find(key) == shaders.end());
+    assert(shaders.find(key) != shaders.end());
     std::unique_lock lock(mutex_);
-    auto shader_vertex = ResourceManager::instance().loadResource<ShaderData>(vertexPath);
-    auto shader_frag = ResourceManager::instance().loadResource<ShaderData>(fragmentPath);
-    auto shader_geo = ResourceManager::instance().loadResource<ShaderData>(geometryPath);
-
-    shaders[key] = std::make_shared<ShaderObject>(shader_vertex, shader_frag, shader_geo);
-    shaders[key]->use();
+    shaders.erase(key);
 }
 
 void Renderer::assignSkyboxShader(int key)
 {
     assert(shaders.count(key) != 0);
+    std::unique_lock lock(mutex_);
     skyboxShader = key;
 }
 
 void Renderer::unassignSkyboxShader()
 {
+    std::unique_lock lock(mutex_);
     skyboxShader = -1;
 }
 
 void Renderer::setViewProjectionUniforms() const
 {
+    std::unique_lock lock(mutex_);
     for (auto &kvp : shaders)
     {
         setViewProjectionUniforms(kvp.first);

@@ -42,7 +42,7 @@ void RenderObject::Purge()
     std::vector<std::string> purgeList = {};
     for (auto &kvp : Meshes)
     {
-        if (kvp.second.use_count() < 1)
+        if (kvp.second.use_count() <= 1)
         {
             purgeList.push_back(kvp.first);
         }
@@ -52,6 +52,14 @@ void RenderObject::Purge()
     {
         Meshes.erase(name);
         printf("Purged render object %s\n", name.c_str());
+    }
+}
+
+void RenderObject::DebugUseCounts()
+{
+    for (auto &kvp : Meshes)
+    {
+        printf("Render object %s has %ld uses\n", kvp.first.c_str(), kvp.second.use_count());
     }
 }
 
@@ -165,6 +173,8 @@ void RenderGroup::reuploadToGLBuffers()
     populateOpenGLBuffers();
 }
 
+#include <ResourceManager/TextureData.h>
+
 void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
 {
     // Check for OpenGL errors
@@ -186,21 +196,21 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
     shader->setInt("material.normalIndex", -1);
     shader->setInt("material.displacementIndex", -1);
 
-    for (size_t i = 0; i < textureArray->getFilePaths().size(); i++)
+    for (size_t i = 0; i < textureArray->getDatas().size(); i++)
     {
-        if (textureArray->getFilePaths()[i] == material->diffuseTexture)
+        if (textureArray->getDatas()[i]->getName() == material->diffuseTexture)
         {
             shader->setInt("material.diffuseIndex", i);
         }
-        else if (textureArray->getFilePaths()[i] == material->specularTexture)
+        else if (textureArray->getDatas()[i]->getName() == material->specularTexture)
         {
             shader->setInt("material.specularIndex", i);
         }
-        else if (textureArray->getFilePaths()[i] == material->normalMap)
+        else if (textureArray->getDatas()[i]->getName() == material->normalMap)
         {
             shader->setInt("material.normalIndex", i);
         }
-        else if (textureArray->getFilePaths()[i] == material->dispMap)
+        else if (textureArray->getDatas()[i]->getName() == material->dispMap)
         {
             shader->setInt("material.displacementIndex", i);
         }

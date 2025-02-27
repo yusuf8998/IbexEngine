@@ -234,11 +234,14 @@ void Renderable::render(const std::shared_ptr<ShaderObject> &_shader)
 {
     // Render the mesh
     auto shader = resolveShader(_shader);
+    if (!renderObject)
+        renderObject = RenderObject::GetRenderObject(render_name);
     if (enabled && visible)
-        RenderObject::GetRenderObject(render_name)->render(shader, transform.globalTransform);
+        renderObject->render(shader, transform.globalTransform);
 }
 void Renderable::reset()
 {
+    renderObject.reset();
 }
 const std::shared_ptr<ShaderObject> Renderable::resolveShader(const std::shared_ptr<ShaderObject> &shader) const
 {

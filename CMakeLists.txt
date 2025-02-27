@@ -9,10 +9,11 @@ add_executable(Ibex
     "src/GLAD/glad.c"
 
     "src/ResourceManager/MaterialLibrary.cpp"
-    "src/ResourceManager/ResourceManager.cpp"
+    "src/ResourceManager/ShaderProgram.cpp"
     "src/ResourceManager/TextureData.cpp"
     "src/ResourceManager/ShaderData.cpp"
     "src/ResourceManager/MeshData.cpp"
+    "src/ResourceManager/ResourceManager.cpp"
 
     "src/ResourceManager/AssetPack/AssetPack.cpp"
 

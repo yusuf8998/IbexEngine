@@ -1,6 +1,6 @@
 #include "ResourceManager.h"
 #include "TextureData.h"
-#include "ShaderData.h"
+#include "ShaderProgram.h"
 #include "MeshData.h"
 #include "MaterialLibrary.h"
 #include <stb/stb_image.h>
@@ -34,7 +34,7 @@ std::shared_ptr<TextureData> ResourceManager::getResource<TextureData>(const std
 }
 
 template <>
-std::shared_ptr<ShaderData> ResourceManager::loadResource<ShaderData>(const std::string &filename)
+std::shared_ptr<ShaderProgram> ResourceManager::loadResource<ShaderProgram>(const std::string &filename)
 {
     // Check if resource is already loaded
     if (shaderCache.find(filename) != shaderCache.end())
@@ -42,13 +42,13 @@ std::shared_ptr<ShaderData> ResourceManager::loadResource<ShaderData>(const std:
         return shaderCache[filename];
     }
 
-    // Load new texture
-    auto shader = std::make_shared<ShaderData>(filename);
+    // Load new shader program
+    auto shader = std::make_shared<ShaderProgram>(filename);
     shaderCache[filename] = shader;
     return shader;
 }
 template <>
-std::shared_ptr<ShaderData> ResourceManager::getResource<ShaderData>(const std::string &filename)
+std::shared_ptr<ShaderProgram> ResourceManager::getResource<ShaderProgram>(const std::string &filename)
 {
     // Check if the resource is in cache
     auto it = shaderCache.find(filename);
@@ -58,7 +58,7 @@ std::shared_ptr<ShaderData> ResourceManager::getResource<ShaderData>(const std::
     }
 
     // If not in cache, load it
-    return loadResource<ShaderData>(filename);
+    return loadResource<ShaderProgram>(filename);
 }
 
 template <>
@@ -136,31 +136,32 @@ std::shared_ptr<MaterialLibrary> ResourceManager::getResource<MaterialLibrary>(c
     return loadResource<MaterialLibrary>(filename);
 }
 
-template <typename ResourceType>
-void ResourceManager::purge()
-{
-    auto &cache = getCache<ResourceType>();
-    std::vector<std::string> purgeList = {};
-    for (auto &kvp : cache)
-    {
-        if (kvp.second.use_count() < 1)
-        {
-            purgeList.push_back(kvp.first);
-        }
-    }
-    for (auto &name : purgeList)
-    {
-        cache.erase(name);
-        printf("Purged resource %s\n", name.c_str());
-    }
-}
-
 void ResourceManager::purgeAll()
 {
     purge<TextureData>();
-    purge<ShaderData>();
+    purge<ShaderProgram>();
     purge<MeshData>();
     purge<MaterialLibrary>();
+}
+
+void ResourceManager::debugUseCounts()
+{
+    for (auto &kvp : textureCache)
+    {
+        printf("Texture %s has %ld uses\n", kvp.first.c_str(), kvp.second.use_count());
+    }
+    for (auto &kvp : shaderCache)
+    {
+        printf("Shader %s has %ld uses\n", kvp.first.c_str(), kvp.second.use_count());
+    }
+    for (auto &kvp : meshCache)
+    {
+        printf("Mesh %s has %ld uses\n", kvp.first.c_str(), kvp.second.use_count());
+    }
+    for (auto &kvp : mtlCache)
+    {
+        printf("Material Library %s has %ld uses\n", kvp.first.c_str(), kvp.second.use_count());
+    }
 }
 
 template <>
@@ -169,7 +170,7 @@ std::map<std::string, std::shared_ptr<TextureData>> &ResourceManager::getCache()
     return textureCache;
 }
 template <>
-std::map<std::string, std::shared_ptr<ShaderData>> &ResourceManager::getCache()
+std::map<std::string, std::shared_ptr<ShaderProgram>> &ResourceManager::getCache()
 {
     return shaderCache;
 }

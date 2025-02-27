@@ -5,6 +5,7 @@
 
 #include <GLAD/glad.h>
 #include <string>
+#include <memory>
 #include <map>
 
 class TextureData;
@@ -14,7 +15,7 @@ class TextureObject
 public:
     // Constructor that takes a file path
     TextureObject(const std::string &filePath);
-    TextureObject(const TextureData &data);
+    TextureObject(const std::shared_ptr<TextureData> &_data);
 
     // Destructor to clean up texture data
     ~TextureObject();
@@ -30,7 +31,8 @@ public:
 
 private:
     GLuint textureID;     // OpenGL texture ID
-    std::string filePath; // Texture file path
+    // std::string filePath; // Texture file path
+    std::shared_ptr<TextureData> data;
 
     static std::map<std::string, TextureObject *> Textures;
 

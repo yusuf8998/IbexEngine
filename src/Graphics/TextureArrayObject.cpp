@@ -5,15 +5,16 @@
 #include "ResourceManager/ResourceManager.h"
 
 TextureArrayObject::TextureArrayObject(const std::vector<std::string> &filePaths)
-    : filePaths(filePaths)
 {
-    loadTextureArray();
+    loadTextureArray(filePaths);
 }
 
 TextureArrayObject::~TextureArrayObject()
 {
     glDeleteTextures(1, &textureArrayID);
 }
+
+const std::vector<std::shared_ptr<TextureData>> &TextureArrayObject::getDatas() const { return datas; }
 
 void TextureArrayObject::bind(GLuint unit) const
 {
@@ -28,27 +29,29 @@ void TextureArrayObject::bind(GLuint unit) const
     }
 }
 
-void TextureArrayObject::loadTextureArray()
+void TextureArrayObject::loadTextureArray(const std::vector<std::string> &filePaths)
 {
-    std::vector<unsigned char *> datas = {};
+    std::vector<unsigned char *> raw_datas = {};
+    datas = std::vector<std::shared_ptr<TextureData>>(filePaths.size());
     int arr_width = 0, arr_height = 0, arr_channels = 0;
-    for (auto filePath : filePaths)
+    for (size_t i = 0; i < filePaths.size(); i++)
     {
-        auto texture = ResourceManager::instance().getResource<TextureData>(filePath);
+        const std::string filePath = filePaths[i];
+        datas[i] = ResourceManager::instance().getResource<TextureData>(filePath);
         if (arr_width == 0)
         {
-            arr_width = texture->getWidth();
-            arr_height = texture->getHeight();
-            arr_channels = texture->getChannels();
+            arr_width = datas[i]->getWidth();
+            arr_height = datas[i]->getHeight();
+            arr_channels = datas[i]->getChannels();
         }
-        else if (texture->getWidth() != arr_width || texture->getHeight() != arr_height || texture->getChannels() != arr_channels)
+        else if (datas[i]->getWidth() != arr_width || datas[i]->getHeight() != arr_height || datas[i]->getChannels() != arr_channels)
         {
             std::cerr << "Texture dimensions do not match: " << filePath << std::endl;
             return;
         }
-        datas.push_back(texture->getData());
+        raw_datas.push_back(datas[i]->getData());
     }
-    generateTextureArray(datas, arr_width, arr_height, datas.size(), arr_channels);
+    generateTextureArray(raw_datas, arr_width, arr_height, raw_datas.size(), arr_channels);
 }
 
 void TextureArrayObject::generateTextureArray(const std::vector<unsigned char *> &data, int width, int height, int layers, int channels)

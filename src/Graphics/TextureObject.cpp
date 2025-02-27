@@ -16,16 +16,17 @@ TextureObject *TextureObject::getTextureByName(const std::string &name)
 }
 
 TextureObject::TextureObject(const std::string &filePath)
-    : filePath(filePath), textureID(0)
+    : textureID(0)
 {
-    loadTexture();
-    Textures[filePath] = this;
+    data = ResourceManager::instance().getResource<TextureData>(filePath);
+    generateTexture(data->getData(), data->getWidth(), data->getHeight(), data->getChannels());
+    Textures[data->getName()] = this;
 }
-TextureObject::TextureObject(const TextureData &data)
-    : filePath(data.getName()), textureID(0)
+TextureObject::TextureObject(const std::shared_ptr<TextureData> &_data)
+    : data(_data), textureID(0)
 {
-    generateTexture(data.getData(), data.getWidth(), data.getHeight(), data.getChannels());
-    Textures[filePath] = this;
+    generateTexture(data->getData(), data->getWidth(), data->getHeight(), data->getChannels());
+    Textures[data->getName()] = this;
 }
 
 TextureObject::~TextureObject()
@@ -33,7 +34,7 @@ TextureObject::~TextureObject()
     // if (textureID != 0) {
     //     glDeleteTextures(1, &textureID);
     // }
-    Textures.erase(filePath);
+    Textures.erase(data->getName());
 }
 
 void TextureObject::bind(GLuint unit) const
@@ -51,8 +52,7 @@ void TextureObject::bind(GLuint unit) const
 
 void TextureObject::loadTexture()
 {
-    auto texture = ResourceManager::instance().getResource<TextureData>(filePath);
-    generateTexture(texture->getData(), texture->getWidth(), texture->getHeight(), texture->getChannels());
+    generateTexture(data->getData(), data->getWidth(), data->getHeight(), data->getChannels());
 }
 
 void TextureObject::generateTexture(unsigned char *data, int width, int height, int channels)
