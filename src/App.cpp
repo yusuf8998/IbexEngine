@@ -19,6 +19,7 @@
 #include "Engine/FSM/PlayerMachine.h"
 
 #include <Engine/Editor/Inspector.h>
+#include "Clock.h"
 
 std::thread save_thread;
 
@@ -98,7 +99,10 @@ int main()
     (void)ImGui_ImplOpenGL3_Init("#version 450");
     ImGui::StyleColorsDark();
 
-    float purgeTimer = 0.f;
+    Clock purgeClock(5.f, []()
+                     {  RenderObject::Purge();
+                        ResourceManager::instance().purgeAll(); }, [](float ct, float dt)
+                     { return ct + dt; });
 
     while (!renderer.shouldClose())
     {
@@ -165,13 +169,7 @@ int main()
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
 
-        purgeTimer += renderer.getDeltaTime();
-        if (purgeTimer > 1.f / renderer.getDeltaTime())
-        {
-            RenderObject::Purge();
-            ResourceManager::instance().purgeAll();
-            purgeTimer = 0.f;
-        }
+        purgeClock.update(renderer.getDeltaTime());
 
         renderer.postUpdate();
     }
