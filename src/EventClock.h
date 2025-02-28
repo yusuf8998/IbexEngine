@@ -2,7 +2,7 @@
 
 #include <functional>
 
-struct Clock
+struct EventClock
 {
 private:
     float currentTime;
@@ -12,9 +12,9 @@ private:
 public:
     const float maxTime;
 
-    Clock(float _maxTime, const std::function<void(void)> &_action)
+    EventClock(float _maxTime, const std::function<void(void)> &_action)
         : maxTime(_maxTime), currentTime(0.f), action(_action) {}
-    Clock(float _maxTime, const std::function<void(void)> &_action, const std::function<float(float, float)> &_updateEvent)
+    EventClock(float _maxTime, const std::function<void(void)> &_action, const std::function<float(float, float)> &_updateEvent)
         : maxTime(_maxTime), currentTime(0.f), action(_action), updateEvent(_updateEvent) {}
 
     inline void update(float dt)

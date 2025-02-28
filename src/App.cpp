@@ -19,7 +19,7 @@
 #include "Engine/FSM/PlayerMachine.h"
 
 #include <Engine/Editor/Inspector.h>
-#include "Clock.h"
+#include "EventClock.h"
 
 std::thread save_thread;
 
@@ -99,7 +99,7 @@ int main()
     (void)ImGui_ImplOpenGL3_Init("#version 450");
     ImGui::StyleColorsDark();
 
-    Clock purgeClock(5.f, []()
+    EventClock purgeClock(5.f, []()
                      {  RenderObject::Purge();
                         ResourceManager::instance().purgeAll(); }, [](float ct, float dt)
                      { return ct + dt; });
