@@ -19,26 +19,34 @@ public:
     Transform();
 
     // Set the position of the node
-    void setPosition(const glm::vec3 &newPos);
+    void setLocalPosition(const glm::vec3 &newPos);
     // Set the scale of the node
-    void setScale(const glm::vec3 &newScale);
+    void setLocalScale(const glm::vec3 &newScale);
     // Set the rotation of the node
-    void setRotation(const glm::quat &newRotation);
+    void setLocalRotation(const glm::quat &newRotation);
 
     void translate(const glm::vec3 &pos);
     void rescale(const glm::vec3 &scl);
     void rotate(const glm::vec3 &rot);
 
     // Get the position (read-only)
-    glm::vec3 getPosition() const;
+    glm::vec3 getLocalPosition() const;
     // Get the rotation (read-only)
-    glm::quat getRotation() const;
+    glm::quat getLocalRotation() const;
     // Get the scale (read-only)
-    glm::vec3 getScale() const;
+    glm::vec3 getLocalScale() const;
 
-    glm::vec3 getFront() const;
-    glm::vec3 getRight() const;
-    glm::vec3 getUp() const;
+    glm::vec3 getLocalFront() const;
+    glm::vec3 getLocalRight() const;
+    glm::vec3 getLocalUp() const;
+
+    glm::vec3 getGlobalPosition() const;
+    glm::quat getGlobalRotation() const;
+    glm::vec3 getGlobalScale() const;
+
+    glm::vec3 getGlobalFront() const;
+    glm::vec3 getGlobalRight() const;
+    glm::vec3 getGlobalUp() const;
 
     void applyTransformToLocal();
     void applyParentToGlobal(const glm::mat4 &parent);

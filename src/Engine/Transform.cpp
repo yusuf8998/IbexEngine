@@ -6,17 +6,17 @@ Transform::Transform()
 {
 }
 
-void Transform::setPosition(const glm::vec3 &newPos)
+void Transform::setLocalPosition(const glm::vec3 &newPos)
 {
     position = newPos;
     transformChanged = true;
 }
-void Transform::setScale(const glm::vec3 &newScale)
+void Transform::setLocalScale(const glm::vec3 &newScale)
 {
     scale = newScale;
     transformChanged = true;
 }
-void Transform::setRotation(const glm::quat &newRotation)
+void Transform::setLocalRotation(const glm::quat &newRotation)
 {
     rotation = newRotation;
     transformChanged = true;
@@ -24,45 +24,75 @@ void Transform::setRotation(const glm::quat &newRotation)
 
 void Transform::translate(const glm::vec3 &pos)
 {
-    setPosition(position + pos);
+    setLocalPosition(position + pos);
 }
 
 void Transform::rescale(const glm::vec3 &scl)
 {
-    setScale(scale * scl);
+    setLocalScale(scale * scl);
 }
 
 void Transform::rotate(const glm::vec3 &rot)
 {
-    setRotation(rotation * glm::quat(rot));
+    setLocalRotation(rotation * glm::quat(rot));
 }
 
-glm::vec3 Transform::getPosition() const
+glm::vec3 Transform::getLocalPosition() const
 {
     return position;
 }
-glm::quat Transform::getRotation() const
+glm::quat Transform::getLocalRotation() const
 {
     return rotation;
 }
-glm::vec3 Transform::getScale() const
+glm::vec3 Transform::getLocalScale() const
 {
     return scale;
 }
 
-glm::vec3 Transform::getFront() const
+glm::vec3 Transform::getLocalFront() const
 {
     return glm::normalize(glm::vec3(glm::mat3_cast(rotation) * glm::vec3(0.f, 0.f, -1.f)));
 }
 
-glm::vec3 Transform::getRight() const
+glm::vec3 Transform::getLocalRight() const
 {
     return glm::normalize(glm::vec3(glm::mat3_cast(rotation) * glm::vec3(1.f, 0.f, 0.f)));
 }
 
-glm::vec3 Transform::getUp() const
+glm::vec3 Transform::getLocalUp() const
 {
     return glm::normalize(glm::vec3(glm::mat3_cast(rotation) * glm::vec3(0.f, 1.f, 0.f)));
+}
+
+glm::vec3 Transform::getGlobalPosition() const
+{
+    return glm::vec3(globalTransform[3]);
+}
+
+glm::quat Transform::getGlobalRotation() const
+{
+    return glm::quat_cast(globalTransform);
+}
+
+glm::vec3 Transform::getGlobalScale() const
+{
+    return glm::vec3(glm::length(glm::vec3(globalTransform[0])), glm::length(glm::vec3(globalTransform[1])), glm::length(glm::vec3(globalTransform[2])));
+}
+
+glm::vec3 Transform::getGlobalFront() const
+{
+    return glm::normalize(glm::vec3(getGlobalRotation() * glm::vec4(0.f, 0.f, -1.f, 0.f)));
+}
+
+glm::vec3 Transform::getGlobalRight() const
+{
+    return glm::normalize(glm::vec3(getGlobalRotation() * glm::vec4(1.f, 0.f, 0.f, 0.f)));
+}
+
+glm::vec3 Transform::getGlobalUp() const
+{
+    return glm::normalize(glm::vec3(getGlobalRotation() * glm::vec4(0.f, 1.f, 0.f, 0.f)));
 }
 
 void Transform::applyTransformToLocal()

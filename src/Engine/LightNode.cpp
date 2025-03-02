@@ -70,16 +70,16 @@ void LightNode::updateVectors()
 {
     if (auto point = std::dynamic_pointer_cast<PointLight>(caster))
     {
-        point->position = transform.getPosition();
+        point->position = transform.getGlobalPosition();
     }
     else if (auto spot = std::dynamic_pointer_cast<SpotLight>(caster))
     {
-        spot->position = transform.getPosition();
-        spot->direction = transform.getFront();
+        spot->position = transform.getGlobalPosition();
+        spot->direction = transform.getGlobalFront();
     }
     else if (auto dir = std::dynamic_pointer_cast<DirectionalLight>(caster))
     {
-        dir->direction = transform.getFront();
+        dir->direction = transform.getGlobalFront();
     }
     else
         throw std::runtime_error("Unknown light type");

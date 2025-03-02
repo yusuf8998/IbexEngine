@@ -78,14 +78,14 @@ int main()
 
     auto dirLight = makeNode<LightNode>("DirLight");
     dirLight->setCaster(std::make_shared<DirectionalLight>(LightColor{glm::vec3(0.0125f), glm::vec3(0.5f), glm::vec3(0.5f)}));
-    dirLight->transform.rotation = glm::quatLookAt(glm::vec3(0, -1, 0), glm::vec3(0, 0, -1));
+    dirLight->transform.setLocalRotation(glm::quatLookAt(glm::vec3(0, -1, 0), glm::vec3(0, 0, -1)));
     dirLight->setActive(true);
     root->addChild(dirLight);
 
     auto pointLight = makeNode<LightNode>("PointLight");
     glm::vec3 green(0.0125f, 1.f, 0.0125f);
     pointLight->setCaster(std::make_shared<PointLight>(LightColor{glm::vec3(0.0125f) * green, glm::vec3(0.5f) * green, glm::vec3(0.5f) * green}, LightAttenuation{1.f, 0.35f, 0.44f}));
-    pointLight->transform.position = glm::vec3(0, 1, 0);
+    pointLight->transform.setLocalPosition(glm::vec3(0, 1, 0));
     pointLight->setActive(true);
     root->addChild(pointLight);
 
@@ -161,6 +161,9 @@ int main()
 
         // Simple update and render cycle
         updateSceneGraph(root);
+
+        LightNode::UpdateActiveLights();
+        LightNode::UpdateActiveLightVectors();
 
         if (updateParticles)
         {

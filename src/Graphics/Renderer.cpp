@@ -168,9 +168,6 @@ void Renderer::update()
     // Setup view and projection matrices
     view = mainCamera.getViewMatrix();
     projection = glm::perspective(glm::radians(mainCamera.zoom), (float)screenSize.x / screenSize.y, 0.1f, 100.f);
-
-    LightNode::UpdateActiveLights();
-    LightNode::UpdateActiveLightVectors();
 }
 
 void Renderer::postUpdate() const
