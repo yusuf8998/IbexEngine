@@ -174,6 +174,7 @@ void RenderGroup::reuploadToGLBuffers()
 }
 
 #include <ResourceManager/TextureData.h>
+#include <Engine/LightNode.h>
 
 void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
 {
@@ -221,12 +222,14 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
 
     shader->setMat4("model", transformation);
 
-    shader->setVec3("light.direction", glm::vec3(0.f, -1.f, 0.f));
-    shader->setVec3("light.ambient", glm::vec3(0.125f, 0.125f, 0.125f));
-    shader->setVec3("light.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-    shader->setVec3("light.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    // shader->setVec3("dirLight.direction", glm::vec3(0.f, -1.f, 0.f));
+    // shader->setVec3("dirLight.color.ambient", glm::vec3(0.0125f, 0.0125f, 0.0125f));
+    // shader->setVec3("dirLight.color.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
+    // shader->setVec3("dirLight.color.specular", glm::vec3(0.5f, 0.5f, 0.5f));
 
     shader->setVec3("viewPos", mainCamera.position);
+
+    LightNode::SetActiveLightUniforms(shader);
 
     // Draw the mesh
     GLCall(glDrawArrays(getDrawMode(), 0, data->getFaceCount(name) * data->getVertexPerFace(name)));

@@ -115,6 +115,12 @@ inline std::shared_ptr<T> makeNode(const std::string &name = "Unnamed")
     return std::make_shared<T>(name);
 }
 
+template <typename T, typename... TArgs>
+inline std::shared_ptr<T> makeNode(const std::string &name = "Unnamed", TArgs... args)
+{
+    return std::make_shared<T>(name, args...);
+}
+
 template <typename T>
 inline std::shared_ptr<T> castNode(const NodePtr &node)
 {

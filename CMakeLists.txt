@@ -6,6 +6,7 @@ cmake_policy(SET CMP0072 NEW)
 find_package(OpenGL REQUIRED)
 
 add_executable(Ibex
+    "src/KHR/khrplatform.h"
     "src/GLAD/glad.c"
 
     "src/ResourceManager/MaterialLibrary.cpp"
@@ -25,6 +26,7 @@ add_executable(Ibex
     "src/Graphics/RenderObject.cpp"
     "src/Graphics/ParticleObject.cpp"
     "src/Graphics/InputManager/InputManager.cpp"
+    "src/Graphics/LightCaster.cpp"
     "src/Graphics/Renderer.cpp"
 
     "src/Engine/Transform.cpp"
@@ -34,6 +36,7 @@ add_executable(Ibex
     "src/Engine/BillboardNode.cpp"
     #"src/Engine/InputHandler.cpp"
     "src/Engine/Camera.cpp"
+    "src/Engine/LightNode.cpp"
 
     "src/Engine/FSM/PlayerMachine.cpp"
 

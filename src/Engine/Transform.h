@@ -36,6 +36,10 @@ public:
     // Get the scale (read-only)
     glm::vec3 getScale() const;
 
+    glm::vec3 getFront() const;
+    glm::vec3 getRight() const;
+    glm::vec3 getUp() const;
+
     void applyTransformToLocal();
     void applyParentToGlobal(const glm::mat4 &parent);
     void applyLocalToGlobal();

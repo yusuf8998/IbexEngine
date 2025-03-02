@@ -21,6 +21,8 @@
 #include <Engine/Editor/Inspector.h>
 #include "EventClock.h"
 
+#include <Engine/LightNode.h>
+
 std::thread save_thread;
 
 void save(const std::shared_ptr<Node> &root)
@@ -73,6 +75,19 @@ int main()
 
     NodePtr root;
     loadSceneGraph("res/root.json", root);
+
+    auto dirLight = makeNode<LightNode>("DirLight");
+    dirLight->setCaster(std::make_shared<DirectionalLight>(LightColor{glm::vec3(0.0125f), glm::vec3(0.5f), glm::vec3(0.5f)}));
+    dirLight->transform.rotation = glm::quatLookAt(glm::vec3(0, -1, 0), glm::vec3(0, 0, -1));
+    dirLight->setActive(true);
+    root->addChild(dirLight);
+
+    auto pointLight = makeNode<LightNode>("PointLight");
+    glm::vec3 green(0.0125f, 1.f, 0.0125f);
+    pointLight->setCaster(std::make_shared<PointLight>(LightColor{glm::vec3(0.0125f) * green, glm::vec3(0.5f) * green, glm::vec3(0.5f) * green}, LightAttenuation{1.f, 0.35f, 0.44f}));
+    pointLight->transform.position = glm::vec3(0, 1, 0);
+    pointLight->setActive(true);
+    root->addChild(pointLight);
 
     InputAxis::Axes["Horizontal"] = std::make_shared<InputAxis>(GLFW_KEY_D, GLFW_KEY_A);
     InputAxis::Axes["Vertical"] = std::make_shared<InputAxis>(GLFW_KEY_S, GLFW_KEY_W);

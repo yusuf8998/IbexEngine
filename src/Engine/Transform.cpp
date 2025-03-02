@@ -50,6 +50,21 @@ glm::vec3 Transform::getScale() const
     return scale;
 }
 
+glm::vec3 Transform::getFront() const
+{
+    return glm::normalize(glm::vec3(glm::mat3_cast(rotation) * glm::vec3(0.f, 0.f, -1.f)));
+}
+
+glm::vec3 Transform::getRight() const
+{
+    return glm::normalize(glm::vec3(glm::mat3_cast(rotation) * glm::vec3(1.f, 0.f, 0.f)));
+}
+
+glm::vec3 Transform::getUp() const
+{
+    return glm::normalize(glm::vec3(glm::mat3_cast(rotation) * glm::vec3(0.f, 1.f, 0.f)));
+}
+
 void Transform::applyTransformToLocal()
 {
     localTransform = glm::mat4(1.f);
