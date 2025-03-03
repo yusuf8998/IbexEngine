@@ -32,7 +32,7 @@
                     "children": [],
                     "enabled": true,
                     "name": "dynamic2",
-                    "renderName": "res/Models/cone.obj",
+                    "renderName": "res/Models/box.obj",
                     "static": false,
                     "transform": {
                         "position": {
@@ -57,7 +57,7 @@
             ],
             "enabled": true,
             "name": "switch1",
-            "activeChild": 0
+            "activeChild": 1
         },
         {
             "billboardName": "res/Textures/box.png",

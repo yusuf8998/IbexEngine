@@ -82,17 +82,17 @@ glm::vec3 Transform::getGlobalScale() const
 
 glm::vec3 Transform::getGlobalFront() const
 {
-    return glm::normalize(glm::vec3(getGlobalRotation() * glm::vec4(0.f, 0.f, -1.f, 0.f)));
+    return -glm::vec3(globalTransform[2]);
 }
 
 glm::vec3 Transform::getGlobalRight() const
 {
-    return glm::normalize(glm::vec3(getGlobalRotation() * glm::vec4(1.f, 0.f, 0.f, 0.f)));
+    return -glm::vec3(globalTransform[0]);
 }
 
 glm::vec3 Transform::getGlobalUp() const
 {
-    return glm::normalize(glm::vec3(getGlobalRotation() * glm::vec4(0.f, 1.f, 0.f, 0.f)));
+    return glm::vec3(globalTransform[1]);
 }
 
 void Transform::applyTransformToLocal()

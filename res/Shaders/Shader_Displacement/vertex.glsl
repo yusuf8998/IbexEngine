@@ -21,6 +21,7 @@ layout(location = 1) out vec2 g_texCoords;
 layout(location = 2) out mat3 g_TBN; // 2, 3, 4
 layout(location = 5) out vec3 g_tangentViewPos;
 layout(location = 6) out vec3 g_tangentFragPos;
+layout(location = 7) out int g_displaced;
 // layout(location = 5) out vec3 g_fragNormal;
 
 uniform Material material;
@@ -33,9 +34,11 @@ uniform vec3 viewPos;
 
 void main() {
     vec4 newPos = vec4(v_position, 1.0);
+    g_displaced = 0;
     if (material.displacementIndex != -1) {
         float newHeight = texture(material.textures, vec3(v_uv, float(material.displacementIndex))).r * 0.05;
         newPos += vec4(v_normal, 0.0) * newHeight;
+        g_displaced = 1;
     }
 
     g_fragPos = vec3(model * newPos);
