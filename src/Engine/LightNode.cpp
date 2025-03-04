@@ -45,8 +45,11 @@ LightNode::~LightNode()
         vector = &PointLights;
     else if (auto spot = std::dynamic_pointer_cast<SpotLight>(caster))
         vector = &SpotLights;
-    // else
-    //     throw std::runtime_error("Unknown light type");
+    else
+    {
+        std::cerr << "Unknown light type" << std::endl;
+        return;
+    }
 
     vector->erase(std::remove(vector->begin(), vector->end(), this), vector->end());
 }
