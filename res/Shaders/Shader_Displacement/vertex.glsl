@@ -19,10 +19,8 @@ layout(location = 3) in vec3 v_tangent;   // Vertex tangent
 layout(location = 0) out vec3 g_fragPos;
 layout(location = 1) out vec2 g_texCoords;
 layout(location = 2) out mat3 g_TBN; // 2, 3, 4
-layout(location = 5) out vec3 g_tangentViewPos;
-layout(location = 6) out vec3 g_tangentFragPos;
-layout(location = 7) out int g_displaced;
-// layout(location = 5) out vec3 g_fragNormal;
+layout(location = 5) out int g_displaced;
+layout(location = 6) out vec3 g_fragNormal;
 
 uniform Material material;
 
@@ -50,12 +48,10 @@ void main() {
     T = normalize(T - dot(T, N) * N);
     vec3 B = cross(N, T);
 
-    // g_fragNormal = normalMatrix * v_normal;
+    g_fragNormal = normalMatrix * v_normal;
 
     mat3 TBN = transpose(mat3(T, B, N));    
     g_TBN = TBN;
-    g_tangentViewPos  = TBN * viewPos;
-    g_tangentFragPos  = TBN * g_fragPos;
 
     gl_Position = projection * view * model * newPos;
 }

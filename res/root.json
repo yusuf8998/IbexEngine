@@ -1,6 +1,7 @@
 {
     "children": [
         {
+            "activeChild": 1,
             "children": [
                 {
                     "children": [],
@@ -56,8 +57,7 @@
                 }
             ],
             "enabled": true,
-            "name": "switch1",
-            "activeChild": 1
+            "name": "switch1"
         },
         {
             "billboardName": "res/Textures/box.png",
@@ -84,7 +84,7 @@
                     "z": 2.0
                 }
             },
-            "visible": true
+            "visible": false
         },
         {
             "children": [],
@@ -92,6 +92,103 @@
             "name": "skybox",
             "skyboxName": "res/Textures/Skybox/skybox-biglake*jpg",
             "visible": true
+        },
+        {
+            "children": [
+                {
+                    "children": [],
+                    "enabled": true,
+                    "lightColor": {
+                        "ambient": {
+                            "x": 0.012500000186264515,
+                            "y": 0.012500000186264515,
+                            "z": 0.012500000186264515
+                        },
+                        "diffuse": {
+                            "x": 0.5,
+                            "y": 0.5,
+                            "z": 0.5
+                        },
+                        "specular": {
+                            "x": 0.5,
+                            "y": 0.5,
+                            "z": 0.5
+                        }
+                    },
+                    "lightType": "directional",
+                    "lightActive": true,
+                    "name": "DirLight",
+                    "static": false,
+                    "transform": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "w": 0.7071067690849304,
+                            "x": -0.7071067690849304,
+                            "y": -0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    }
+                },
+                {
+                    "children": [],
+                    "enabled": true,
+                    "lightAttenuation": {
+                        "constant": 1.0,
+                        "linear": 0.550000011920929,
+                        "quadratic": 0.4399999976158142
+                    },
+                    "lightColor": {
+                        "ambient": {
+                            "x": 0.00015625001105945557,
+                            "y": 0.012500000186264515,
+                            "z": 0.00015625001105945557
+                        },
+                        "diffuse": {
+                            "x": 0.0062500000931322575,
+                            "y": 0.5,
+                            "z": 0.0062500000931322575
+                        },
+                        "specular": {
+                            "x": 0.0062500000931322575,
+                            "y": 0.5,
+                            "z": 0.0062500000931322575
+                        }
+                    },
+                    "lightType": "point",
+                    "lightActive": true,
+                    "name": "PointLight",
+                    "static": false,
+                    "transform": {
+                        "position": {
+                            "x": 0.0,
+                            "y": 1.2000000476837158,
+                            "z": 0.0
+                        },
+                        "rotation": {
+                            "w": 1.0,
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        }
+                    }
+                }
+            ],
+            "enabled": true,
+            "name": "LightContainer"
         }
     ],
     "enabled": true,

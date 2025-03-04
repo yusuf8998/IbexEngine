@@ -48,6 +48,10 @@ struct LightCaster
         : color(color)
     {
     }
+    LightCaster()
+        : color(LightColor())
+    {
+    }
     virtual ~LightCaster() = 0;
 
     virtual void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const = 0;
@@ -63,6 +67,10 @@ struct AttenuationLightCaster : public LightCaster
         : LightCaster(color), attenuation(attenuation)
     {
     }
+    AttenuationLightCaster()
+        : LightCaster(), attenuation(LightAttenuation())
+    {
+    }
     virtual ~AttenuationLightCaster() = 0;
 };
 inline AttenuationLightCaster::~AttenuationLightCaster() {}
@@ -75,6 +83,10 @@ struct DirectionalLight : public LightCaster
         : LightCaster(color)
     {
     }
+    DirectionalLight()
+        : LightCaster()
+    {
+    }
 
     void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const override;
 };
@@ -83,6 +95,10 @@ struct PointLight : public AttenuationLightCaster
 {
     PointLight(const LightColor &color, const LightAttenuation &attenuation)
         : AttenuationLightCaster(color, attenuation)
+    {
+    }
+    PointLight()
+        : AttenuationLightCaster()
     {
     }
 
@@ -96,6 +112,10 @@ struct SpotLight : public AttenuationLightCaster
 
     SpotLight(const LightColor &color, const LightAttenuation &attenuation, const LightCutOff &cutOff)
         : AttenuationLightCaster(color, attenuation), cutOff(cutOff)
+    {
+    }
+    SpotLight()
+        : AttenuationLightCaster(), cutOff(LightCutOff())
     {
     }
 

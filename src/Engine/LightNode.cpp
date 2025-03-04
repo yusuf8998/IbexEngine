@@ -1,6 +1,6 @@
 #include "LightNode.h"
 
-LightNode * LightNode::ActiveDirectionalLight;
+LightNode *LightNode::ActiveDirectionalLight;
 std::array<LightNode *, MAX_POINT_LIGHTS> LightNode::ActivePointLights;
 std::array<LightNode *, MAX_SPOT_LIGHTS> LightNode::ActiveSpotLights;
 
@@ -191,4 +191,92 @@ void LightNode::SetActiveLightUniforms(const std::shared_ptr<ShaderObject> &shad
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
         if (ActiveSpotLights[i])
             ActiveSpotLights[i]->setUniforms(shader, "spotLights[" + std::to_string(i) + "]");
+}
+
+void to_json(nlohmann::json &j, const LightColor &color)
+{
+    j = nlohmann::json{
+        {"ambient", color.ambient}, {"diffuse", color.diffuse}, {"specular", color.specular}};
+}
+
+void from_json(const nlohmann::json &j, LightColor &color)
+{
+    j.at("ambient").get_to(color.ambient);
+    j.at("diffuse").get_to(color.diffuse);
+    j.at("specular").get_to(color.specular);
+}
+
+void to_json(nlohmann::json &j, const LightAttenuation &attenuation)
+{
+    j = nlohmann::json{
+        {"constant", attenuation.constant}, {"linear", attenuation.linear}, {"quadratic", attenuation.quadratic}};
+}
+
+void from_json(const nlohmann::json &j, LightAttenuation &attenuation)
+{
+    j.at("constant").get_to(attenuation.constant);
+    j.at("linear").get_to(attenuation.linear);
+    j.at("quadratic").get_to(attenuation.quadratic);
+}
+
+void to_json(nlohmann::json &j, const std::shared_ptr<LightNode> &node)
+{
+    ::to_json(j, node.get());
+}
+void to_json(nlohmann::json &j, const LightNode *node)
+{
+    ::to_json(j, dynamic_cast<const Transformable *>(node));
+    if (auto point = std::dynamic_pointer_cast<PointLight>(node->getCaster()))
+    {
+        j += {"lightType", "point"};
+        j += {"lightColor", point->color};
+        j += {"lightAttenuation", point->attenuation};
+    }
+    else if (auto spot = std::dynamic_pointer_cast<SpotLight>(node->getCaster()))
+    {
+        j += {"lightType", "spot"};
+        j += {"lightColor", spot->color};
+        j += {"lightAttenuation", spot->attenuation};
+        j += {"innerCutoff", spot->cutOff.inner};
+        j += {"outerCutoff", spot->cutOff.outer};
+    }
+    else if (auto dir = std::dynamic_pointer_cast<DirectionalLight>(node->getCaster()))
+    {
+        j += {"lightType", "directional"};
+        j += {"lightColor", dir->color};
+    }
+    j += {"lightActive", node->isActive()};
+}
+void from_json(const nlohmann::json &j, const std::shared_ptr<LightNode> &node)
+{
+    ::from_json(j, std::dynamic_pointer_cast<Transformable>(node));
+    std::string type;
+    j.at("lightType").get_to(type);
+    bool _active = false;
+    j.at("lightActive").get_to(_active);
+    node->setActive(_active);
+    if (type == "point")
+    {
+        auto caster = std::make_shared<PointLight>();
+        j.at("lightColor").get_to(caster->color);
+        j.at("lightAttenuation").get_to(caster->attenuation);
+        node->setCaster(caster);
+    }
+    else if (type == "spot")
+    {
+        auto caster = std::make_shared<SpotLight>();
+        j.at("lightColor").get_to(caster->color);
+        j.at("lightAttenuation").get_to(caster->attenuation);
+        j.at("innerCutoff").get_to(caster->cutOff.inner);
+        j.at("outerCutoff").get_to(caster->cutOff.outer);
+        node->setCaster(caster);
+    }
+    else if (type == "directional")
+    {
+        auto caster = std::make_shared<DirectionalLight>();
+        j.at("lightColor").get_to(caster->color);
+        node->setCaster(caster);
+    }
+    else
+        throw std::runtime_error("Unknown light type: " + type);
 }

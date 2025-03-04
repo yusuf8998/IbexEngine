@@ -18,10 +18,12 @@ struct Inspector
         if (ImGui::BeginChild((node->name + "_Children").c_str(), ImVec2(0, 0), flags))
         {
             ImGui::Text("Children");
+            ImGui::Indent();
             for (const auto &child : node->children)
             {
                 drawNode(child);
             }
+            ImGui::Unindent();
         }
         ImGui::EndChild();
     }
@@ -42,13 +44,13 @@ inline void Inspector::draw(const std::shared_ptr<T> &node)
     Separator();
     if (CollapsingHeader((node->name + "_Node").c_str(), ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::Indent();
+        // ImGui::Indent();
         if (ImGui::BeginChild(node->name.c_str(), windowSize, flags))
         {
             drawContent<T>(node);
         }
         ImGui::EndChild();
-        Unindent();
+        // Unindent();
     }
 }
 
@@ -105,6 +107,61 @@ inline void Inspector::drawContent<SwitchNode>(const std::shared_ptr<SwitchNode>
 {
     using namespace ImGui;
     InputInt("active child", &node->active_child);
+    if (draw_children)
+        drawChildren(node);
+}
+
+#include <Graphics/LightCaster.h>
+#include <Engine/LightNode.h>
+
+inline void drawLightColor(const std::string &node_name, LightColor &color)
+{
+    using namespace ImGui;
+    if (CollapsingHeader((node_name + "_Color").c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        // ImGui::Indent();
+        InputFloat3("ambient", &color.ambient[0]);
+        InputFloat3("diffuse", &color.diffuse[0]);
+        InputFloat3("specular", &color.specular[0]);
+        // ImGui::Unindent();
+    }
+}
+
+inline void drawLightAttenuation(const std::string &node_name, LightAttenuation &attenuation)
+{
+    using namespace ImGui;
+    if (CollapsingHeader((node_name + "_Attenuation").c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        // ImGui::Indent();
+        InputFloat("constant", &attenuation.constant);
+        InputFloat("linear", &attenuation.linear);
+        InputFloat("quadratic", &attenuation.quadratic);
+        // ImGui::Unindent();
+    }
+}
+
+template <>
+inline void Inspector::drawContent<LightNode>(const std::shared_ptr<LightNode> &node, bool draw_children)
+{
+    using namespace ImGui;
+    drawContent<Transformable>(std::reinterpret_pointer_cast<Transformable>(node), false);
+    auto caster = node->getCaster();
+    if (auto point = std::dynamic_pointer_cast<PointLight>(caster))
+    {
+        drawLightColor(node->name, point->color);
+        drawLightAttenuation(node->name, point->attenuation);
+    }
+    else if (auto spot = std::dynamic_pointer_cast<SpotLight>(caster))
+    {
+        drawLightColor(node->name, spot->color);
+        InputFloat("inner cutoff", &spot->cutOff.inner);
+        InputFloat("outer cutoff", &spot->cutOff.outer);
+        drawLightAttenuation(node->name, spot->attenuation);
+    }
+    else if (auto dir = std::dynamic_pointer_cast<DirectionalLight>(caster))
+    {
+        drawLightColor(node->name, dir->color);
+    }
     if (draw_children)
         drawChildren(node);
 }
@@ -191,6 +248,10 @@ inline void Inspector::drawNode(const std::shared_ptr<Node> &_node)
     if (const auto &node = std::dynamic_pointer_cast<Renderable>(_node))
     {
         draw<Renderable>(node);
+    }
+    else if (const auto &node = std::dynamic_pointer_cast<LightNode>(_node))
+    {
+        draw<LightNode>(node);
     }
     else if (const auto &node = std::dynamic_pointer_cast<Transformable>(_node))
     {

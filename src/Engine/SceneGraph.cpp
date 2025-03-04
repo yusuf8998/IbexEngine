@@ -2,6 +2,7 @@
 #include <Graphics/RenderObject.h>
 #include "SkyboxNode.h"
 #include "BillboardNode.h"
+#include "LightNode.h"
 
 using namespace std;
 using namespace glm;
@@ -101,6 +102,14 @@ void to_json(json &j, const NodePtr &node)
     {
         ::to_json(j, renderable);
     }
+    else if (auto *_switch = dynamic_cast<SwitchNode *>(node.get()))
+    {
+        ::to_json(j, _switch);
+    }
+    else if (auto *light = dynamic_cast<LightNode *>(node.get()))
+    {
+        ::to_json(j, light);
+    }
     else if (auto *transformable = dynamic_cast<Transformable *>(node.get()))
     {
         ::to_json(j, transformable);
@@ -118,7 +127,6 @@ void from_json(const json &j, NodePtr &node)
         for (const auto &child_json : j["children"])
         {
             NodePtr child_node;
-            constructNodeFromJson(child_json, child_node);
             ::from_json(child_json, child_node);
             node->children.push_back(child_node);
             child_node->parent = node.get();
@@ -155,6 +163,12 @@ void constructNodeFromJson(const json &j, NodePtr &node)
     {
         node = make_shared<SwitchNode>();
         ::from_json(j, dynamic_pointer_cast<SwitchNode>(node));
+        return;
+    }
+    if (j.contains("lightType"))
+    {
+        node = make_shared<LightNode>();
+        ::from_json(j, dynamic_pointer_cast<LightNode>(node));
         return;
     }
     if (j.contains("transform"))

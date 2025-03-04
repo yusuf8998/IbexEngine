@@ -19,30 +19,28 @@ layout(triangle_strip, max_vertices = 3) out; // Output primitive is also a tria
 layout(location = 0) in vec3 g_fragPos[3];
 layout(location = 1) in vec2 g_texCoords[3];
 layout(location = 2) in mat3 g_TBN[3]; // 2, 3, 4
-layout(location = 5) in vec3 g_tangentViewPos[3];
-layout(location = 6) in vec3 g_tangentFragPos[3];
-layout(location = 7) in int g_displaced[3];
-// layout(location = 5) in vec3 g_fragNormal[3];
+layout(location = 5) in int g_displaced[3];
+layout(location = 6) in vec3 g_fragNormal[3];
 
 layout(location = 0) out vec3 f_fragPos;
 layout(location = 1) out vec2 f_texCoords;
 layout(location = 2) out mat3 f_TBN; // 2, 3, 4
-layout(location = 5) out vec3 f_tangentViewPos;
-layout(location = 6) out vec3 f_tangentFragPos;
-layout(location = 7) out vec3 f_fragNormal;
+layout(location = 5) out vec3 f_fragNormal;
 
 uniform vec3 viewPos;
 
 vec3 GetNormal() {
-    vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
-    vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
-    return normalize(cross(a, b));
+    if (g_displaced[0] <= 0)
+        return g_fragNormal[0];
+    vec3 a = vec3(g_fragPos[0]) - vec3(g_fragPos[1]);
+    vec3 b = vec3(g_fragPos[2]) - vec3(g_fragPos[1]);
+    return -normalize(cross(a, b));
 }
 
 vec3 GetTangent()
 {
-    vec3 edge1 = vec3(gl_in[1].gl_Position) - vec3(gl_in[0].gl_Position);
-    vec3 edge2 = vec3(gl_in[2].gl_Position) - vec3(gl_in[0].gl_Position);
+    vec3 edge1 = vec3(g_fragPos[1]) - vec3(g_fragPos[0]);
+    vec3 edge2 = vec3(g_fragPos[2]) - vec3(g_fragPos[0]);
     vec2 deltaUV1 = g_texCoords[1] - g_texCoords[0];
     vec2 deltaUV2 = g_texCoords[2] - g_texCoords[0];
 
@@ -71,14 +69,10 @@ void main() {
     if (material.normalIndex != -1 && g_displaced[0] > 0)
     {
         f_TBN = GetTBN();
-        f_tangentViewPos = f_TBN * viewPos;
-        f_tangentFragPos = f_TBN * g_fragPos[0];
     }
     else
     {
         f_TBN = g_TBN[0];
-        f_tangentViewPos = g_tangentViewPos[0];
-        f_tangentFragPos = g_tangentFragPos[0];
     }
     f_fragNormal = GetNormal();
     gl_Position = gl_in[0].gl_Position;
@@ -89,14 +83,10 @@ void main() {
     if (material.normalIndex != -1 && g_displaced[1] > 0)
     {
         f_TBN = GetTBN();
-        f_tangentViewPos = f_TBN * viewPos;
-        f_tangentFragPos = f_TBN * g_fragPos[1];
     }
     else
     {
         f_TBN = g_TBN[1];
-        f_tangentViewPos = g_tangentViewPos[1];
-        f_tangentFragPos = g_tangentFragPos[1];
     }
     f_fragNormal = GetNormal();
     gl_Position = gl_in[1].gl_Position;
@@ -107,14 +97,10 @@ void main() {
     if (material.normalIndex != -1 && g_displaced[2] > 0)
     {
         f_TBN = GetTBN();
-        f_tangentViewPos = f_TBN * viewPos;
-        f_tangentFragPos = f_TBN * g_fragPos[2];
     }
     else
     {
         f_TBN = g_TBN[2];
-        f_tangentViewPos = g_tangentViewPos[2];
-        f_tangentFragPos = g_tangentFragPos[2];
     }
     f_fragNormal = GetNormal();
     gl_Position = gl_in[2].gl_Position;
