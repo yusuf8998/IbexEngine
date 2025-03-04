@@ -15,6 +15,9 @@ public:
     int getChannels() const { return channels; }
     std::string getName() const { return filename; }
 
+    void createData(int width, int height, int channels);
+    void uploadData(unsigned char *data, int size, int offset);
+
 private:
     std::string filename;
     int width = 0;

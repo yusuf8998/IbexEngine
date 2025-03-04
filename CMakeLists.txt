@@ -27,6 +27,7 @@ add_executable(Ibex
     "src/Graphics/ParticleObject.cpp"
     "src/Graphics/InputManager/InputManager.cpp"
     "src/Graphics/LightCaster.cpp"
+    "src/Graphics/FramebufferObject.cpp"
     "src/Graphics/Renderer.cpp"
 
     "src/Engine/Transform.cpp"

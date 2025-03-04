@@ -16,6 +16,21 @@ TextureData::TextureData(const std::string& filename)
 
 TextureData::~TextureData() {
     if (data) {
-        stbi_image_free(data);
+        free(data);
     }
+}
+
+void TextureData::createData(int width, int height, int channels)
+{
+    this->width = width;
+    this->height = height;
+    this->channels = channels;
+    this->data = (unsigned char *) malloc(width * height * channels);
+}
+
+void TextureData::uploadData(unsigned char *data, int size, int offset)
+{
+    assert(this->data);
+    assert(size + offset <= width * height * channels);
+    memcpy(this->data + offset, data, size);
 }

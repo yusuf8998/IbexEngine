@@ -7,7 +7,7 @@
                     "children": [],
                     "enabled": true,
                     "name": "dynamic1",
-                    "renderName": "res/Models/disp_cube.obj",
+                    "renderName": "res/Models/Pebble_Sphere.obj",
                     "static": false,
                     "transform": {
                         "position": {

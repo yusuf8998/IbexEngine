@@ -31,9 +31,9 @@ TextureObject::TextureObject(const std::shared_ptr<TextureData> &_data)
 
 TextureObject::~TextureObject()
 {
-    // if (textureID != 0) {
-    //     glDeleteTextures(1, &textureID);
-    // }
+    if (textureID != 0) {
+        glDeleteTextures(1, &textureID);
+    }
     Textures.erase(data->getName());
 }
 

@@ -23,6 +23,7 @@
 
 #include <Engine/LightNode.h>
 #include "glm/gtx/string_cast.hpp"
+#include "Graphics/FramebufferObject.h"
 
 std::thread save_thread;
 
@@ -123,9 +124,12 @@ int main()
     ImGui::StyleColorsDark();
 
     EventClock purgeClock(5.f, []()
-                     {  RenderObject::Purge();
+                          {  RenderObject::Purge();
                         ResourceManager::instance().purgeAll(); }, [](float ct, float dt)
-                     { return ct + dt; });
+                          { return ct + dt; });
+
+    FramebufferObject fbo(renderer.getScreenSize().x, renderer.getScreenSize().y, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
+    bool bind_fbo = false;
 
     while (!renderer.shouldClose())
     {
@@ -154,6 +158,8 @@ int main()
             RenderObject::DebugUseCounts();
         if (input.isKeyPressed(GLFW_KEY_F8))
             ResourceManager::instance().debugUseCounts();
+        if (input.isKeyPressed(GLFW_KEY_F9))
+            bind_fbo = !bind_fbo;
 
         if (mouseLook)
         {
@@ -177,6 +183,17 @@ int main()
         {
             particleObj.updateParticles();
             particleObj.updateInstanceBuffer();
+        }
+        if (bind_fbo)
+        {
+            fbo.bindTexture(0);
+            fbo.bind();
+            // renderSceneGraph(root, renderer.getShader(6), true);
+            // fbo.unbind();
+        }
+        else
+        {
+            fbo.unbind();
         }
         glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL));
         particleObj.render(renderer.getShader(5), glm::mat4(1.f));
