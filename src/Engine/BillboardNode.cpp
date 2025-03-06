@@ -1,4 +1,5 @@
 #include "BillboardNode.h"
+#include <Graphics/Renderer.h>
 
 void BillboardNode::render(const std::shared_ptr<ShaderObject> &_shader)
 {
@@ -18,11 +19,11 @@ void BillboardNode::render(const std::shared_ptr<ShaderObject> &_shader)
         renderObject = RenderObject::GetRenderObject("Billboard");
     auto shader = resolveShader(_shader);
     shader->use();
-    shader->setInt("image", 0);
+    Renderer::instance().slotTexture(GL_TEXTURE_2D, texture->getID(), shader, "image");
     shader->setInt("lockHorizontal", lockHorizontal ? 1 : 0);
     shader->setMat4("model", transform.globalTransform);
-    texture->bind(0);
     renderObject->renderRaw();
+    Renderer::instance().resetTextureSlots();
 }
 
 void BillboardNode::reset()

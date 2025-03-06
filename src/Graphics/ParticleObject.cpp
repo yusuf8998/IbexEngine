@@ -96,8 +96,7 @@ void ParticleObject::render(const std::shared_ptr<ShaderObject> &shader, const g
 
     shader->use();
     shader->setMat4("model", transformation);
-    texture->bind(0);
-    shader->setInt("image", 0);
+    Renderer::instance().slotTexture(GL_TEXTURE_2D, texture->getID(), shader, "image");
 
     // Bind the VAO, draw instances then unbind
     glBindVertexArray(quadVAO);

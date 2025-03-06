@@ -21,7 +21,7 @@ public:
     ~TextureObject();
 
     // Method to bind the texture
-    void bind(GLuint unit = 0) const;
+    void bind() const;
 
     // Getter for the texture ID
     GLuint getID() const { return textureID; }

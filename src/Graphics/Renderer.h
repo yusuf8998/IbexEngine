@@ -45,6 +45,8 @@ private:
     std::map<int, std::shared_ptr<ShaderObject>> shaders;
     int skyboxShader = -1;
 
+    int lastActiveTextureSlot = 0;
+
 public:
     Renderer();
     ~Renderer();
@@ -68,6 +70,11 @@ public:
     std::shared_ptr<ShaderObject> getSkyboxShader() const;
     int getSkyboxShaderIndex() const;
 
+    int slotTexture(GLuint target, GLuint id);
+    void slotTexture(GLuint target, GLuint id, const std::shared_ptr<ShaderObject> &shader, const std::string &name);
+    void unslotTextures();
+    void resetTextureSlots();
+
     void setClearColor(const glm::vec3 &color);
     void setCursorState(int state);
     void setScreenSize(const glm::uvec2 &size);
@@ -86,7 +93,7 @@ public:
     bool shouldClose() const;
 
     void update();
-    void postUpdate() const;
+    void postUpdate();
 
     void cleanup() const;
 };

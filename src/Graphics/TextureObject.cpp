@@ -3,6 +3,7 @@
 #include "ResourceManager/TextureData.h"
 #include "ResourceManager/ResourceManager.h"
 #include <Graphics/GL.h>
+#include "Renderer.h"
 
 std::map<std::string, TextureObject *> TextureObject::Textures = {};
 TextureObject *TextureObject::getTextureByName(const std::string &name)
@@ -37,17 +38,9 @@ TextureObject::~TextureObject()
     Textures.erase(data->getName());
 }
 
-void TextureObject::bind(GLuint unit) const
+void TextureObject::bind() const
 {
-    if (unit >= 0 && unit <= 31)
-    {
-        GLCall(glActiveTexture(GL_TEXTURE0 + unit));
-        GLCall(glBindTexture(GL_TEXTURE_2D, textureID));
-    }
-    else
-    {
-        std::cerr << "Invalid texture unit: " << unit << std::endl;
-    }
+    Renderer::instance().slotTexture(GL_TEXTURE_2D, textureID);
 }
 
 void TextureObject::loadTexture()

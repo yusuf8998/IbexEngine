@@ -41,16 +41,16 @@ void SkyboxNode::render(const std::shared_ptr<ShaderObject> &_shader)
     }
     if (!SkyboxObject)
         SkyboxObject = RenderObject::GetRenderObject(SkyboxMesh);
-    cubeMap->bind(0);
     auto shader = resolveShader(_shader);
     shader->use();
-    shader->setInt("cubemap", 0);
+    Renderer::instance().slotTexture(GL_TEXTURE_CUBE_MAP, cubeMap->getID(), shader, "cubemap");
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LEQUAL);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     SkyboxObject->renderRaw();
     glDepthFunc(DEFAULT_DEPTH_FUNC);
     glDepthMask(GL_TRUE);
+    Renderer::instance().resetTextureSlots();
 }
 
 void SkyboxNode::reset()

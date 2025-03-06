@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <Graphics/ShaderObject.h>
+#include <stdexcept>
 
 // float distance    = length(light.position - FragPos);
 // float attenuation = 1.0 / (light.constant + light.linear * distance +
@@ -22,7 +23,7 @@
 struct LightColor
 {
     glm::vec3 ambient, diffuse, specular;
-    
+
     void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const;
 };
 
@@ -55,6 +56,8 @@ struct LightCaster
     virtual ~LightCaster() = 0;
 
     virtual void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const = 0;
+    virtual void calcLightSpaceMatrix() = 0;
+    virtual glm::mat4 getLightSpaceMatrix() const = 0;
 };
 inline LightCaster::~LightCaster() {}
 
@@ -79,6 +82,8 @@ struct DirectionalLight : public LightCaster
 {
     glm::vec3 direction;
 
+    glm::mat4 lightSpaceMatrix;
+
     DirectionalLight(const LightColor &color)
         : LightCaster(color)
     {
@@ -89,10 +94,14 @@ struct DirectionalLight : public LightCaster
     }
 
     void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const override;
+    void calcLightSpaceMatrix() override;
+    glm::mat4 getLightSpaceMatrix() const override { return lightSpaceMatrix; }
 };
 
 struct PointLight : public AttenuationLightCaster
 {
+    glm::mat4 lightSpaceMatrix[6];
+
     PointLight(const LightColor &color, const LightAttenuation &attenuation)
         : AttenuationLightCaster(color, attenuation)
     {
@@ -103,12 +112,16 @@ struct PointLight : public AttenuationLightCaster
     }
 
     void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const override;
+    void calcLightSpaceMatrix() override;
+    glm::mat4 getLightSpaceMatrix() const override { throw std::runtime_error("Can't get singular light space matrix of point light!"); }
 };
 
 struct SpotLight : public AttenuationLightCaster
 {
     glm::vec3 direction;
     LightCutOff cutOff;
+
+    glm::mat4 lightSpaceMatrix;
 
     SpotLight(const LightColor &color, const LightAttenuation &attenuation, const LightCutOff &cutOff)
         : AttenuationLightCaster(color, attenuation), cutOff(cutOff)
@@ -120,4 +133,6 @@ struct SpotLight : public AttenuationLightCaster
     }
 
     void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const override;
+    void calcLightSpaceMatrix() override;
+    glm::mat4 getLightSpaceMatrix() const override { return lightSpaceMatrix; }
 };

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stb/stb_image.h>
 #include "CubemapObject.h"
+#include "Renderer.h"
 
 void CubemapObject::loadCubemap()
 {
@@ -66,15 +67,7 @@ CubemapObject::~CubemapObject()
     glDeleteTextures(1, &textureID);
 }
 
-void CubemapObject::bind(GLuint unit) const
+void CubemapObject::bind() const
 {
-    if (unit >= 0 && unit <= 31)
-    {
-        glActiveTexture(GL_TEXTURE0 + unit);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-    }
-    else
-    {
-        std::cerr << "Invalid texture unit: " << unit << std::endl;
-    }
+    Renderer::instance().slotTexture(GL_TEXTURE_CUBE_MAP, textureID);
 }

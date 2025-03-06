@@ -76,6 +76,37 @@ int Renderer::getSkyboxShaderIndex() const
     return skyboxShader;
 }
 
+int Renderer::slotTexture(GLuint target, GLuint id)
+{
+    std::unique_lock lock(mutex_);
+    glActiveTexture(GL_TEXTURE0 + lastActiveTextureSlot);
+    lastActiveTextureSlot++;
+    glBindTexture(target, id);
+    return lastActiveTextureSlot - 1;
+}
+
+void Renderer::slotTexture(GLuint target, GLuint id, const std::shared_ptr<ShaderObject> &shader, const std::string &name)
+{
+    slotTexture(target, id);
+    shader->setInt(name, lastActiveTextureSlot - 1);
+}
+
+void Renderer::unslotTextures()
+{
+    std::unique_lock lock(mutex_);
+    lastActiveTextureSlot = 0;
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+}
+
+void Renderer::resetTextureSlots()
+{
+    std::unique_lock lock(mutex_);
+    lastActiveTextureSlot = 0;
+}
+
 void Renderer::setClearColor(const glm::vec3 &color)
 {
     std::unique_lock lock(mutex_);
@@ -170,10 +201,11 @@ void Renderer::update()
     projection = glm::perspective(glm::radians(mainCamera.zoom), (float)screenSize.x / screenSize.y, 0.1f, 100.f);
 }
 
-void Renderer::postUpdate() const
+void Renderer::postUpdate()
 {
     glfwSwapBuffers(window);
     glfwPollEvents();
+    lastActiveTextureSlot = 0;
 }
 
 void Renderer::cleanup() const

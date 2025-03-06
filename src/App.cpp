@@ -49,6 +49,7 @@ int main()
     renderer.loadShader(3, "res/Shaders/Shader_Billboard");
     renderer.loadShader(4, "res/Shaders/Shader_Displacement");
     renderer.loadShader(5, "res/Shaders/Shader_Particle");
+    renderer.loadShader(6, "res/Shaders/Shader_Depth");
     renderer.assignSkyboxShader(1);
 
     std::vector<Particle> particles = std::vector<Particle>(25);
@@ -128,7 +129,7 @@ int main()
                         ResourceManager::instance().purgeAll(); }, [](float ct, float dt)
                           { return ct + dt; });
 
-    FramebufferObject fbo(renderer.getScreenSize().x, renderer.getScreenSize().y, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
+    FramebufferObject fbo(renderer.getScreenSize().x, renderer.getScreenSize().y, false, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
     bool bind_fbo = false;
 
     while (!renderer.shouldClose())
@@ -186,7 +187,7 @@ int main()
         }
         if (bind_fbo)
         {
-            fbo.bindTexture(0);
+            fbo.bindTexture();
             fbo.bind();
             // renderSceneGraph(root, renderer.getShader(6), true);
             // fbo.unbind();
@@ -197,6 +198,8 @@ int main()
         }
         glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL));
         particleObj.render(renderer.getShader(5), glm::mat4(1.f));
+        LightNode::RenderDepthMaps(renderer.getShader(6), [&]()
+                                   { renderSceneGraph(root, renderer.getShader(4), true); });
         renderSceneGraph(root, renderer.getShader(4));
         if (drawNormals)
             renderSceneGraph(root, renderer.getShader(2), true);

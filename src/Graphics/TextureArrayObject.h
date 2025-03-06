@@ -18,7 +18,7 @@ public:
     ~TextureArrayObject();
 
     // Method to bind the texture array
-    void bind(GLuint unit = 0) const;
+    void bind() const;
 
     // Getter for the texture array ID
     GLuint getID() const { return textureArrayID; }

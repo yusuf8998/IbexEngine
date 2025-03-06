@@ -1,15 +1,17 @@
 #pragma once
 
 #include <Graphics/LightCaster.h>
+#include <Graphics/ShadowMap.h>
 #include <Engine/SceneGraph.h>
 
 constexpr int MAX_POINT_LIGHTS = 4;
 constexpr int MAX_SPOT_LIGHTS = 4;
 
-class LightNode : public Transformable, public std::enable_shared_from_this<LightNode>
+class LightNode : public Transformable
 {
 protected:
     std::shared_ptr<LightCaster> caster = nullptr;
+    std::shared_ptr<ShadowMap> shadowMap = nullptr;
     bool active = false;
 
     static LightNode * ActiveDirectionalLight;
@@ -43,10 +45,12 @@ public:
     void setCaster(const std::shared_ptr<LightCaster> &_caster);
 
     void updateVectors();
+    void renderDepth(const std::shared_ptr<ShaderObject> &shader, const std::function<void()> &renderFunc);
 
     static void UpdateActiveLights();
     static void UpdateActiveLightVectors();
     static void SetActiveLightUniforms(const std::shared_ptr<ShaderObject> &shader);
+    static void RenderDepthMaps(const std::shared_ptr<ShaderObject> &shader, const std::function<void()> &renderFunc);
 };
 
 void to_json(nlohmann::json &j, const LightColor &color);

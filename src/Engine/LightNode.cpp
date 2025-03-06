@@ -18,16 +18,19 @@ LightNode::LightNode(const std::string &name, const LightColor &color)
     : LightNode(name, &DirectionalLights)
 {
     caster = std::make_shared<DirectionalLight>(color);
+    shadowMap = std::make_shared<ShadowMap2D>();
 }
 LightNode::LightNode(const std::string &name, const LightColor &color, const LightAttenuation &attenuation)
     : LightNode(name, &PointLights)
 {
     caster = std::make_shared<PointLight>(color, attenuation);
+    shadowMap = std::make_shared<ShadowMapCube>();
 }
 LightNode::LightNode(const std::string &name, const LightColor &color, const LightAttenuation &attenuation, const LightCutOff &cutOff)
     : LightNode(name, &SpotLights)
 {
     caster = std::make_shared<SpotLight>(color, attenuation, cutOff);
+    shadowMap = std::make_shared<ShadowMap2D>();
 }
 
 LightNode::LightNode(const std::string &name)
@@ -60,11 +63,20 @@ void LightNode::setCaster(const std::shared_ptr<LightCaster> &_caster)
 
     std::vector<LightNode *> *vector = 0;
     if (auto dir = std::dynamic_pointer_cast<DirectionalLight>(caster))
+    {
         vector = &DirectionalLights;
+        shadowMap = std::make_shared<ShadowMap2D>();
+    }
     else if (auto point = std::dynamic_pointer_cast<PointLight>(caster))
+    {
         vector = &PointLights;
+        shadowMap = std::make_shared<ShadowMapCube>();
+    }
     else if (auto spot = std::dynamic_pointer_cast<SpotLight>(caster))
+    {
         vector = &SpotLights;
+        shadowMap = std::make_shared<ShadowMap2D>();
+    }
 
     vector->push_back(this);
 }
@@ -86,11 +98,21 @@ void LightNode::updateVectors()
     }
     else
         throw std::runtime_error("Unknown light type");
+
+    caster->calcLightSpaceMatrix();
+}
+
+void LightNode::renderDepth(const std::shared_ptr<ShaderObject> &shader, const std::function<void()> &renderFunc)
+{
+    if (!shadowMap)
+        return;
+    shadowMap->render(shader, caster, renderFunc);
 }
 
 void LightNode::setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const
 {
     caster->setUniforms(shader, name);
+    shadowMap->setUniforms(shader, name);
 }
 
 void LightNode::UpdateActiveLights()
@@ -194,6 +216,20 @@ void LightNode::SetActiveLightUniforms(const std::shared_ptr<ShaderObject> &shad
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
         if (ActiveSpotLights[i])
             ActiveSpotLights[i]->setUniforms(shader, "spotLights[" + std::to_string(i) + "]");
+}
+
+void LightNode::RenderDepthMaps(const std::shared_ptr<ShaderObject> &shader, const std::function<void()> &renderFunc)
+{
+    glCullFace(GL_FRONT);
+    if (ActiveDirectionalLight)
+        ActiveDirectionalLight->renderDepth(shader, renderFunc);
+    for (int i = 0; i < MAX_POINT_LIGHTS; i++)
+        if (ActivePointLights[i])
+            ActivePointLights[i]->renderDepth(shader, renderFunc);
+    for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
+        if (ActiveSpotLights[i])
+            ActiveSpotLights[i]->renderDepth(shader, renderFunc);
+    glCullFace(GL_BACK);
 }
 
 void to_json(nlohmann::json &j, const LightColor &color)

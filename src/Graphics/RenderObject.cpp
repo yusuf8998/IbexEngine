@@ -175,6 +175,7 @@ void RenderGroup::reuploadToGLBuffers()
 
 #include <ResourceManager/TextureData.h>
 #include <Engine/LightNode.h>
+#include "Renderer.h"
 
 void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm::mat4 &transformation)
 {
@@ -217,8 +218,7 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
         }
     }
 
-    textureArray->bind(0);
-    shader->setInt("material.textures", 0);
+    Renderer::instance().slotTexture(GL_TEXTURE_2D_ARRAY, textureArray->getID(), shader, "material.textures");
 
     shader->setMat4("model", transformation);
 
@@ -236,6 +236,8 @@ void RenderGroup::render(const std::shared_ptr<ShaderObject> &shader, const glm:
 
     // Unbind the VAO
     glBindVertexArray(0);
+
+    Renderer::instance().resetTextureSlots();
 
     // Check for OpenGL errors
     ASSERT(GLLogCall("glDrawElements", __FILE__, __LINE__));

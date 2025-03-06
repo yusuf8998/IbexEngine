@@ -3,6 +3,7 @@
 #include <iostream>
 #include "ResourceManager/TextureData.h"
 #include "ResourceManager/ResourceManager.h"
+#include "Renderer.h"
 
 TextureArrayObject::TextureArrayObject(const std::vector<std::string> &filePaths)
 {
@@ -16,17 +17,9 @@ TextureArrayObject::~TextureArrayObject()
 
 const std::vector<std::shared_ptr<TextureData>> &TextureArrayObject::getDatas() const { return datas; }
 
-void TextureArrayObject::bind(GLuint unit) const
+void TextureArrayObject::bind() const
 {
-    if (unit >= 0 && unit <= 31)
-    {
-        glActiveTexture(GL_TEXTURE0 + unit);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, textureArrayID);
-    }
-    else
-    {
-        std::cerr << "Invalid texture unit: " << unit << std::endl;
-    }
+    Renderer::instance().slotTexture(GL_TEXTURE_2D_ARRAY, textureArrayID);
 }
 
 void TextureArrayObject::loadTextureArray(const std::vector<std::string> &filePaths)
