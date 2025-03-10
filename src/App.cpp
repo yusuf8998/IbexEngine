@@ -196,11 +196,12 @@ int main()
         {
             fbo.unbind();
         }
-        glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL));
-        particleObj.render(renderer.getShader(5), glm::mat4(1.f));
         LightNode::RenderDepthMaps(renderer.getShader(6), [&]()
-                                   { renderSceneGraph(root, renderer.getShader(4), true); });
-        renderSceneGraph(root, renderer.getShader(4));
+                                   { renderSceneGraph(root, renderer.getShader(6), true); });
+        glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL));
+        renderer.resetViewport();
+        particleObj.render(renderer.getShader(5), glm::mat4(1.f));
+        renderSceneGraph(root, renderer.getShader(4), false);
         if (drawNormals)
             renderSceneGraph(root, renderer.getShader(2), true);
 

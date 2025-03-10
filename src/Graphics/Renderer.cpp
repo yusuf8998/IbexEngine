@@ -176,6 +176,11 @@ void Renderer::setViewProjectionUniforms(int key) const
     shader->setMat4("projection", projection);
 }
 
+void Renderer::resetViewport() const
+{
+    glViewport(0, 0, screenSize.x, screenSize.y);
+}
+
 bool Renderer::shouldClose() const
 {
     return glfwWindowShouldClose(window);

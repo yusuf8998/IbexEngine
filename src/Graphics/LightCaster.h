@@ -80,8 +80,7 @@ inline AttenuationLightCaster::~AttenuationLightCaster() {}
 
 struct DirectionalLight : public LightCaster
 {
-    glm::vec3 direction;
-
+    glm::vec3 direction, up;
     glm::mat4 lightSpaceMatrix;
 
     DirectionalLight(const LightColor &color)
@@ -89,7 +88,7 @@ struct DirectionalLight : public LightCaster
     {
     }
     DirectionalLight()
-        : LightCaster()
+        : DirectionalLight(LightColor())
     {
     }
 
@@ -107,7 +106,7 @@ struct PointLight : public AttenuationLightCaster
     {
     }
     PointLight()
-        : AttenuationLightCaster()
+        : PointLight(LightColor(), LightAttenuation())
     {
     }
 
@@ -118,17 +117,17 @@ struct PointLight : public AttenuationLightCaster
 
 struct SpotLight : public AttenuationLightCaster
 {
-    glm::vec3 direction;
+    glm::vec3 direction, up;
     LightCutOff cutOff;
 
     glm::mat4 lightSpaceMatrix;
 
     SpotLight(const LightColor &color, const LightAttenuation &attenuation, const LightCutOff &cutOff)
-        : AttenuationLightCaster(color, attenuation), cutOff(cutOff)
+        : AttenuationLightCaster(color, attenuation), cutOff(cutOff), direction(glm::vec3(0.f)), up(glm::vec3(0.f))
     {
     }
     SpotLight()
-        : AttenuationLightCaster(), cutOff(LightCutOff())
+        : SpotLight(LightColor(), LightAttenuation(), LightCutOff())
     {
     }
 

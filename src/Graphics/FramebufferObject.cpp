@@ -74,5 +74,4 @@ void FramebufferObject::setTexture(GLuint id, GLuint type, GLuint attachement)
     texture = id;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, attachement, type, texture, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

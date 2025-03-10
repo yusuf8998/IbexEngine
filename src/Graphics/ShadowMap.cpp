@@ -74,6 +74,7 @@ void ShadowMap2D::render(const std::shared_ptr<ShaderObject> &shader, const std:
 {
     bind();
     glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, width, height);
     prepare(shader, light->getLightSpaceMatrix());
     renderFunc();
     unbind();
@@ -113,6 +114,7 @@ void ShadowMapCube::render(const std::shared_ptr<ShaderObject> &shader, const st
 {
     bind();
     glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, width, height);
     auto point = std::dynamic_pointer_cast<PointLight>(light);
     for (target = GL_TEXTURE_CUBE_MAP_POSITIVE_X; target < GL_TEXTURE_CUBE_MAP_POSITIVE_X + 6; target++)
     {

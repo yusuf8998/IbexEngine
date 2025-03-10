@@ -91,10 +91,12 @@ void LightNode::updateVectors()
     {
         spot->position = transform.getGlobalPosition();
         spot->direction = transform.getGlobalFront();
+        spot->up = transform.getGlobalUp();
     }
     else if (auto dir = std::dynamic_pointer_cast<DirectionalLight>(caster))
     {
         dir->direction = transform.getGlobalFront();
+        dir->up = transform.getGlobalUp();
     }
     else
         throw std::runtime_error("Unknown light type");
@@ -221,6 +223,7 @@ void LightNode::SetActiveLightUniforms(const std::shared_ptr<ShaderObject> &shad
 void LightNode::RenderDepthMaps(const std::shared_ptr<ShaderObject> &shader, const std::function<void()> &renderFunc)
 {
     glCullFace(GL_FRONT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     if (ActiveDirectionalLight)
         ActiveDirectionalLight->renderDepth(shader, renderFunc);
     for (int i = 0; i < MAX_POINT_LIGHTS; i++)
@@ -229,6 +232,7 @@ void LightNode::RenderDepthMaps(const std::shared_ptr<ShaderObject> &shader, con
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
         if (ActiveSpotLights[i])
             ActiveSpotLights[i]->renderDepth(shader, renderFunc);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glCullFace(GL_BACK);
 }
 

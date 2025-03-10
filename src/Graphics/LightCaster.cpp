@@ -35,8 +35,8 @@ void DirectionalLight::calcLightSpaceMatrix()
     // glm::vec3 lightViewPos = -direction * 7.5f + mainCamera.position + mainCamera.front;
     // glm::vec3 lightViewCenter = mainCamera.position + mainCamera.front;
 
-    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, .125f, 20.f);
-    glm::mat4 lightView = glm::lookAt(-direction * 10.0f, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.f, 7.5f);
+    glm::mat4 lightView = glm::lookAt(-direction * 1.0f, glm::vec3(0.0f), up);
     lightSpaceMatrix = lightProjection * lightView;
 }
 void PointLight::setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const
@@ -72,6 +72,6 @@ void SpotLight::setUniforms(const std::shared_ptr<ShaderObject> &shader, const s
 void SpotLight::calcLightSpaceMatrix()
 {
     glm::mat4 lightProjection = glm::perspective(glm::radians(cutOff.outer * 2.0f), 1.0f, 0.125f, 20.f);
-    glm::mat4 lightView = glm::lookAt(position, position + direction, glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 lightView = glm::lookAt(position, position + direction, up);
     lightSpaceMatrix = lightProjection * lightView;
 }

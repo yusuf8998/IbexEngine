@@ -88,6 +88,8 @@ public:
     void setViewProjectionUniforms() const;
     void setViewProjectionUniforms(int key) const;
 
+    void resetViewport() const;
+
     void flipCursorState();
 
     bool shouldClose() const;
