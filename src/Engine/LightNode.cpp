@@ -111,10 +111,13 @@ void LightNode::renderDepth(const std::shared_ptr<ShaderObject> &shader, const s
     shadowMap->render(shader, caster, renderFunc);
 }
 
+int lastUsedShadowMapSlot = 0;
+
 void LightNode::setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const
 {
     caster->setUniforms(shader, name);
     shadowMap->setUniforms(shader, name);
+    lastUsedShadowMapSlot = shadowMap->getTextureSlot();
 }
 
 void LightNode::UpdateActiveLights()
@@ -215,9 +218,15 @@ void LightNode::SetActiveLightUniforms(const std::shared_ptr<ShaderObject> &shad
     for (int i = 0; i < MAX_POINT_LIGHTS; i++)
         if (ActivePointLights[i])
             ActivePointLights[i]->setUniforms(shader, "pointLights[" + std::to_string(i) + "]");
+        else
+            shader->setInt("pointLights[" + std::to_string(i) + "].shadowMap", lastUsedShadowMapSlot);
+    lastUsedShadowMapSlot = 0;
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
         if (ActiveSpotLights[i])
             ActiveSpotLights[i]->setUniforms(shader, "spotLights[" + std::to_string(i) + "]");
+        else
+            shader->setInt("spotLights[" + std::to_string(i) + "].shadowMap", lastUsedShadowMapSlot);
+    lastUsedShadowMapSlot = 0;
 }
 
 void LightNode::RenderDepthMaps(const std::shared_ptr<ShaderObject> &shader, const std::function<void()> &renderFunc)

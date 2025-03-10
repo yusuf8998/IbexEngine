@@ -10,6 +10,7 @@ class ShadowMap
 {
 protected:
     GLuint id, target;
+    int textureSlot;
     FramebufferObject *fbo;
     unsigned int width, height;
 
@@ -23,13 +24,14 @@ public:
     void unbind() const;
 
     GLuint getID() const { return id; }
+    int getTextureSlot() const { return textureSlot; }
     const FramebufferObject *getFBO() const { return fbo; }
 
     unsigned int getWidth() const { return width; }
     unsigned int getHeight() const { return height; }
 
     void prepare(const std::shared_ptr<ShaderObject> &shader, glm::mat4 lightSpaceMatrix);
-    void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const;
+    void setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name);
 
     virtual void render(const std::shared_ptr<ShaderObject> &shader, const std::shared_ptr<LightCaster> &light, const std::function<void()> &renderFunc) = 0;
 };

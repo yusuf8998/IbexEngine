@@ -28,6 +28,7 @@ void DirectionalLight::setUniforms(const std::shared_ptr<ShaderObject> &shader, 
 {
     shader->setVec3(name + ".direction", direction);
     color.setUniforms(shader, name);
+    shader->setMat4(name + ".lightSpaceMatrix", lightSpaceMatrix);
 }
 
 void DirectionalLight::calcLightSpaceMatrix()
@@ -44,18 +45,20 @@ void PointLight::setUniforms(const std::shared_ptr<ShaderObject> &shader, const 
     shader->setVec3(name + ".position", position);
     color.setUniforms(shader, name);
     attenuation.setUniforms(shader, name);
+    for (int i = 0; i < 6; i++)
+        shader->setMat4(name + ".lightSpaceMatrix[" + std::to_string(i) + "]", lightSpaceMatrix[i]);
 }
 
 void PointLight::calcLightSpaceMatrix()
 {
     glm::mat4 lightProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.125f, 20.0f);
     glm::mat4 views[6];
-    views[0] = glm::lookAt(position, position + glm::vec3(+1.0, +0.0, +0.0), glm::vec3(+0.0, -1.0, +0.0));
-    views[1] = glm::lookAt(position, position + glm::vec3(-1.0, +0.0, +0.0), glm::vec3(+0.0, -1.0, +0.0));
+    views[0] = glm::lookAt(position, position + glm::vec3(+1.0, +0.0, +0.0), glm::vec3(+0.0, +1.0, +0.0));
+    views[1] = glm::lookAt(position, position + glm::vec3(-1.0, +0.0, +0.0), glm::vec3(+0.0, +1.0, +0.0));
     views[2] = glm::lookAt(position, position + glm::vec3(+0.0, +1.0, +0.0), glm::vec3(+0.0, +0.0, +1.0));
     views[3] = glm::lookAt(position, position + glm::vec3(+0.0, -1.0, +0.0), glm::vec3(+0.0, +0.0, -1.0));
-    views[4] = glm::lookAt(position, position + glm::vec3(+0.0, +0.0, +1.0), glm::vec3(+0.0, -1.0, +0.0));
-    views[5] = glm::lookAt(position, position + glm::vec3(+0.0, +0.0, -1.0), glm::vec3(+0.0, -1.0, +0.0));
+    views[4] = glm::lookAt(position, position + glm::vec3(+0.0, +0.0, +1.0), glm::vec3(+0.0, +1.0, +0.0));
+    views[5] = glm::lookAt(position, position + glm::vec3(+0.0, +0.0, -1.0), glm::vec3(+0.0, +1.0, +0.0));
     for (unsigned int i = 0; i < 6; i++)
         lightSpaceMatrix[i] = lightProjection * views[i];
 }
@@ -67,6 +70,7 @@ void SpotLight::setUniforms(const std::shared_ptr<ShaderObject> &shader, const s
     color.setUniforms(shader, name);
     attenuation.setUniforms(shader, name);
     cutOff.setUniforms(shader, name);
+    shader->setMat4(name + ".lightSpaceMatrix", lightSpaceMatrix);
 }
 
 void SpotLight::calcLightSpaceMatrix()

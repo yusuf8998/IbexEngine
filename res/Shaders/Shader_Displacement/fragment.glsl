@@ -18,12 +18,16 @@ struct LightCutOff {
 struct DirectionalLight {
     vec3 direction;
     LightColor color;
+    sampler2D shadowMap;
+    mat4 lightSpaceMatrix;
 };
 
 struct PointLight {
     vec3 position;
     LightColor color;
     LightAttenuation attenuation;
+    samplerCube shadowMap;
+    mat4 lightSpaceMatrix[6];
 };
 
 struct SpotLight {
@@ -32,6 +36,8 @@ struct SpotLight {
     LightColor color;
     LightAttenuation attenuation;
     LightCutOff cutOff;
+    sampler2D shadowMap;
+    mat4 lightSpaceMatrix;
 };
 
 uniform DirectionalLight dirLight;
@@ -88,13 +94,13 @@ vec4 calcAmbientLight(LightColor color) {
 }
 
 #pragma region calcDiffuse
-vec4 calcDiffuseDirectional(vec3 normal) {
+vec4 calcDiffuseDirectional(vec3 normal, float shadow) {
     float diff = max(dot(normal, getLightDir(dirLight.direction)), 0.0);
     vec3 diffuse = material.diffuse * dirLight.color.diffuse * diff;
-    return vec4(diffuse, 1.0);
+    return vec4(diffuse, 1.0) * (1.0 - shadow);
 }
 
-vec4 calcDiffusePoint(vec3 normal, int i) {
+vec4 calcDiffusePoint(vec3 normal, float shadow, int i) {
     if (pointLights[i].color.ambient == vec3(0.0) && pointLights[i].color.diffuse == vec3(0.0) && pointLights[i].color.specular == vec3(0.0))
         return vec4(0.0);
     vec3 lightDir = getLightDir(f_fragPos - pointLights[i].position);
@@ -106,10 +112,10 @@ vec4 calcDiffusePoint(vec3 normal, int i) {
     float attenuation = 1.0 / (pointLights[i].attenuation.constant + pointLights[i].attenuation.linear * distance +
         pointLights[i].attenuation.quadratic * (distance * distance));
 
-    return vec4(diffuse, 1.0) * attenuation;
+    return vec4(diffuse, 1.0) * attenuation * (1.0 - shadow);
 }
 
-vec4 calcDiffuseSpot(vec3 normal, int i) {
+vec4 calcDiffuseSpot(vec3 normal, float shadow, int i) {
     if (dot(f_fragPos - spotLights[i].position, spotLights[i].direction) < cos(spotLights[i].cutOff.outer))
         return vec4(0.0);
     if (spotLights[i].color.ambient == vec3(0.0) && spotLights[i].color.diffuse == vec3(0.0) && spotLights[i].color.specular == vec3(0.0))
@@ -122,19 +128,19 @@ vec4 calcDiffuseSpot(vec3 normal, int i) {
     float attenuation = 1.0 / (spotLights[i].attenuation.constant + spotLights[i].attenuation.linear * distance +
         spotLights[i].attenuation.quadratic * (distance * distance));
 
-    return vec4(diffuse, 1.0) * attenuation;
+    return vec4(diffuse, 1.0) * attenuation * (1.0 - shadow);
 }
 #pragma endregion
 #pragma region calcSpecular
 const float kPi = 3.14159265359;
-vec4 calcSpecularDirectional(vec3 normal, vec3 viewDir) {
+vec4 calcSpecularDirectional(vec3 normal, vec3 viewDir, float shadow) {
     vec3 halfwayDir = normalize(getLightDir(dirLight.direction) + viewDir);
     float energyConservation = (8.0 + material.shininess) / (8.0 * kPi);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     vec3 specular = energyConservation * 0.5 * material.specular * dirLight.color.specular * spec;
-    return vec4(specular, 1.0);
+    return vec4(specular, 1.0) * (1.0 - shadow);
 }
-vec4 calcSpecularPoint(vec3 normal, vec3 viewDir, int i)
+vec4 calcSpecularPoint(vec3 normal, vec3 viewDir, float shadow, int i)
 {
     if (pointLights[i].color.ambient == vec3(0.0) && pointLights[i].color.diffuse == vec3(0.0) && pointLights[i].color.specular == vec3(0.0))
         return vec4(0.0);
@@ -148,9 +154,9 @@ vec4 calcSpecularPoint(vec3 normal, vec3 viewDir, int i)
     float attenuation = 1.0 / (pointLights[i].attenuation.constant + pointLights[i].attenuation.linear * distance +
         pointLights[i].attenuation.quadratic * (distance * distance));
 
-    return vec4(specular, 1.0) * attenuation;
+    return vec4(specular, 1.0) * attenuation * (1.0 - shadow);
 }
-vec4 calcSpecularSpot(vec3 normal, vec3 viewDir, int i)
+vec4 calcSpecularSpot(vec3 normal, vec3 viewDir, float shadow, int i)
 {
     if (dot(f_fragPos - spotLights[i].position, spotLights[i].direction) < cos(spotLights[i].cutOff.outer))
         return vec4(0.0);
@@ -166,9 +172,38 @@ vec4 calcSpecularSpot(vec3 normal, vec3 viewDir, int i)
     float attenuation = 1.0 / (spotLights[i].attenuation.constant + spotLights[i].attenuation.linear * distance +
         spotLights[i].attenuation.quadratic * (distance * distance));
 
-    return vec4(specular, 1.0) * attenuation;
+    return vec4(specular, 1.0) * attenuation * (1.0 - shadow);
 }
 #pragma endregion
+
+float calcDirShadow(vec4 fragPosLightSpace)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    float closestDepth = texture(dirLight.shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+    return shadow;
+}
+
+float calcPointShadow(vec4 fragPosLightSpace, int i)
+{
+    vec3 fragToLight = fragPosLightSpace.xyz - pointLights[i].position;
+    float currentDepth = length(fragToLight);
+    float closestDepth = texture(pointLights[i].shadowMap, fragToLight).r;
+    float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+    return shadow;
+}
+
+float calcSpotShadow(vec4 fragPosLightSpace, int i)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    float closestDepth = texture(spotLights[i].shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float shadow = currentDepth > closestDepth ? 1.0 : 0.0;
+    return shadow;
+}
 
 void main() {
     vec3 norm = vec3(0.0);
@@ -180,6 +215,11 @@ void main() {
         norm = normalMap();
         viewDir = normalize(f_TBN * viewDir);
     }
+    vec4 fragPosLightSpace = dirLight.lightSpaceMatrix * vec4(f_fragPos, 1.0);
+
+    float dirShadow = calcDirShadow(fragPosLightSpace);
+    float pointShadow[MAX_POINT_LIGHTS];
+    float spotShadow[MAX_SPOT_LIGHTS];
 
     vec4 ambient = calcAmbientLight(dirLight.color);
     for (int i = 0; i < MAX_POINT_LIGHTS; i++)
@@ -191,27 +231,29 @@ void main() {
         ambient += calcAmbientLight(spotLights[i].color);
     }
     
-    vec4 diffuse = calcDiffuseDirectional(norm);
+    vec4 diffuse = calcDiffuseDirectional(norm, dirShadow);
     for (int i = 0; i < MAX_POINT_LIGHTS; i++)
     {
-        diffuse += calcDiffusePoint(norm, i);
+        pointShadow[i] = calcPointShadow(fragPosLightSpace, i);
+        diffuse += calcDiffusePoint(norm, pointShadow[i], i);
     }
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
     {
-        diffuse += calcDiffuseSpot(norm, i);
+        spotShadow[i] = calcSpotShadow(fragPosLightSpace, i);
+        diffuse += calcDiffuseSpot(norm, spotShadow[i], i);
     }
 
     vec4 specular = vec4(0.0);
     if (material.specularIndex != -1)
     {
-        specular = calcSpecularDirectional(norm, viewDir);
+        specular = calcSpecularDirectional(norm, viewDir, dirShadow);
         for (int i = 0; i < MAX_POINT_LIGHTS; i++)
         {
-            specular += calcSpecularPoint(norm, viewDir, i);
+            specular += calcSpecularPoint(norm, viewDir, pointShadow[i], i);
         }
         for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
         {
-            specular += calcSpecularSpot(norm, viewDir, i);
+            specular += calcSpecularSpot(norm, viewDir, spotShadow[i], i);
         }
     }
 
