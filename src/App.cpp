@@ -24,6 +24,7 @@
 #include <Engine/LightNode.h>
 #include "glm/gtx/string_cast.hpp"
 #include "Graphics/FramebufferObject.h"
+#include "Graphics/UniformBufferObject.h"
 
 std::thread save_thread;
 
@@ -131,6 +132,12 @@ int main()
 
     FramebufferObject fbo(renderer.getScreenSize().x, renderer.getScreenSize().y, false, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
     bool bind_fbo = false;
+
+    UniformBufferObject ubo = UniformBufferObject("LightingUniforms", ShaderUniforms::LIGHTING_UNIFORM_SIZE);
+    ShaderUniforms::LightingUniforms lightingUniforms;
+    lightingUniforms.dirLight = ShaderUniforms::DirectionalLight{glm::vec3(1.f), ShaderUniforms::LightColor{glm::vec3(0.f), glm::vec3(1.f), glm::vec3(0.f)}, 0, glm::mat4(1.f)};
+    ubo.setData(&lightingUniforms);
+    ubo.bind();
 
     while (!renderer.shouldClose())
     {

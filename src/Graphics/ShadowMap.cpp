@@ -33,7 +33,7 @@ void ShadowMap::prepare(const std::shared_ptr<ShaderObject> &shader, glm::mat4 l
 
 void ShadowMap::setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name)
 {
-    Renderer::instance().slotTexture(target, id, shader, name + ".shadowMap");
+    // Renderer::instance().slotTexture(target, id, shader, name + ".shadowMap");
     textureSlot = Renderer::instance().slotTexture(target, id);
     shader->setInt(name + ".shadowMap", textureSlot);
     // shader->setFloat(name + ".farPlane", 7.5f);
