@@ -215,11 +215,32 @@ void main() {
         norm = normalMap();
         viewDir = normalize(f_TBN * viewDir);
     }
-    vec4 fragPosLightSpace = dirLight.lightSpaceMatrix * vec4(f_fragPos, 1.0);
 
-    float dirShadow = calcDirShadow(fragPosLightSpace);
+    float dirShadow;
     float pointShadow[MAX_POINT_LIGHTS];
     float spotShadow[MAX_SPOT_LIGHTS];
+
+    dirShadow = 0.0;
+    for (int i = 0; i < MAX_POINT_LIGHTS; i++)
+        pointShadow[i] = 0.0;
+    for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
+        spotShadow[i] = 0.0;
+
+    dirShadow = calcDirShadow(dirLight.lightSpaceMatrix * vec4(f_fragPos, 1.0));
+    for (int i = 0; i < MAX_POINT_LIGHTS; i++)
+    {
+        pointShadow[i] = 0.0;
+        for (int j = 0; j < 6; j++)
+        {
+            vec4 fragPosLightSpace = pointLights[i].lightSpaceMatrix[j] * vec4(f_fragPos, 1.0);
+            pointShadow[i] += calcPointShadow(fragPosLightSpace, i);
+        }
+    }
+    for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
+    {
+        vec4 fragPosLightSpace = spotLights[i].lightSpaceMatrix * vec4(f_fragPos, 1.0);
+        pointShadow[i] = calcSpotShadow(fragPosLightSpace, i);
+    }
 
     vec4 ambient = calcAmbientLight(dirLight.color);
     for (int i = 0; i < MAX_POINT_LIGHTS; i++)
@@ -234,12 +255,10 @@ void main() {
     vec4 diffuse = calcDiffuseDirectional(norm, dirShadow);
     for (int i = 0; i < MAX_POINT_LIGHTS; i++)
     {
-        pointShadow[i] = calcPointShadow(fragPosLightSpace, i);
         diffuse += calcDiffusePoint(norm, pointShadow[i], i);
     }
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
     {
-        spotShadow[i] = calcSpotShadow(fragPosLightSpace, i);
         diffuse += calcDiffuseSpot(norm, spotShadow[i], i);
     }
 
