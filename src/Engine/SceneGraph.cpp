@@ -18,6 +18,20 @@ void glm::from_json(const json &j, vec3 &v)
     j.at("y").get_to(v.y);
     j.at("z").get_to(v.z);
 }
+void glm::to_json(json &j, const vec4 &v)
+{
+    j = json{{"x", v.x}, {"y", v.y}, {"z", v.z}, {"w", v.w}};
+}
+void glm::from_json(const json &j, vec4 &v)
+{
+    j.at("x").get_to(v.x);
+    j.at("y").get_to(v.y);
+    j.at("z").get_to(v.z);
+    if (j.contains("w"))
+        j.at("w").get_to(v.w);
+    else
+        v.w = 0.f;
+}
 void glm::to_json(json &j, const quat &q)
 {
     j = json{{"w", q.w}, {"x", q.x}, {"y", q.y}, {"z", q.z}};

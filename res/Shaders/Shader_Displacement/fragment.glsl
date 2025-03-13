@@ -20,17 +20,18 @@ struct LightCutOff {
 
 struct DirectionalLight {
     vec3 direction; // 3 locations
+    vec3 up; // 3 locations
     LightColor color; // 9 locations
-    sampler2D shadowMap; // 1 locations
+    // sampler2D shadowMap; // 1 locations
     mat4 lightSpaceMatrix; // 4 x 4 = 16 locations
 };
-// 3 + 9 + 1 + 16 = 29 locations
+// 3 + 3 + 9 + 1 + 16 = 32 locations
 
 struct PointLight {
     vec3 position; // 3 locations
     LightColor color; // 9 locations
     LightAttenuation attenuation; // 3 locations
-    samplerCube shadowMap; // 1 locations
+    // samplerCube shadowMap; // 1 locations
     mat4 lightSpaceMatrix[6]; // 6 x 4 x 4 = 96 locations
 };
 // 3 + 9 + 3 + 1 + 96 = 112 locations
@@ -38,17 +39,18 @@ struct PointLight {
 struct SpotLight {
     vec3 position; // 3 locations
     vec3 direction; // 3 locations
+    vec3 up; // 3 locations
     LightColor color; // 9 locations
     LightAttenuation attenuation; // 3 locations
     LightCutOff cutOff; // 2 locations
     // sampler2D shadowMap; // 1 locations
-    // mat4 lightSpaceMatrix; // 4 x 4 = 16 locations
+    mat4 lightSpaceMatrix; // 4 x 4 = 16 locations
 };
-// 3 + 3 + 9 + 3 + 2 + 1 + 16 = 37 locations
+// 3 + 3 + 3 + 9 + 3 + 2 + 1 + 16 = 40 locations
 
-uniform DirectionalLight dirLight;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
+// uniform DirectionalLight dirLight;
+// uniform PointLight pointLights[MAX_POINT_LIGHTS];
+// uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 struct Material {
     sampler2DArray textures; // 1 locations
@@ -64,19 +66,19 @@ struct Material {
 
 uniform Material material;
 
-uniform vec3 viewPos;
+// uniform vec3 viewPos;
 
 layout(location = 0) in vec3 f_fragPos;
 layout(location = 1) in vec2 f_texCoords;
 layout(location = 2) in mat3 f_TBN; // 2, 3, 4
 layout(location = 5) in vec3 f_fragNormal;
 
-layout(binding = 3) uniform LightingUniforms
+layout(std140, binding = 1) uniform LightingUniforms
 {
+    vec3 viewPos;
     DirectionalLight dirLight;
     PointLight pointLights[MAX_POINT_LIGHTS];
     SpotLight spotLights[MAX_SPOT_LIGHTS];
-    vec3 viewPos;
 };
 
 layout(location = 0) out vec4 FragColor;  // Output color

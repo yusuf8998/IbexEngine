@@ -28,8 +28,6 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
-uniform vec3 viewPos;
-
 void main() {
     vec4 newPos = vec4(v_position, 1.0);
     g_displaced = 0;

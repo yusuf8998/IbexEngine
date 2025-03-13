@@ -1,8 +1,8 @@
 #include <Graphics/LightCaster.h>
-#include "LightCaster.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <Engine/Camera.h>
+#include "LightCaster.h"
 
 void LightColor::setUniforms(const std::shared_ptr<ShaderObject> &shader, const std::string &name) const
 {
@@ -78,4 +78,56 @@ void SpotLight::calcLightSpaceMatrix()
     glm::mat4 lightProjection = glm::perspective(glm::radians(cutOff.outer * 2.0f), 1.0f, 0.125f, 20.f);
     glm::mat4 lightView = glm::lookAt(position, position + direction, up);
     lightSpaceMatrix = lightProjection * lightView;
+}
+
+#include <Graphics/UniformBufferObject.h>
+void pushLightingColorData(UniformBufferObject &ubo, const LightColor &color, size_t &offset)
+{
+    ubo.pushData(&color.ambient[0], sizeof(glm::vec3), offset);
+    ubo.pushData(&color.diffuse[0], sizeof(glm::vec3), offset);
+    ubo.pushData(&color.specular[0], sizeof(glm::vec3), offset);
+}
+void pushLightingAttenuationData(UniformBufferObject &ubo, const LightAttenuation &attenuation, size_t &offset)
+{
+    glm::vec3 attenuation_vector = {attenuation.constant, attenuation.linear, attenuation.quadratic};
+    ubo.pushData(&attenuation_vector[0], sizeof(glm::vec3), offset);
+}
+void pushLightingCutoffData(UniformBufferObject &ubo, const LightCutOff &cutoff, size_t &offset)
+{
+    glm::vec2 cutoff_vector = {cutoff.inner, cutoff.outer};
+    ubo.pushData(&cutoff_vector[0], sizeof(glm::vec2), offset);
+}
+void setLightingData(UniformBufferObject &ubo, const LightingUniforms &uniforms)
+{
+    size_t offset = 0;
+
+    ubo.pushData(&uniforms.viewPos[0], sizeof(glm::vec3), offset);
+
+    // Directional Light
+    ubo.pushData(&uniforms.dirLight.direction[0], sizeof(glm::vec3), offset);
+    ubo.pushData(&uniforms.dirLight.up[0], sizeof(glm::vec3), offset);
+    pushLightingColorData(ubo, uniforms.dirLight.color, offset);
+    ubo.pushData(&uniforms.dirLight.lightSpaceMatrix[0][0], sizeof(glm::mat4), offset);
+
+    // Point Lights
+    for (int i = 0; i < MAX_POINT_LIGHTS; i++)
+    {
+        ubo.pushData(&uniforms.pointLights[i].position[0], sizeof(glm::vec3), offset);
+        pushLightingColorData(ubo, uniforms.pointLights[i].color, offset);
+        pushLightingAttenuationData(ubo, uniforms.pointLights[i].attenuation, offset);
+        for (int j = 0; j < 6; j++)
+            ubo.pushData(&uniforms.pointLights[i].lightSpaceMatrix[j][0][0], sizeof(glm::mat4), offset);
+    }
+
+    // Spot Lights
+    for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
+    {
+        ubo.pushData(&uniforms.spotLights[i].position[0], sizeof(glm::vec3), offset);
+        ubo.pushData(&uniforms.spotLights[i].direction[0], sizeof(glm::vec3), offset);
+        ubo.pushData(&uniforms.spotLights[i].up[0], sizeof(glm::vec3), offset);
+        pushLightingColorData(ubo, uniforms.spotLights[i].color, offset);
+        pushLightingAttenuationData(ubo, uniforms.spotLights[i].attenuation, offset);
+        pushLightingCutoffData(ubo, uniforms.spotLights[i].cutOff, offset);
+        ubo.pushData(&uniforms.spotLights[i].lightSpaceMatrix[0][0], sizeof(glm::mat4), offset);
+    }
 }

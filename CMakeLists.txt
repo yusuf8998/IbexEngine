@@ -29,6 +29,7 @@ add_executable(Ibex
     "src/Graphics/LightCaster.cpp"
     "src/Graphics/FramebufferObject.cpp"
     "src/Graphics/ShadowMap.cpp"
+    "src/Graphics/UniformBufferObject.cpp"
     "src/Graphics/Renderer.cpp"
 
     "src/Engine/Transform.cpp"

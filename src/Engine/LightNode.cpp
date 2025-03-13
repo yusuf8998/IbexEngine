@@ -214,16 +214,25 @@ void LightNode::UpdateActiveLightVectors()
 void LightNode::SetActiveLightUniforms(const std::shared_ptr<ShaderObject> &shader)
 {
     if (ActiveDirectionalLight)
+    {
         ActiveDirectionalLight->setUniforms(shader, "dirLight");
+        lightingUniforms.dirLight = *std::dynamic_pointer_cast<DirectionalLight>(ActiveDirectionalLight->caster).get();
+    }
     for (int i = 0; i < MAX_POINT_LIGHTS; i++)
         if (ActivePointLights[i])
+        {
             ActivePointLights[i]->setUniforms(shader, "pointLights[" + std::to_string(i) + "]");
+            lightingUniforms.pointLights[i] = *std::dynamic_pointer_cast<PointLight>(ActivePointLights[i]->caster).get();
+        }
         else
             shader->setInt("pointLights[" + std::to_string(i) + "].shadowMap", lastUsedShadowMapSlot);
     lastUsedShadowMapSlot = 0;
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++)
         if (ActiveSpotLights[i])
+        {
             ActiveSpotLights[i]->setUniforms(shader, "spotLights[" + std::to_string(i) + "]");
+            lightingUniforms.spotLights[i] = *std::dynamic_pointer_cast<SpotLight>(ActiveSpotLights[i]->caster).get();
+        }
         else
             shader->setInt("spotLights[" + std::to_string(i) + "].shadowMap", lastUsedShadowMapSlot);
     lastUsedShadowMapSlot = 0;

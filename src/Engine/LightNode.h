@@ -4,9 +4,6 @@
 #include <Graphics/ShadowMap.h>
 #include <Engine/SceneGraph.h>
 
-constexpr int MAX_POINT_LIGHTS = 4;
-constexpr int MAX_SPOT_LIGHTS = 4;
-
 class LightNode : public Transformable
 {
 protected:

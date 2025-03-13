@@ -133,11 +133,9 @@ int main()
     FramebufferObject fbo(renderer.getScreenSize().x, renderer.getScreenSize().y, false, GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
     bool bind_fbo = false;
 
-    UniformBufferObject ubo = UniformBufferObject("LightingUniforms", ShaderUniforms::LIGHTING_UNIFORM_SIZE);
-    ShaderUniforms::LightingUniforms lightingUniforms;
-    lightingUniforms.dirLight = ShaderUniforms::DirectionalLight{glm::vec3(1.f), ShaderUniforms::LightColor{glm::vec3(0.f), glm::vec3(1.f), glm::vec3(0.f)}, 0, glm::mat4(1.f)};
+    UniformBufferObject ubo = UniformBufferObject("LightingUniforms", LIGHTING_UNIFORM_SIZE, 1);
     ubo.setData(&lightingUniforms);
-    ubo.bind();
+    ubo.use(renderer.getShader(4)->getID());
 
     while (!renderer.shouldClose())
     {
@@ -208,6 +206,9 @@ int main()
         glPolygonMode(GL_FRONT_AND_BACK, (drawWireframe ? GL_LINE : GL_FILL));
         renderer.resetViewport();
         particleObj.render(renderer.getShader(5), glm::mat4(1.f));
+        lightingUniforms.viewPos = mainCamera.position;
+        setLightingData(ubo, lightingUniforms);
+        ubo.use(renderer.getShader(4)->getID());
         renderSceneGraph(root, renderer.getShader(4), false);
         if (drawNormals)
             renderSceneGraph(root, renderer.getShader(2), true);

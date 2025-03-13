@@ -27,8 +27,6 @@ layout(location = 1) out vec2 f_texCoords;
 layout(location = 2) out mat3 f_TBN; // 2, 3, 4
 layout(location = 5) out vec3 f_fragNormal;
 
-uniform vec3 viewPos;
-
 vec3 GetNormal() {
     if (g_displaced[0] <= 0)
         return g_fragNormal[0];

@@ -5,20 +5,8 @@
 #include <Graphics/ShaderObject.h>
 #include <stdexcept>
 
-// float distance    = length(light.position - FragPos);
-// float attenuation = 1.0 / (light.constant + light.linear * distance +
-//     		    light.quadratic * (distance * distance));
-// ambient  *= attenuation;
-// diffuse  *= attenuation;
-// specular *= attenuation;
-
-// float theta = dot(lightDir, normalize(-light.direction));
-// if(theta > light.cutOff)
-// {
-// //   do lighting calculations
-// }
-// else  // else, use ambient light so scene isn't completely dark outside the spotlight.
-//   color = vec4(light.ambient * vec3(texture(material.diffuse, TexCoords)), 1.0);
+constexpr int MAX_POINT_LIGHTS = 4;
+constexpr int MAX_SPOT_LIGHTS = 4;
 
 struct LightColor
 {
@@ -135,3 +123,21 @@ struct SpotLight : public AttenuationLightCaster
     void calcLightSpaceMatrix() override;
     glm::mat4 getLightSpaceMatrix() const override { return lightSpaceMatrix; }
 };
+
+struct LightingUniforms
+{
+    DirectionalLight dirLight;
+    PointLight pointLights[MAX_POINT_LIGHTS];
+    SpotLight spotLights[MAX_SPOT_LIGHTS];
+    glm::vec3 viewPos;
+};
+constexpr size_t LIGHTING_UNIFORM_SIZE = sizeof(LightingUniforms);
+
+inline LightingUniforms lightingUniforms;
+
+class UniformBufferObject;
+
+void pushLightingColorData(UniformBufferObject &ubo, const LightColor &color, size_t &offset);
+void pushLightingAttenuationData(UniformBufferObject &ubo, const LightAttenuation &attenuation, size_t &offset);
+void pushLightingCutoffData(UniformBufferObject &ubo, const LightCutOff &cutoff, size_t &offset);
+void setLightingData(UniformBufferObject &ubo, const LightingUniforms &uniforms);
